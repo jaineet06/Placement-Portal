@@ -4,6 +4,7 @@ import cookieParser from 'cookie-parser'
 import cors from 'cors'
 import userRouter from './routes/user.routes.js'
 import connectDB from './configs/mondoDB.js'
+import studentRouter from './routes/student.routes.js'
 
 connectDB()
 
@@ -19,6 +20,7 @@ app.get('/', (req, res) => {
     res.send("Api is working")
 })
 app.use('/api/auth', userRouter)
+app.use('/api/student', studentRouter)
 
 app.listen(port, () => {
     console.log(`App is listening on http://localhost:${port}`)

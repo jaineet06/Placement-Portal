@@ -31,6 +31,7 @@ const registerUser = async (req, res) => {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production",
             sameSite: 'none',
+            maxAge: 7 * 24 * 60 * 60 * 1000
         }
 
         res.cookie('token', token,
@@ -70,6 +71,7 @@ const loginUser = async (req, res) => {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production",
             sameSite: 'none',
+            maxAge: 7 * 24 * 60 * 60 * 1000
         }
 
         res.cookie('token', token,
@@ -110,44 +112,4 @@ const getUserProfile = async (req, res) => {
     }
 }
 
-//Teacher register
-const createTeacher = async (req, res) => {
-    const { email, password, name } = req.body;
-    if (!email || !password) {
-        return res.status(400).json({ success: false, message: "Enter all credentials properly!" })
-    }
-
-    try {
-        const userExists = await User.findOne({ email })
-        if (userExists) {
-            return res.json({ success: false, message: "User already exists" })
-        }
-
-        const user = new User({
-            name,
-            email,
-            password,
-            isVerified: true,
-            role: 'teacher'
-        })
-        await user.save()
-
-        const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET_KEY)
-
-        const options = {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === "production",
-            sameSite: 'none',
-        }
-
-        res.cookie('token', token,
-            options
-        )
-
-        return res.status(200).json({ success: true, message: "Registerd Succesfully!" })
-    } catch (error) {
-        return res.status(500).json({ success: false, message: error.message })
-    }
-}
-
-export { loginUser, logoutUser, registerUser, createTeacher, getUserProfile }
+export { loginUser, logoutUser, registerUser, getUserProfile }

@@ -1,14 +1,11 @@
 import express from "express";
-import { createTeacher, getUserProfile, loginUser, logoutUser, registerUser } from "../controllers/user.controller.js";
+import { getUserProfile, loginUser, logoutUser, registerUser } from "../controllers/user.controller.js";
 import { authUser } from "../middlewares/auth.js";
 
 const userRouter = express.Router()
 
 //Student routes
 userRouter.post('/register', registerUser)
-
-//Teacher routes
-userRouter.post('/teacher/register', createTeacher)
 
 userRouter.post('/login', loginUser)
 userRouter.get('/logout', logoutUser)
