@@ -9,7 +9,7 @@ const uploadToCloudinary = async (filePath, folder, publicId, resource_type = "a
             resource_type
         });
 
-        return result.secure_url;
+        return result
     } catch (error) {
         console.log("Cloudinary Upload Error:", error.message);
         return null;

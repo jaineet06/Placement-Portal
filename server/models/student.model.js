@@ -11,8 +11,14 @@ const studentSchema = new mongoose.Schema({
     mobile: { type: String, required: true },
     alternateMobile: { type: String },
     parentMobile: { type: String, required: true },
-    resume: { type: String },
-    profilePath: { type: String }
+    resume: {
+        url: { type: String },
+        public_id: { type: String }
+    },
+    profilePath: {
+        url: { type: String },
+        public_id: { type: String }
+    },
 }, { timestamps: true })
 
 const Student = mongoose.model("student", studentSchema)
