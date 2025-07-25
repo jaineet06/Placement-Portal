@@ -5,8 +5,10 @@ import cors from 'cors'
 import userRouter from './routes/user.routes.js'
 import connectDB from './configs/mondoDB.js'
 import studentRouter from './routes/student.routes.js'
+import connectCloudinary from './configs/cloudinary.js'
 
 connectDB()
+connectCloudinary()
 
 const app = express()
 const port = process.env.PORT
