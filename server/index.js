@@ -6,6 +6,8 @@ import userRouter from './routes/user.routes.js'
 import connectDB from './configs/mondoDB.js'
 import studentRouter from './routes/student.routes.js'
 import connectCloudinary from './configs/cloudinary.js'
+import addresRouter from './routes/address.route.js'
+import educationRouter from './routes/education.routes.js'
 
 connectDB()
 connectCloudinary()
@@ -23,6 +25,8 @@ app.get('/', (req, res) => {
 })
 app.use('/api/auth', userRouter)
 app.use('/api/student', studentRouter)
+app.use('/api/address', addresRouter)
+app.use('/api/education', educationRouter)
 
 app.listen(port, () => {
     console.log(`App is listening on http://localhost:${port}`)

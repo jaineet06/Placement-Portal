@@ -11,5 +11,4 @@ userRouter.post('/login', loginUser)
 userRouter.get('/logout', logoutUser)
 userRouter.get('/get-profile', authUser, getUserProfile)
 
-
 export default userRouter

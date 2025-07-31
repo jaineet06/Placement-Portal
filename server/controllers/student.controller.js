@@ -1,4 +1,5 @@
 import Student from "../models/student.model.js";
+import User from "../models/user.model.js";
 import deleteFromCloudinary from "../utils/deleteFromCloudinary.js";
 import uploadToCloudinary from "../utils/uploadToCloudinary.js";
 
@@ -194,4 +195,22 @@ const updateStudentFiles = async (req, res) => {
     }
 }
 
-export { createStudent, getStudents, getStudent, updateStudentFiles }
+//To check is student verified
+const getStudentVefrification = async (req, res) => {
+
+    const { id } = req.user
+
+    try {
+        const user = await User.findById(id)
+        if (!user) {
+            return res.status(400).json({ success: false, message: "No User exists" });
+        }
+
+        return res.status(200).json({ success: true, isVerified: user.isVerified })
+    } catch (error) {
+        console.error("Update Error:", error.message);
+        return res.status(500).json({ success: false, message: "Internal Server Error" });
+    }
+}
+
+export { createStudent, getStudents, getStudent, updateStudentFiles, getStudentVefrification }
