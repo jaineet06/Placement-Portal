@@ -10,6 +10,8 @@ const addressSchema = new mongoose.Schema({
     country: { type: String, default: "India" }
 }, { timestamps: true })
 
+addressSchema.index({ user: 1, type: 1 }, { unique: true });
+
 const Address = mongoose.model('address', addressSchema)
 
 export default Address

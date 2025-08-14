@@ -1,73 +1,88 @@
+// Address Controller Fix
 import Address from "../models/address.model.js";
 import Student from "../models/student.model.js";
 
-// Add Address
-const addAddress = async (req, res) => {
-
-    const { type, address, city, state, pincode, country } = req.body;
+// Add or Update Address
+const addOrUpdateAddress = async (req, res) => {
+    const { type, address, city, state, pincode, country = "India" } = req.body;
     const { id } = req.user;
 
     try {
-        const isStudentExist = await Student.findOne({ user: id });
-        if (!isStudentExist) {
+        const studentExists = await Student.findOne({ user: id });
+        if (!studentExists) {
             return res.status(404).json({ success: false, message: "No Student exists with this ID" });
         }
 
-        if (!type || !address || !city || !state || !pincode || !country) {
+        if (!type || !address || !city || !state || !pincode) {
             return res.status(400).json({ success: false, message: "Provide all required address fields" });
         }
 
-        const studentAddress = new Address({
-            user: id,
-            address,
-            city,
-            type,
-            state,
-            pincode,
-            country,
+        const existing = await Address.findOne({ user: id, type });
+        if (existing) {
+            existing.address = address;
+            existing.city = city;
+            existing.state = state;
+            existing.pincode = pincode;
+            existing.country = country;
+            await existing.save();
+        } else {
+            const newAddress = new Address({
+                user: id,
+                type,
+                address,
+                city,
+                state,
+                pincode,
+                country,
+            });
+            await newAddress.save();
+        }
+
+        return res.status(200).json({ success: true, message: "Address added/updated successfully" });
+    } catch (error) {
+        return res.status(500).json({ success: false, message: "Server error", error: error.message });
+    }
+};
+
+// Get Addresses
+const getAddresses = async (req, res) => {
+    const { id } = req.user;
+    try {
+        const addresses = await Address.find({ user: id }).select(
+            "type address city state pincode country"
+        );
+
+        const formatted = {
+            permanent: {},
+            current: {},
+        };
+
+        for (let addr of addresses) {
+            const cleanAddr = {
+                type: addr.type,
+                address: addr.address,
+                city: addr.city,
+                state: addr.state,
+                pincode: addr.pincode,
+                country: addr.country
+            };
+
+            if (addr.type === "permanent") formatted.permanent = cleanAddr;
+            if (addr.type === "current") formatted.current = cleanAddr;
+        }
+
+        return res.status(200).json({
+            success: true,
+            address: formatted,
         });
-
-        await studentAddress.save();
-
-        return res.status(201).json({ success: true, message: "Address added successfully" });
     } catch (error) {
-        return res.status(500).json({ success: false, message: "Server error", error: error.message });
+        return res.status(500).json({
+            success: false,
+            message: "Server error",
+            error: error.message,
+        });
     }
 };
 
-// Update Address
-const updateAddress = async (req, res) => {
-    const { type, address, city, state, pincode, country } = req.body;
-    const { id } = req.user;
 
-    try {
-        const isStudentExist = await Student.findOne({ user: id });
-        if (!isStudentExist) {
-            return res.status(404).json({ success: false, message: "No Student exists with this ID" });
-        }
-
-        if (!type || !address || !city || !state || !pincode || !country) {
-            return res.status(400).json({ success: false, message: "Provide all required address fields" });
-        }
-
-        const existingAddress = await Address.findOne({ user: id });
-        if (!existingAddress) {
-            return res.status(404).json({ success: false, message: "Address not found. Please add address first." });
-        }
-
-        existingAddress.type = type;
-        existingAddress.address = address;
-        existingAddress.city = city;
-        existingAddress.state = state;
-        existingAddress.pincode = pincode;
-        existingAddress.country = country;
-
-        await existingAddress.save();
-
-        return res.status(200).json({ success: true, message: "Address updated successfully" });
-    } catch (error) {
-        return res.status(500).json({ success: false, message: "Server error", error: error.message });
-    }
-};
-
-export { addAddress, updateAddress };
+export { addOrUpdateAddress, getAddresses };

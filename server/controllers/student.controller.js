@@ -15,57 +15,57 @@ const createStudent = async (req, res) => {
             return res.status(400).json({ success: false, message: "Student with this enrollment number already exists." })
         }
 
-        let resumePath = "";
-        let profilePicPath = "";
+        // let resumePath = "";
+        // let profilePicPath = "";
 
-        if (req.files) {
-            if (req.files.resume && req.files.resume[0]) {
-                const resume = req.files.resume[0]
+        // if (req.files) {
+        //     if (req.files.resume && req.files.resume[0]) {
+        //         const resume = req.files.resume[0]
 
-                if (resume.mimetype != "application/pdf") {
-                    return res.status(400).json({ success: false, message: "Resume must be a PDF." });
-                }
+        //         if (resume.mimetype != "application/pdf") {
+        //             return res.status(400).json({ success: false, message: "Resume must be a PDF." });
+        //         }
 
-                if (resume.size > 2 * 1024 * 1024) {
-                    return res.status(400).json({ success: false, message: "Resume must be under 2MB." });
-                }
+        //         if (resume.size > 2 * 1024 * 1024) {
+        //             return res.status(400).json({ success: false, message: "Resume must be under 2MB." });
+        //         }
 
-                const resumeResult = await uploadToCloudinary(
-                    resume.path,
-                    "students/resumes",
-                    `${enrollmentNo}-resume`,
-                    "raw"
-                )
+        //         const resumeResult = await uploadToCloudinary(
+        //             resume.path,
+        //             "students/resumes",
+        //             `${enrollmentNo}-resume`,
+        //             "raw"
+        //         )
 
-                resumePath = {
-                    url: resumeResult.secure_url,
-                    public_id: resumeResult.public_id
-                }
-            }
+        //         resumePath = {
+        //             url: resumeResult.secure_url,
+        //             public_id: resumeResult.public_id
+        //         }
+        //     }
 
-            if (req.files.profilePath && req.files.profilePath[0]) {
-                const profile = req.files.profilePath[0]
-                const validTypes = ["image/jpeg", "image/png", "image/jpg"]
-                if (!validTypes.includes(profile.mimetype)) {
-                    return res.status(400).json({ success: false, message: "Profile image must be JPG, PNG, or JPEG." });
-                }
+        //     if (req.files.profilePath && req.files.profilePath[0]) {
+        //         const profile = req.files.profilePath[0]
+        //         const validTypes = ["image/jpeg", "image/png", "image/jpg"]
+        //         if (!validTypes.includes(profile.mimetype)) {
+        //             return res.status(400).json({ success: false, message: "Profile image must be JPG, PNG, or JPEG." });
+        //         }
 
-                if (profile.size > 1 * 1024 * 1024) {
-                    return res.status(400).json({ success: false, message: "Profile image must be under 1MB." });
-                }
+        //         if (profile.size > 1 * 1024 * 1024) {
+        //             return res.status(400).json({ success: false, message: "Profile image must be under 1MB." });
+        //         }
 
-                const profileResult = await uploadToCloudinary(
-                    profile.path,
-                    "students/profilePics",
-                    `${enrollmentNo}-profile`,
-                    "image"
-                );
-                profilePicPath = {
-                    url: profileResult.secure_url,
-                    public_id: profileResult.public_id
-                }
-            }
-        }
+        //         const profileResult = await uploadToCloudinary(
+        //             profile.path,
+        //             "students/profilePics",
+        //             `${enrollmentNo}-profile`,
+        //             "image"
+        //         );
+        //         profilePicPath = {
+        //             url: profileResult.secure_url,
+        //             public_id: profileResult.public_id
+        //         }
+        //     }
+        // }
 
         const newStudent = new Student({
             user: id,
@@ -78,8 +78,6 @@ const createStudent = async (req, res) => {
             category,
             mobile,
             alternateMobile,
-            resume: resumePath,
-            profilePath: profilePicPath
         })
 
         await newStudent.save()
@@ -106,25 +104,35 @@ const getStudents = async (req, res) => {
 
 //Get single student
 const getStudent = async (req, res) => {
-    const { enrollmentNo } = req.params
+    const { id } = req.user;
     try {
-        const student = await Student.findOne({ enrollmentNo })
-
+        const student = await Student.findOne({ user: id })
         res.status(200).json({ success: true, message: "Students fetched Succesfully", student });
     } catch (error) {
         return res.status(500).json({ success: false, message: "Server Error" });
     }
 }
 
+const studentExist = async (req, res) => {
+    const { id } = req.user;
+    try {
+        const student = await Student.findOne({ user: id })
+        if (!student) res.json({ isStudent: false });
+        res.json({ isStudent: true });
+    } catch (error) {
+        return res.json({ success: false, message: "Server Error" });
+    }
+}
+
 //update student files
-const updateStudentFiles = async (req, res) => {
-    const { enrollmentNo } = req.params
+const uploadStudentFiles = async (req, res) => {
+    const { id } = req.user
     try {
 
         if (!req.files || (!req.files.resume && !req.files.profilePath)) {
             return res.status(400).json({ success: false, message: "No files provided for update." });
         }
-        const student = await Student.findOne({ enrollmentNo })
+        const student = await Student.findOne({ user: id })
         if (!student) {
             return res.status(400).json({ success: false, message: "Student not found." })
         }
@@ -137,11 +145,11 @@ const updateStudentFiles = async (req, res) => {
                 const resume = req.files.resume[0]
 
                 if (resume.mimetype !== "application/pdf") {
-                    return res.status(400).json({ success: false, message: "Resume must be a PDF." });
+                    return res.json({ success: false, message: "Resume must be a PDF." });
                 }
 
                 if (resume.size > 2 * 1024 * 1024) {
-                    return res.status(400).json({ success: false, message: "Resume size must be less than 2MB" });
+                    return res.json({ success: false, message: "Resume size must be less than 2MB" });
                 }
 
                 if (student.resume.url) {
@@ -151,7 +159,7 @@ const updateStudentFiles = async (req, res) => {
                 resumePath = await uploadToCloudinary(
                     resume.path,
                     "students/resumes",
-                    `${enrollmentNo}-resume`,
+                    `${student.enrollmentNo}-resume`,
                     "raw"
                 )
             }
@@ -160,11 +168,11 @@ const updateStudentFiles = async (req, res) => {
                 const profile = req.files.profilePath[0]
                 const validTypes = ["image/jpeg", "image/png", "image/jpg"]
                 if (!validTypes.includes(profile.mimetype)) {
-                    return res.status(400).json({ success: false, message: "Profile image must be JPG, PNG, or JPEG." });
+                    return res.json({ success: false, message: "Profile image must be JPG, PNG, or JPEG." });
                 }
 
                 if (profile.size > 1 * 1024 * 1024) {
-                    return res.status(400).json({ success: false, message: "Profile image must be under 1MB." });
+                    return res.json({ success: false, message: "Profile image must be under 1MB." });
                 }
 
                 if (student.profilePath.url) {
@@ -174,13 +182,17 @@ const updateStudentFiles = async (req, res) => {
                 profilePicPath = await uploadToCloudinary(
                     profile.path,
                     "students/profilePics",
-                    `${enrollmentNo}-profile`,
+                    `${student.enrollmentNo}-profile`,
                     "image"
                 );
             }
 
-            student.resume = resumePath
-            student.profilePath = profilePicPath
+            if (resumePath) {
+                student.resume = resumePath;
+            }
+            if (profilePicPath) {
+                student.profilePath = profilePicPath;
+            }
 
             await student.save()
 
@@ -213,4 +225,28 @@ const getStudentVefrification = async (req, res) => {
     }
 }
 
-export { createStudent, getStudents, getStudent, updateStudentFiles, getStudentVefrification }
+const getStudentFiles = async (req, res) => {
+    const { id } = req.user;
+
+    try {
+        const student = await Student.findOne({ user: id })
+            .select("resume profilePath");
+
+        if (!student) {
+            return res.json({ success: false, message: "No Student exists" });
+        }
+
+        return res.json({
+            success: true,
+            files: {
+                resume: student.resume?.url,
+                profilePath: student.profilePath?.url
+            }
+        });
+    } catch (error) {
+        console.error("Error fetching student files:", error);
+        return res.json({ success: false, message: "Server Error" });
+    }
+};
+
+export { createStudent, getStudents, getStudent, uploadStudentFiles, getStudentVefrification, studentExist, getStudentFiles }

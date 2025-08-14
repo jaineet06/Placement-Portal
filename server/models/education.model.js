@@ -62,28 +62,5 @@ const educationSchema = new mongoose.Schema({
 
 }, { timestamps: true });
 
-
-// Custom validation to enforce either HSC or Diploma (but not both)
-educationSchema.pre('validate', function (next) {
-    const education = this;
-
-    // HSC and Diploma - mutually exclusive
-    if (education.hsc.percentage && education.diploma.percentage) {
-        return next(new Error("Provide either HSC or Diploma, not both."));
-    }
-
-    // One of HSC or Diploma must be present
-    if (!education.hsc.percentage && !education.diploma.percentage) {
-        return next(new Error("Either HSC or Diploma is required."));
-    }
-
-    // SPI must contain at least one value
-    if (!education.spi || education.spi.length === 0) {
-        return next(new Error("Provide at least one SPI value."));
-    }
-
-    next();
-});
-
 const Education = mongoose.model('education', educationSchema);
 export default Education;

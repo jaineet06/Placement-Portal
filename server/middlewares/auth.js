@@ -5,7 +5,7 @@ const authUser = async (req, res, next) => {
     const { token } = req.cookies
 
     if (!token) {
-        return res.status(401).json({ success: false, message: 'No token provided' });
+        return res.json({ success: false, message: 'No token provided' });
     }
 
     try {
@@ -13,14 +13,14 @@ const authUser = async (req, res, next) => {
         req.user = decodedToken
         next()
     } catch (error) {
-        res.status(403).json({ success: false, message: 'Invalid or expired token' });
+        res.json({ success: false, message: 'Invalid or expired token' });
     }
 }
 
 const authorizeRoles = (...roles) => {
     return (req, res, next) => {
         if (!req.user || !roles.includes(req.user.role)) {
-            return res.status(403).json({ success: false, message: 'Not Authorised' });
+            return res.json({ success: false, message: 'Not Authorised' });
         }
         next()
     }
