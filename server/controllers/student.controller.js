@@ -96,9 +96,9 @@ const getStudents = async (req, res) => {
     try {
         const students = await Student.find({})
 
-        res.status(200).json({ success: true, message: "Students fetched Succesfully", students });
+        res.json({ success: true, message: "Students fetched Succesfully", students });
     } catch (error) {
-        return res.status(500).json({ success: false, message: "Server Error" });
+        return res.json({ success: false, message: "Server Error" });
     }
 }
 
@@ -107,9 +107,9 @@ const getStudent = async (req, res) => {
     const { id } = req.user;
     try {
         const student = await Student.findOne({ user: id })
-        res.status(200).json({ success: true, message: "Students fetched Succesfully", student });
+        res.json({ success: true, message: "Students fetched Succesfully", student });
     } catch (error) {
-        return res.status(500).json({ success: false, message: "Server Error" });
+        return res.json({ success: false, message: "Server Error" });
     }
 }
 

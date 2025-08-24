@@ -106,7 +106,7 @@ const logoutUser = async (req, res) => {
 const getUserProfile = async (req, res) => {
     try {
         const { id } = req.user
-        const user = await User.findById(id).select("-password -email -_id")
+        const user = await User.findById(id).select("-password")
 
         return res.json({ success: true, user })
     } catch (error) {
@@ -115,4 +115,34 @@ const getUserProfile = async (req, res) => {
     }
 }
 
-export { loginUser, logoutUser, registerUser, getUserProfile }
+const getAllUsers = async (req, res) => {
+    try {
+        const { id } = req.user
+        const users = await User.find({ isVerified: false }).select("-password")
+
+        return res.json({ success: true, users })
+    } catch (error) {
+        console.log(error.message);
+        return res.json({ success: false, message: error.message })
+    }
+}
+
+const verifyUser = async (req, res) => {
+    const { id } = req.body;
+    try {
+        const user = await User.findById(id);
+        if (user.isVerified) {
+            return res.json({ success: false, message: "User is already verified" })
+        }
+
+        user.isVerified = true
+        await user.save();
+
+        return res.json({ success: true, message: "User verified succesfully" })
+    } catch (error) {
+        console.log(error.message);
+        return res.json({ success: false, message: error.message })
+    }
+}
+
+export { loginUser, logoutUser, registerUser, getUserProfile, getAllUsers, verifyUser }

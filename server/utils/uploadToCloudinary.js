@@ -6,7 +6,7 @@ const uploadToCloudinary = async (filePath, folder, publicId, resource_type = "a
         const result = await cloudinary.uploader.upload(filePath, {
             folder,
             public_id: publicId,
-            resource_type
+            resource_type,
         });
 
         return result
