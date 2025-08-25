@@ -1,12 +1,12 @@
 import React from "react";
 import { Route, Routes } from "react-router-dom";
-import AdminLayout from "../pages/AdminLayout";
 import { useAdminContext } from "./context/AdminContext";
 import Login from "./components/Login";
 import { Toaster } from "react-hot-toast";
-import ListOfStudents from "../pages/ListOfStudents";
-import VerifyUsers from "../pages/VerifyUsers";
-import StudentDetails from "../pages/StudentDetails";
+import AdminLayout from "./pages/AdminLayout.jsx";
+import ListOfStudents from "./pages/ListOfStudents.jsx";
+import StudentDetails from "./pages/StudentDetails.jsx";
+import VerifyUsers from "./pages/VerifyUsers.jsx";
 
 const App = () => {
   const { isAdmin, user } = useAdminContext();

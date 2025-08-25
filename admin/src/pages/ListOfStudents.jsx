@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
-import Spinner from "../src/components/Spinner";
+import Spinner from "../components/Spinner";
 import toast from "react-hot-toast";
-import { useAdminContext } from "../src/context/AdminContext";
-import Title from "../src/components/Title";
+import { useAdminContext } from "../context/AdminContext";
+import Title from "../components/Title";
 import { Download } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
@@ -54,7 +54,7 @@ const ListOfStudents = () => {
             {students.map((item, index) => (
               <tr
                 key={index}
-                className="border-b border-primary/10 bg-primary/5 even:bg-primary/10 cursor-pointer"
+                className="border-b border-primary/10 bg-primary/5 even:bg-primary/10 hover:bg-primary-dull/20 cursor-pointer"
                 onClick={() => navigate(`/students/${item.enrollmentNo}`)}
               >
                 <td className="p-2 pl-5">{item.enrollmentNo}</td>
@@ -69,7 +69,7 @@ const ListOfStudents = () => {
                       rel="noopener noreferrer"
                       download
                       onClick={(e) => e.stopPropagation()}
-                      className="px-4 py-2 active:scale-95 transition bg-gray-500/15 border border-blue-500 rounded text-blue-500 text-sm font-medium flex items-center justify-center gap-1 cursor-pointer"
+                      className="px-2 py-2 active:scale-95 transition bg-gray-500/15 border border-blue-500 rounded text-blue-500 text-sm font-medium flex items-center justify-center gap-1 cursor-pointer"
                     >
                       <Download size={20} />
                       Download

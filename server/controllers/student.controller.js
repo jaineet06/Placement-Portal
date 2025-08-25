@@ -86,7 +86,7 @@ const createStudent = async (req, res) => {
 
     } catch (error) {
         console.error("Create Student Error:", error.message);
-        return res.status(500).json({ success: false, message: "Server Error" });
+        return res.json({ success: false, message: "Server Error" });
     }
 
 }

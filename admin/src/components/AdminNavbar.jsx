@@ -18,7 +18,7 @@ const AdminNavbar = () => {
     }
   };
   return (
-    <div className="flex items-center justify-between px-4 md:px-8 border-b border-gray-300 py-4 bg-white transition-all duration-300">
+    <div className="flex items-center justify-between px-4 md:px-8 border-b border-black py-4 bg-white transition-all duration-300">
       <p>Admin Panel</p>
       <div className="flex items-center gap-5 text-gray-500">
         <p>Hi! Admin</p>

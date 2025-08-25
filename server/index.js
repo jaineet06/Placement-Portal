@@ -8,6 +8,7 @@ import studentRouter from './routes/student.routes.js'
 import connectCloudinary from './configs/cloudinary.js'
 import addresRouter from './routes/address.route.js'
 import educationRouter from './routes/education.routes.js'
+import adminRouter from './routes/admin.routes.js'
 
 connectDB()
 connectCloudinary()
@@ -28,6 +29,7 @@ app.use('/api/auth', userRouter)
 app.use('/api/student', studentRouter)
 app.use('/api/address', addresRouter)
 app.use('/api/education', educationRouter)
+app.use('/api/admin', adminRouter)
 
 app.listen(port, () => {
     console.log(`App is listening on http://localhost:${port}`)

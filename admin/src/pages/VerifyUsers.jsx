@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
-import Spinner from "../src/components/Spinner";
-import { useAdminContext } from "../src/context/AdminContext";
-import Title from "../src/components/Title";
+import Spinner from "../components/Spinner";
+import { useAdminContext } from "../context/AdminContext";
+import Title from "../components/Title";
 import { SquareCheck } from "lucide-react";
 import toast from "react-hot-toast";
 
