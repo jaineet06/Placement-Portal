@@ -67,11 +67,11 @@ const deleteStudent = async (req, res) => {
         const student = await Student.findOne({ user: userId })
         if (student) {
             if (student.profilePath?.public_id) {
-                await deleteFromCloudinary(student.profilePath.public_id)
+                await deleteFromCloudinary(student.profilePath.public_id, "image")
             }
 
             if (student.resume?.public_id) {
-                await deleteFromCloudinary(student.resume.public_id, { resource_type: "raw" });
+                await deleteFromCloudinary(student.resume.public_id, "raw");
             }
         }
 
