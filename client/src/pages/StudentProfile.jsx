@@ -7,20 +7,27 @@ import EducationForm from "../components/EducationForm";
 import UploadFiles from "../components/UploadFiles";
 
 const StudentProfile = () => {
-  const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("personal");
 
-  const { getStudentVerification, verified } = useAppContext();
+  const { getStudentVerification, verified, isLoggedIn } = useAppContext();
 
   useEffect(() => {
     getStudentVerification();
   }, []);
 
-  if (loading && verified === null) {
+  if (verified === null) {
     return (
       <div className="flex flex-col justify-center items-center h-full">
         <Spinner />
         <p className="text-sm mt-2 font-normal">Checking verification...</p>
+      </div>
+    );
+  }
+
+  if (!isLoggedIn) {
+    return (
+      <div className="flex items-center justify-center h-full">
+        <h1 className="text-2xl font-normal">Login first to get access</h1>
       </div>
     );
   }
@@ -66,18 +73,12 @@ const StudentProfile = () => {
         ))}
       </div>
 
-      {loading ? (
-        <div className="flex justify-center">
-          <Spinner />
-        </div>
-      ) : (
-        <>
-          {activeTab === "personal" && <PersonalDetailsForm />}
-          {activeTab === "address" && <AddressForm />}
-          {activeTab === "education" && <EducationForm />}
-          {activeTab === "uploads" && <UploadFiles />}
-        </>
-      )}
+      <>
+        {activeTab === "personal" && <PersonalDetailsForm />}
+        {activeTab === "address" && <AddressForm />}
+        {activeTab === "education" && <EducationForm />}
+        {activeTab === "uploads" && <UploadFiles />}
+      </>
     </div>
   );
 };

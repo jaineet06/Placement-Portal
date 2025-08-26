@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { toast } from "react-hot-toast";
 import { useAppContext } from "../context/AppContext";
+import Spinner from "./Spinner";
 
 const defaultAddressData = {
   permanent: {
@@ -23,8 +24,10 @@ const AddressForm = () => {
   const [addressFormData, setAddressFormData] = useState(defaultAddressData);
   const [saving, setSaving] = useState(false);
   const { axios, verified } = useAppContext();
+  const [loading, setLoading] = useState(false);
 
   const loadData = async () => {
+    setLoading(true);
     try {
       const { data } = await axios.get("/api/address/get");
       const address = data.address || {};
@@ -48,6 +51,8 @@ const AddressForm = () => {
     } catch (err) {
       console.error(err);
       toast.error("Failed to load address data.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -94,7 +99,12 @@ const AddressForm = () => {
     }
   };
 
-  return (
+  return loading ? (
+    <div className="flex flex-col items-center justify-center w-full h-full min-h-[60vh]">
+      <Spinner />
+      <p className="mt-2 text-sm font-normal">Fetching details...</p>
+    </div>
+  ) : (
     <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-6">
       <h2 className="text-xl font-semibold text-gray-800 border-b pb-3 mb-4">
         Address Details
@@ -110,7 +120,7 @@ const AddressForm = () => {
               <button
                 type="button"
                 onClick={copyPermanentToCurrent}
-                className="text-sm text-blue-600 hover:underline"
+                className="text-sm text-blue-600 hover:underline cursor-pointer"
               >
                 Copy from Permanent
               </button>

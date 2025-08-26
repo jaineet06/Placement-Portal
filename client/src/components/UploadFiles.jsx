@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useAppContext } from "../context/AppContext";
 import { toast } from "react-hot-toast";
+import Spinner from "./Spinner";
 
 const UploadFiles = () => {
   const [resume, setResume] = useState(null);
@@ -8,6 +9,7 @@ const UploadFiles = () => {
   const [resumePreview, setResumePreview] = useState(null);
   const [profilePreview, setProfilePreview] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
 
   const { axios, verified } = useAppContext();
@@ -40,7 +42,7 @@ const UploadFiles = () => {
   const handleUpload = async () => {
     if (!resume && !profile)
       return toast.error("Please select at least one file");
-    setLoading(true);
+    setUploading(true);
 
     try {
       const formData = new FormData();
@@ -62,11 +64,12 @@ const UploadFiles = () => {
     } catch (error) {
       toast.error("Failed to upload files");
     } finally {
-      setLoading(false);
+      setUploading(false);
     }
   };
 
   const loadData = async () => {
+    setLoading(true);
     try {
       const { data } = await axios.get("/api/student/get-files");
       if (data.success) {
@@ -79,6 +82,8 @@ const UploadFiles = () => {
       }
     } catch (error) {
       toast.error("Failed to load files");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -89,7 +94,12 @@ const UploadFiles = () => {
   const dropZoneClass =
     "flex flex-col items-center justify-center p-4 border-2 border-dashed rounded-lg cursor-pointer transition hover:bg-gray-50";
 
-  return (
+  return loading ? (
+    <div className="flex flex-col items-center justify-center w-full h-full min-h-[60vh]">
+      <Spinner />
+      <p className="mt-2 text-sm font-normal">Fetching details...</p>
+    </div>
+  ) : (
     <div className="max-w-2xl mx-auto p-6 space-y-6 bg-white shadow rounded-lg">
       <h2 className="text-xl font-semibold text-gray-700">Upload Files</h2>
 
@@ -164,10 +174,10 @@ const UploadFiles = () => {
       {/* Upload Button */}
       <button
         onClick={handleUpload}
-        disabled={loading}
+        disabled={uploading}
         className="w-full py-2 px-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:opacity-50"
       >
-        {loading ? "Uploading..." : "Upload Files"}
+        {uploading ? "Uploading..." : "Upload Files"}
       </button>
 
       {/* Profile Modal */}

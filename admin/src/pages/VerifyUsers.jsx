@@ -57,47 +57,53 @@ const VerifyUsers = () => {
   ) : (
     <>
       <Title text1={"Verfiy"} text2={"Users"} />
-      <div className="max-w-4xl mt-6 overflow-x-auto">
-        <table className="w-full border-collapse rounded-md overflow-hidden text-nowrap">
-          <thead>
-            <tr className="bg-primary text-left text-white">
-              <th className="p-2 font-medium pl-5">User Name</th>
-              <th className="p-2 font-medium">Email</th>
-              <th className="p-2 font-medium">Verify</th>
-            </tr>
-          </thead>
-          <tbody>
-            {verifyUser.map((item, index) => (
-              <tr
-                key={index}
-                className="border-b border-primary/10 bg-primary/5 even:bg-primary/10"
-              >
-                <td className="p-2 pl-5">{item.name}</td>
-                <td className="p-2">{item.email}</td>
-                <td className="p-2">
-                  <button
-                    type="button"
-                    onClick={() => verifyUserById(item._id)}
-                    className="px-6 py-2 active:scale-95 transition bg-gray-500/15 border border-blue-500 rounded text-blue-500 text-sm font-medium flex items-center justify-center gap-1 cursor-pointer"
-                  >
-                    {verifying ? (
-                      <>
-                        <div className="animate-spin rounded-full h-4 w-4 border-2 border-primary/50 border-t-primary" />
-                        <p>Verifying...</p>
-                      </>
-                    ) : (
-                      <>
-                        <SquareCheck size={15} />
-                        Verify
-                      </>
-                    )}
-                  </button>
-                </td>
+      {verifyUser.length === 0 ? (
+        <div className="flex flex-col justify-center items-center mt-10 text-gray-500 text-lg font-medium">
+          All users are verified!
+        </div>
+      ) : (
+        <div className="max-w-4xl mt-6 overflow-x-auto">
+          <table className="w-full border-collapse rounded-md overflow-hidden text-nowrap">
+            <thead>
+              <tr className="bg-primary text-left text-white">
+                <th className="p-2 font-medium pl-5">User Name</th>
+                <th className="p-2 font-medium">Email</th>
+                <th className="p-2 font-medium">Verify</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody>
+              {verifyUser.map((item, index) => (
+                <tr
+                  key={index}
+                  className="border-b border-primary/10 bg-primary/5 even:bg-primary/10"
+                >
+                  <td className="p-2 pl-5">{item.name}</td>
+                  <td className="p-2">{item.email}</td>
+                  <td className="p-2">
+                    <button
+                      type="button"
+                      onClick={() => verifyUserById(item._id)}
+                      className="px-6 py-2 active:scale-95 transition bg-gray-500/15 border border-blue-500 rounded text-blue-500 text-sm font-medium flex items-center justify-center gap-1 cursor-pointer"
+                    >
+                      {verifying ? (
+                        <>
+                          <div className="animate-spin rounded-full h-4 w-4 border-2 border-primary/50 border-t-primary" />
+                          <p>Verifying...</p>
+                        </>
+                      ) : (
+                        <>
+                          <SquareCheck size={15} />
+                          Verify
+                        </>
+                      )}
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </>
   );
 };

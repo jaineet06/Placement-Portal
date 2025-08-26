@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { toast } from "react-hot-toast";
 import { useAppContext } from "../context/AppContext";
+import Spinner from "./Spinner";
 
 const defaultPersonalData = {
   fullName: "",
@@ -18,10 +19,12 @@ const PersonalDetailsForm = () => {
   const [personalFormData, setPersonalFormData] = useState(defaultPersonalData);
   const [saving, setSaving] = useState(false);
   const [isStudent, setIsStudent] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const { axios, verified } = useAppContext();
 
   const loadData = async () => {
+    setLoading(true);
     try {
       const studentRes = await axios.get("/api/student/get");
       const student = studentRes.data.student || {};
@@ -40,6 +43,8 @@ const PersonalDetailsForm = () => {
     } catch (err) {
       console.error(err);
       toast.error("Failed to load student data.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -92,7 +97,12 @@ const PersonalDetailsForm = () => {
     }
   };
 
-  return (
+  return loading ? (
+    <div className="flex flex-col items-center justify-center w-full h-full min-h-[60vh]">
+      <Spinner />
+      <p className="mt-2 text-sm font-normal">Fetching details...</p>
+    </div>
+  ) : (
     <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-6">
       <h2 className="text-xl font-semibold text-gray-800 border-b pb-3 mb-4">
         Personal Details

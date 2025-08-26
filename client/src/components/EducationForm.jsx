@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useAppContext } from "../context/AppContext";
 import { toast } from "react-hot-toast";
+import Spinner from "./Spinner";
 
 const defaultEducationData = {
   ssc: { percentage: "", passoutYear: "" },
@@ -16,9 +17,11 @@ const EducationForm = () => {
     useState(defaultEducationData);
   const [saving, setSaving] = useState(false);
   const { axios, verified } = useAppContext();
+  const [loading, setLoading] = useState(false);
 
   // Load existing education data
   const loadData = async () => {
+    setLoading(true);
     try {
       const { data } = await axios.get("/api/education/get");
       setEducationFormData({
@@ -35,6 +38,8 @@ const EducationForm = () => {
     } catch (err) {
       console.error(err);
       toast.error("Failed to load education data.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -141,7 +146,12 @@ const EducationForm = () => {
     }
   };
 
-  return (
+  return loading ? (
+    <div className="flex flex-col items-center justify-center w-full h-full min-h-[60vh]">
+      <Spinner />
+      <p className="mt-2 text-sm font-normal">Fetching details...</p>
+    </div>
+  ) : (
     <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-6">
       <h2 className="text-xl font-semibold text-gray-800 border-b pb-3 mb-4">
         Education Details
@@ -231,7 +241,7 @@ const EducationForm = () => {
                   spi: [...prev.spi, ""],
                 }))
               }
-              className="mt-2 text-blue-600 hover:underline"
+              className="mt-2 text-primary hover:underline"
             >
               + Add SPI Semester
             </button>
@@ -270,7 +280,7 @@ const EducationForm = () => {
       <div className="flex justify-end">
         <button
           onClick={handleSubmit}
-          className="px-5 py-2 rounded-lg text-white text-sm font-medium shadow-md transition bg-blue-600 hover:bg-blue-700"
+          className="px-5 py-2 rounded-lg text-white text-sm font-medium shadow-md transition bg-primary cursor-pointer hover:bg-primary-dull"
         >
           {saving ? "Saving..." : "Save Details"}
         </button>
