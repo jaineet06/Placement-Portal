@@ -33,7 +33,7 @@ export const AdminContextProvider = (props) => {
     if (!user) fetchUser();
   }, [user]);
 
-  const values = { axios, user, isAdmin, setUser };
+  const values = { axios, user, isAdmin, setUser, setIsAdmin, fetchUser };
   return (
     <AdminContext.Provider value={values}>
       {props.children}

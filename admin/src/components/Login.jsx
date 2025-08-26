@@ -3,7 +3,7 @@ import { useAdminContext } from "../context/AdminContext";
 import { toast } from "react-hot-toast";
 
 const Login = () => {
-  const { axios, setUser } = useAdminContext();
+  const { axios, fetchUser } = useAdminContext();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
@@ -13,7 +13,7 @@ const Login = () => {
       const { data } = await axios.post("/api/auth/login", { email, password });
 
       if (data.success) {
-        setUser(data.user);
+        fetchUser();
       } else {
         toast.error(data.message);
       }

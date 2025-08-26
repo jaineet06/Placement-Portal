@@ -2,7 +2,7 @@ import toast from "react-hot-toast";
 import { useAdminContext } from "../context/AdminContext";
 
 const AdminNavbar = () => {
-  const { axios, setUser } = useAdminContext();
+  const { axios, setUser, setIsAdmin } = useAdminContext();
   const logout = async () => {
     try {
       const { data } = await axios.get("/api/auth/logout");
@@ -10,6 +10,7 @@ const AdminNavbar = () => {
       if (data.success) {
         toast.success(data.message);
         setUser(null);
+        setIsAdmin(false);
       } else {
         toast.error(data.message);
       }
