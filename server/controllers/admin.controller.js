@@ -3,7 +3,7 @@ import Education from "../models/education.model.js";
 import Student from "../models/student.model.js"
 import User from "../models/user.model.js";
 import deleteFromCloudinary from "../utils/deleteFromCloudinary.js";
-
+import Job from "../models/job.model.js"; 
 
 const getStudentByEnrollment = async (req, res) => {
     const { id } = req.params
@@ -86,4 +86,69 @@ const deleteStudent = async (req, res) => {
     }
 }
 
-export { getStudentByEnrollment, getAddressByEnrollment, getEducation, deleteStudent }
+// Get all jobs (for Admin Job Listing)
+const getAllJobs = async (req, res) => {
+  try {
+    // Fetch all jobs sorted by creation date (newest first)
+    const jobs = await Job.find({}).sort({ createdAt: -1 });
+    res.json({ success: true, jobs });
+  } catch (error) {
+    console.error("Fetch Jobs Error:", error.message);
+    res.json({ success: false, message: "Server Error" });
+  }
+};
+
+
+//get a single job by Id:
+const getJobById = async (req, res) => {
+  try {
+    const { jobId } = req.params;
+    const job = await Job.findById(jobId);
+
+    if (!job) return res.json({ success: false, message: "Job not found!" });
+
+    res.json({ success: true, job });
+  } catch (error) {
+    res.json({ success: false, error: error.message });
+  }
+};
+
+
+
+//create job :
+const createJob =async (req,res) => {
+  try {
+    const {title,description,lastDate,location} = req.body
+    
+    if(!title || !description || !lastDate){
+      return res.json({success:false,message:"Title, description, and last date are required"})
+    }
+
+    const newJob = await Job.create({
+      title,
+      description,
+      lastDate,
+      location
+    });
+    res.json({success:true,message:"Job is created successfully!",job:newJob})
+  } catch (error) {
+    res.json({success:false,message:error.message})
+  }
+};
+
+//delete a job a ID:
+const deleteJob = async (req,res) => {
+  try {
+    const {jobId} = req.params;
+    const deleteJob = await Job.findByIdAndDelete(jobId);
+
+    if(!deleteJob){
+      return res.json({success:false,message:"Job not found!"})
+    }
+    res.json({success:true,message:"Job deleted successfully!"});
+  } catch (error) {
+    res.json({success:false,message:error.message})
+  }
+}
+
+export { getStudentByEnrollment, getAddressByEnrollment, getEducation, deleteStudent ,getAllJobs, getJobById,createJob,deleteJob}
