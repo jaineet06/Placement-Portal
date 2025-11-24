@@ -5,9 +5,9 @@ import bcrypt from "bcryptjs"
 //Student register
 const registerUser = async (req, res) => {
 
-    const { name, email, password } = req.body
+    const { name, email, password , enrollNumber } = req.body
 
-    if (!name || !email || !password) {
+    if (!name || !email || !password || !enrollNumber) {
         return res.json({ success: false, message: "Enter all credentials properly!" })
     }
 
@@ -20,6 +20,7 @@ const registerUser = async (req, res) => {
         const user = new User({
             name,
             email,
+            enrollNumber,
             password,
             role: 'student'
         })
