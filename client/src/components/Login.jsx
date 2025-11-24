@@ -8,8 +8,10 @@ const Login = () => {
   const [state, setState] = useState("login");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [enrollNumber , setEnrollNumber] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  
 
   const onSubmitHandler = async (e) => {
     e.preventDefault();
@@ -19,6 +21,7 @@ const Login = () => {
         name,
         email,
         password,
+        enrollNumber,
       });
       if (data.success) {
         toast.success(data.message);
@@ -61,6 +64,26 @@ const Login = () => {
             />
           </div>
         )}
+
+      {state === "register" && (
+       <div className="w-full">
+        <p>Enrollment Number</p>
+         <input
+           onChange={(e) => {
+           const value = e.target.value;
+           setEnrollNumber(value);  
+
+         }}
+            value={enrollNumber}
+            placeholder="Enter your 12-digit Enrollment Number"
+            maxLength={12}  
+            className="border border-gray-200 rounded w-full p-2 mt-1 outline-primary"
+            type="text"
+            required
+         />
+      </div>
+    )}
+
         <div className="w-full ">
           <p>Email</p>
           <input
