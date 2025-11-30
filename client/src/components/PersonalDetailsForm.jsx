@@ -29,10 +29,15 @@ const PersonalDetailsForm = () => {
       const studentRes = await axios.get("/api/student/get");
       const student = studentRes.data.student || {};
 
+      // to fetch userschema data 
+      const userRes = await axios.get("/api/user/me");
+      const user = userRes.data.user || {};
+
+
       setPersonalFormData({
         fullName: student.fullName || "",
         parentName: student.parentName || "",
-        enrollmentNo: student.enrollmentNo || "",
+        enrollmentNo: user.enrollmentNo || "", // fetched from user schema
         branch: student.branch || "",
         birthDate: student.birthDate?.split("T")[0] || "",
         category: student.category || "",
@@ -88,7 +93,10 @@ const PersonalDetailsForm = () => {
 
     setSaving(true);
     try {
-      await axios.post("/api/student/create", personalFormData);
+      // Remove enrollmentNo before sending
+    const { enrollmentNo, ...studentData } = personalFormData;
+
+      await axios.post("/api/student/create", studentData); // chnaged from personalFormData to studentData
       toast.success("Personal details saved successfully.");
     } catch (error) {
       toast.error(error.response?.data?.message || error.message);
@@ -112,7 +120,7 @@ const PersonalDetailsForm = () => {
         {Object.entries({
           fullName: "Full Name",
           parentName: "Parent Name",
-          enrollmentNo: "Enrollment No",
+         enrollmentNo: "Enrollment No",
           branch: "Branch",
           birthDate: "Birth Date",
           category: "Category",
@@ -159,7 +167,15 @@ const PersonalDetailsForm = () => {
                 disabled={isStudent}
                 className="w-full rounded-lg border-gray-300 border text-sm px-3 py-2 focus:border-blue-500 focus:ring focus:ring-blue-100 disabled:bg-gray-100"
               />
-            ) : (
+            ) : field === "enrollmentNo" ? ( // added condition to disable enrollmentNo input
+                <input
+                type="text"
+                value={personalFormData[field]}
+                disabled={true}
+                className="w-full rounded-lg border-gray-300 border text-sm px-3 py-2 bg-gray-100 cursor-not-allowed"
+                />
+            )
+             :(
               <input
                 type="text"
                 value={personalFormData[field]}

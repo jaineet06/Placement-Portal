@@ -6,7 +6,7 @@ import uploadToCloudinary from "../utils/uploadToCloudinary.js";
 //To create a Student
 const createStudent = async (req, res) => {
     const { id } = req.user;
-    const { enrollmentNo, fullName, parentName, branch, birthDate, category, mobile, alternateMobile, parentMobile } = req.body
+    const {  fullName, parentName, branch, birthDate, category, mobile, alternateMobile, parentMobile } = req.body
 
     try {
 
@@ -69,7 +69,7 @@ const createStudent = async (req, res) => {
 
         const newStudent = new Student({
             user: id,
-            enrollmentNo,
+           // enrollmentNo,
             fullName,
             parentName,
             parentMobile,
@@ -165,7 +165,7 @@ const uploadStudentFiles = async (req, res) => {
                 resumePath = await uploadToCloudinary(
                     resume.path,
                     "students/resumes",
-                    `${student.enrollmentNo}-resume`,
+                    `${student.id}-resume`,
                     "raw"
                 )
             }

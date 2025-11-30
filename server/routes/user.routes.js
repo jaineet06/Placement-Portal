@@ -12,5 +12,8 @@ userRouter.get('/logout', logoutUser)
 userRouter.get('/get-profile', authUser, getUserProfile)
 userRouter.get('/get-all', authUser, authorizeRoles("admin"), getAllUsers)
 userRouter.post('/verify-user', authUser, authorizeRoles("admin"), verifyUser)
+// Get currently logged-in user
+userRouter.get("/me", authUser, getUserProfile);
+
 
 export default userRouter
