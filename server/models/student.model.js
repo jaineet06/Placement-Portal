@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 
 const studentSchema = new mongoose.Schema({
     user: { type: mongoose.Schema.Types.ObjectId, ref: 'user', required: true, index: true },
-    enrollmentNo: { type: Number, unique: true, required: true },
+   // enrollmentNo: { type: Number, unique: true, required: true },
     fullName: { type: String, required: true },
     parentName: { type: String, required: true },
     branch: { type: String, required: true },
