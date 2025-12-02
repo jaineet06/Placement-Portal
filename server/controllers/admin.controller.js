@@ -6,6 +6,28 @@ import deleteFromCloudinary from "../utils/deleteFromCloudinary.js";
 import Job from "../models/job.model.js";
 
 const getStudentByEnrollment = async (req, res) => {
+    const { id } = req.params
+    try {
+
+        // const isStudent = await Student.findOne({ enrollmentNo: id }).populate("user", "email");
+        // if (!isStudent) {
+        //     return res.json({ success: false, message: "No Student found" })
+        // }
+
+        const user = await User.findOne({ enrollNumber: id });
+        if (!user) {
+             return res.json({ success: false, message: "No Student found" });
+       }
+        const isStudent = await Student.findOne({ user: user._id }).populate("user", "email");
+        if (!isStudent) {
+             return res.json({ success: false, message: "No Student found" });
+        }
+
+
+        return res.json({ success: true, message: "Student fetched succesfully", student: isStudent })
+      } catch (error) {
+        console.error("Create Student Error:", error.message);
+        return res.json({ success: false, message: "Server Error" });
   const { id } = req.params
   try {
 
@@ -22,6 +44,38 @@ const getStudentByEnrollment = async (req, res) => {
 }
 
 const getAddressByEnrollment = async (req, res) => {
+    const { id } = req.params;
+    try {
+       // const student = await Student.findOne({ enrollmentNo: id });
+       // const userId = student.user;
+
+       const user = await User.findOne({ enrollNumber: id });
+        if (!user) {
+            return res.json({ success: false, message: "No Student found" });
+        }
+
+        const addresses = await Address.find({ user: user.id });
+
+        if (!addresses || addresses.length === 0) {
+        return res.json({ success: false, message: "No Address found" });
+       }
+
+
+
+        const formatted = {
+            permanent: {},
+            current: {},
+        };
+
+        for (let add of addresses) {
+            if (add.type === "permanent") formatted.permanent = add;
+            if (add.type === "current") formatted.current = add;
+        }
+
+        return res.json({ success: true, address: formatted })
+    } catch (error) {
+        console.error("Address Fetch Error:", error.message);
+        return res.json({ success: false, message: "Server Error" });
   const { id } = req.params;
   try {
     const student = await Student.findOne({ enrollmentNo: id });

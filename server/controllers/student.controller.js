@@ -10,10 +10,10 @@ const createStudent = async (req, res) => {
 
     try {
 
-        const isExist = await Student.findOne({ enrollmentNo })
-        if (isExist) {
-            return res.status(400).json({ success: false, message: "Student with this enrollment number already exists." })
-        }
+        // const isExist = await Student.findOne({ enrollmentNo })
+        // if (isExist) {
+        //     return res.status(400).json({ success: false, message: "Student with this enrollment number already exists." })
+        // }
 
         // let resumePath = "";
         // let profilePicPath = "";
@@ -113,9 +113,22 @@ const getStudent = async (req, res) => {
     const { id } = req.user;
     try {
         const student = await Student.findOne({ user: id })
-        res.json({ success: true, message: "Students fetched Succesfully", student });
+    //     res.json({ success: true, message: "Students fetched Succesfully", student });
+
+      const userData = await User.findById(id).select("enrollNumber");
+
+      return res.json({
+      success: true,
+      message: "Student fetched successfully",
+      student: {
+        ...student._doc,
+        enrollNumber: userData.enrollNumber,
+    },
+   });
+      
     } catch (error) {
-        return res.json({ success: false, message: "Server Error" });
+        console.error("Get Student Error:", error.message);
+        return res.status(500).json({ success: false, message: "Server Error" });
     }
 }
 
@@ -158,7 +171,8 @@ const uploadStudentFiles = async (req, res) => {
                     return res.json({ success: false, message: "Resume size must be less than 2MB" });
                 }
 
-                if (student.resume.url) {
+                if (student.resume && student.resume.public_id) {
+
                     await deleteFromCloudinary(student.resume.public_id, "raw")
                 }
 
@@ -181,14 +195,15 @@ const uploadStudentFiles = async (req, res) => {
                     return res.json({ success: false, message: "Profile image must be under 1MB." });
                 }
 
-                if (student.profilePath.url) {
+                if (student.profilePath && student.profilePath.public_id) {
+
                     await deleteFromCloudinary(student.profilePath.public_id, "image")
                 }
 
                 profilePicPath = await uploadToCloudinary(
                     profile.path,
                     "students/profilePics",
-                    `${student.enrollmentNo}-profile`,
+                    `${student.id}-profile`,
                     "image"
                 );
             }

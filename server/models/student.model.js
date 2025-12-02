@@ -12,12 +12,12 @@ const studentSchema = new mongoose.Schema({
     alternateMobile: { type: String },
     parentMobile: { type: String, required: true },
     resume: {
-        url: { type: String },
-        public_id: { type: String }
+        url: { type: String , default: "" },
+        public_id: { type: String , default: "" }
     },
     profilePath: {
-        url: { type: String },
-        public_id: { type: String }
+        url: { type: String , default: "" },
+        public_id: { type: String , default: ""}
     },
     appliedJobs:[
         {
