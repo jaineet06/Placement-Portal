@@ -19,6 +19,14 @@ const studentSchema = new mongoose.Schema({
         url: { type: String , default: "" },
         public_id: { type: String , default: ""}
     },
+    appliedJobs:[
+        {
+            job:{type:mongoose.Schema.Types.ObjectId,ref:"Job"},
+            /*appliedAt:{type:Date,default:Date.now} */
+        }
+    ]
+
+    
 }, { timestamps: true })
 
 const Student = mongoose.model("student", studentSchema)
