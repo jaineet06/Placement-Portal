@@ -94,7 +94,7 @@ const StudentDetails = () => {
     <>
       <Title text1="Student" text2="Details" />
 
-      <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-6 mt-10">
+      <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-6 mt-10  ">
         <h1 className="text-xl font-semibold text-gray-800 border-b pb-3 mb-4">
           Personal Details
         </h1>

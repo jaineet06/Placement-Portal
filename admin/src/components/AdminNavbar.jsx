@@ -3,10 +3,10 @@ import { useAdminContext } from "../context/AdminContext";
 
 const AdminNavbar = () => {
   const { axios, setUser, setIsAdmin } = useAdminContext();
+
   const logout = async () => {
     try {
       const { data } = await axios.get("/api/auth/logout");
-
       if (data.success) {
         toast.success(data.message);
         setUser(null);
@@ -15,20 +15,18 @@ const AdminNavbar = () => {
         toast.error(data.message);
       }
     } catch (error) {
-      console.log("Error in loggin out user: ", error.message);
+      console.log("Error logging out user:", error.message);
     }
   };
+
   return (
-    <div className="flex items-center justify-between px-4 md:px-8 border-b border-black py-4 bg-white transition-all duration-300">
-      <p>Admin Panel</p>
-      <div className="flex items-center gap-5 text-gray-500">
-        <p>Hi! Admin</p>
-        <button
-          onClick={logout}
-          className=" text-white cursor-pointer rounded-full text-sm px-6 py-2 bg-primary hover:bg-primary-dull"
-        >
-          Logout
-        </button>
+    <div className="fixed top-0 left-0 w-full h-16 border-b border-black bg-white z-50 flex items-center justify-between px-6 md:px-10">
+      <h1 className="text-xl font-semibold">Admin Panel</h1>
+      <div
+        onClick={logout}
+        className="flex items-center justify-center bg-primary hover:bg-primary-dull transition-all text-white py-1 px-4 rounded-full cursor-pointer"
+      >
+        Logout
       </div>
     </div>
   );

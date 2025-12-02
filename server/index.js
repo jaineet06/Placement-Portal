@@ -9,6 +9,7 @@ import connectCloudinary from './configs/cloudinary.js'
 import addresRouter from './routes/address.route.js'
 import educationRouter from './routes/education.routes.js'
 import adminRouter from './routes/admin.routes.js'
+//import jobRouter from './routes/job.routes.js'
 
 connectDB()
 connectCloudinary()
@@ -25,6 +26,7 @@ app.use(cors({ origin: allowedOrigins, credentials: true }))
 app.get('/', (req, res) => {
     res.send("Api is working")
 })
+
 app.use('/api/auth', userRouter)
 app.use('/api/student', studentRouter)
 app.use('/api/address', addresRouter)
