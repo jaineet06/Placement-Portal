@@ -108,9 +108,9 @@ const ListOfStudents = () => {
               <tr
                 key={index}
                 className="border-b border-primary/10 bg-primary/5 even:bg-primary/10 hover:bg-primary-dull/20 cursor-pointer"
-                onClick={() => navigate(`/students/${item.user._id}}`)}
+                onClick={() => navigate(`/students/${item.user.enrollNumber}`)}
               >
-                <td className="p-2 pl-5">{item.enrollmentNo}</td>
+                <td className="p-2 pl-5">{item.user.enrollNumber}</td>
                 <td className="p-2">{item.fullName}</td>
                 <td className="p-2">{item.branch}</td>
                 <td className="p-2">{item.mobile}</td>

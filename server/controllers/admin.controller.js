@@ -18,7 +18,7 @@ const getStudentByEnrollment = async (req, res) => {
         if (!user) {
              return res.json({ success: false, message: "No Student found" });
        }
-        const isStudent = await Student.findOne({ user: user._id }).populate("user", "email");
+        const isStudent = await Student.findOne({ user: user._id }).populate("user", "email enrollNumber ");
         if (!isStudent) {
              return res.json({ success: false, message: "No Student found" });
         }
@@ -135,6 +135,7 @@ const deleteStudent = async (req, res) => {
     await Education.findOneAndDelete({ user: userId })
     return res.json({ success: true, message: "Student and related data deleted successfully" });
   } catch (error) {
+        
     console.error("Student Fetch Error:", error.message);
     return res.json({ success: false, message: "Server Error" });
   }

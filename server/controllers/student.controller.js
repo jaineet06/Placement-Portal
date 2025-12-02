@@ -98,7 +98,11 @@ const getStudents = async (req, res) => {
         const limit = Number(req.query.limit) || 10
         const skip = (page - 1) * limit
 
-        const students = await Student.find({}).skip(skip).limit(limit)
+        const students = await Student.find({})
+            .populate("user", "enrollNumber fullName email")
+            .skip(skip)
+            .limit(limit);
+
 
         const total = await Student.countDocuments()
 
