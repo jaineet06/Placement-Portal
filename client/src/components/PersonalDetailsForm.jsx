@@ -23,21 +23,38 @@ const PersonalDetailsForm = () => {
 
   const { axios, verified } = useAppContext();
 
+
   const loadData = async () => {
+   
+
     setLoading(true);
     try {
-      const studentRes = await axios.get("/api/student/get");
-      const student = studentRes.data.student || {};
 
       // to fetch userschema data 
-      const userRes = await axios.get("/api/user/me");
-      const user = userRes.data.user || {};
+      const userRes = await axios.get("/api/auth/me");
+      const user = userRes.data.user || {}; 
+
+      // const studentRes = await axios.get("/api/student/get");
+      // const student = studentRes.data.student || {};
+
+      let student = {};
+      try {
+      const studentRes = await axios.get("/api/student/get");
+      if (studentRes.data.success) {
+        student = studentRes.data.student;
+      }
+      } catch {
+      // no student found → no error toast
+      student = {};
+      }
+
+      
 
 
       setPersonalFormData({
         fullName: student.fullName || "",
         parentName: student.parentName || "",
-        enrollmentNo: user.enrollmentNo || "", // fetched from user schema
+        enrollmentNo: user.enrollNumber || "", // fetched from user schema
         branch: student.branch || "",
         birthDate: student.birthDate?.split("T")[0] || "",
         category: student.category || "",
@@ -51,8 +68,12 @@ const PersonalDetailsForm = () => {
     } finally {
       setLoading(false);
     }
+
+    
   };
 
+
+    
   const getIsStudent = async () => {
     try {
       const { data } = await axios.get("/api/student/is-student");
