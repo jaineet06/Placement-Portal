@@ -120,7 +120,7 @@ const StudentDetails = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
           <div>
             <label className="text-sm text-gray-500">Enrollment No</label>
-            <p className="text-gray-800">{student.enrollmentNo}</p>
+            <p className="text-gray-800">{student.user?.enrollNumber}</p>
           </div>
           <div>
             <label className="text-sm text-gray-500">Branch</label>
