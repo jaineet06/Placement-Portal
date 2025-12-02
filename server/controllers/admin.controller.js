@@ -101,6 +101,7 @@ const deleteStudent = async (req, res) => {
         await Education.findOneAndDelete({ user: userId })
         return res.json({ success: true, message: "Student and related data deleted successfully" });
     } catch (error) {
+        
         console.error("Student Fetch Error:", error.message);
         return res.json({ success: false, message: "Server Error" });
     }
