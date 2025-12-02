@@ -234,6 +234,8 @@ const changeStatus = async (req, res) => {
     res.json({ success: false, error: error.message });
   }
 }
+}
 
+}
 
 export { getStudentByEnrollment, getAddressByEnrollment, getEducation, deleteStudent, getAllJobs, getJobById, createJob, deleteJob, changeStatus }
