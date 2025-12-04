@@ -66,6 +66,7 @@ const VerifyUsers = () => {
           <table className="w-full border-collapse rounded-md overflow-hidden text-nowrap">
             <thead>
               <tr className="bg-primary text-left text-white">
+                <th className="p-2 font-medium">Enrollment No</th>
                 <th className="p-2 font-medium pl-5">User Name</th>
                 <th className="p-2 font-medium">Email</th>
                 <th className="p-2 font-medium">Verify</th>
@@ -77,6 +78,7 @@ const VerifyUsers = () => {
                   key={index}
                   className="border-b border-primary/10 bg-primary/5 even:bg-primary/10"
                 >
+                  <td className="p-2">{item.enrollNumber}</td>
                   <td className="p-2 pl-5">{item.name}</td>
                   <td className="p-2">{item.email}</td>
                   <td className="p-2">
