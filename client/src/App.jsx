@@ -4,6 +4,8 @@ import { Toaster } from "react-hot-toast";
 import StudentLayout from "./pages/StudentLayout.jsx";
 import { useAppContext } from "./context/AppContext.jsx";
 import StudentProfile from "./pages/StudentProfile.jsx";
+import Companies from "./pages/Companies.jsx";
+import JobDetails from "./pages/JobDetails.jsx";
 
 const App = () => {
   const { showUserLogin } = useAppContext();
@@ -14,6 +16,9 @@ const App = () => {
       <Routes>
         <Route path="/*" element={<StudentLayout />}>
           <Route path="profile" element={<StudentProfile />} />
+          <Route path="#" element={<Companies />} />
+          <Route path="#" element={<JobDetails />} />
+
         </Route>
       </Routes>
     </div>
