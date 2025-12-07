@@ -11,8 +11,8 @@ import {
 const links = [
   { name: "Home", path: "/home", icon: <Home size={20} /> },
   { name: "Profile", path: "/profile", icon: <User size={20} /> },
-  { name: "News", path: "/news", icon: <Bell size={20} /> },
   { name: "Companies", path: "/company", icon: <Bookmark size={20} /> },
+  { name: "Applied Jobs", path: "/applied-job", icon: <Bell size={20} /> },
 ];
 
 const StudentSideBar = ({ expanded, setExpanded }) => {

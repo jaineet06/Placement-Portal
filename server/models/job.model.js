@@ -20,11 +20,14 @@ const jobSchema = new mongoose.Schema(
           type: String,
           required: true,
         },
-        applicants: [
-          {
+        applicants: [{
+          student: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "student",
           },
+          acceptedTerms: { type: Boolean, required: true },
+          appliedAt: { type: Date, default: Date.now }
+        }
         ],
       },
     ],
