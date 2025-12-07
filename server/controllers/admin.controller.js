@@ -205,6 +205,8 @@ const deleteJob = async (req, res) => {
       return res.json({ success: false, message: "Job not found!" });
     }
 
+    await Student.updateMany({}, { $pull: { job: jobId } })
+
     res.json({ success: true, message: "Job deleted successfully!" });
   } catch (error) {
     res.json({ success: false, message: error.message });

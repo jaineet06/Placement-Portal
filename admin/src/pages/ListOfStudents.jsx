@@ -115,7 +115,7 @@ const ListOfStudents = () => {
                 <td className="p-2">{item.branch}</td>
                 <td className="p-2">{item.mobile}</td>
                 <td className="p-2">
-                  {item.resume ? (
+                  {item.resume && item.resume.url ? (
                     <a
                       href={item.resume.url}
                       target="_blank"
