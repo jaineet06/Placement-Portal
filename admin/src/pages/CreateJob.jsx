@@ -203,7 +203,7 @@ const CreateJob = () => {
           >
             {loading ? (
               <>
-                <Spinner />
+                <div className="animate-spin rounded-full h-5 w-5 border-2 border-white/50 border-t-white" />
                 <span>Creating...</span>
               </>
             ) : (

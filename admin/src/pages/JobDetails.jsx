@@ -12,18 +12,32 @@ const JobDetails = () => {
   const [job, setJob] = useState(null);
   const [loading, setLoading] = useState(false);
 
+  const [appliedStudents, setAppliedStudents] = useState([]);
+  const [role, setRole] = useState(null);
+
   const fetchJobDetails = async () => {
     setLoading(true);
     try {
       const { data } = await axios.get(`/api/admin/get/${jobId}`);
-      if (data.success) setJob(data.job);
-      else toast.error(data.message || "Job not found");
+      if (data.success) {
+        setJob(data.job);
+        setRole(data.job.roles[0].name);
+      } else toast.error(data.message || "Job not found");
     } catch (error) {
       console.log(error);
       toast.error("Failed to fetch job details");
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleRoleChange = (role) => {
+    const selectedRole = job.roles.find((r) => r.name === role);
+    if (!selectedRole) {
+      return toast.error("No role found in job");
+    }
+    setAppliedStudents(selectedRole.applicants || []);
+    console.log(selectedRole.applicants);
   };
 
   const handleDeleteJob = async () => {
@@ -45,6 +59,11 @@ const JobDetails = () => {
   useEffect(() => {
     fetchJobDetails();
   }, [jobId]);
+
+  useEffect(() => {
+    if (!role) return;
+    handleRoleChange(role);
+  }, [role]);
 
   if (loading) {
     return (
@@ -72,65 +91,139 @@ const JobDetails = () => {
   const isExpired = new Date(job.lastDate) < new Date();
 
   return (
-    <div className="p-6 bg-white rounded-lg shadow-md w-full border border-gray-200 space-y-6">
-      <Title text1="Job" text2="Details" />
+    <div className="flex flex-col w-full gap-4">
+      <div className="p-6 space-y-4 bg-white rounded-lg shadow-md w-full border border-gray-200">
+        <Title text1="Job" text2="Details" />
 
-      <div className="space-y-4">
-        <div>
-          <h2 className="text-lg font-medium">Company:</h2>
-          <p className="mt-1">{job.companyName}</p>
-        </div>
+        <div className="space-y-4">
+          <div>
+            <h2 className="text-lg font-medium">Company:</h2>
+            <p className="mt-1">{job.companyName}</p>
+          </div>
 
-        <div>
-          <h2 className="text-lg font-medium">Title:</h2>
-          <p className="mt-1">{job.title}</p>
-        </div>
+          <div>
+            <h2 className="text-lg font-medium">Title:</h2>
+            <p className="mt-1">{job.title}</p>
+          </div>
 
-        <div>
-          <h2 className="text-lg font-medium">Description:</h2>
-          <p className="mt-1 whitespace-pre-line">{job.description}</p>
-        </div>
+          <div>
+            <h2 className="text-lg font-medium">Description:</h2>
+            <p className="mt-1 whitespace-pre-line">{job.description}</p>
+          </div>
 
-        <div>
-          <h2 className="text-lg font-medium">Location:</h2>
-          <p className="mt-1">{job.location || "Not specified"}</p>
-        </div>
+          <div>
+            <h2 className="text-lg font-medium">Location:</h2>
+            <p className="mt-1">{job.location || "Not specified"}</p>
+          </div>
 
-        <div>
-          <h2 className="text-lg font-medium">Last Date:</h2>
-          <p className={`mt-1 font-medium ${isExpired ? "text-red-600" : ""}`}>
-            {new Date(job.lastDate).toLocaleDateString()}
-            {isExpired && " (Expired)"}
-          </p>
-        </div>
+          <div>
+            <h2 className="text-lg font-medium">Last Date:</h2>
+            <p
+              className={`mt-1 font-medium ${isExpired ? "text-red-600" : ""}`}
+            >
+              {new Date(job.lastDate).toLocaleDateString()}
+              {isExpired && " (Expired)"}
+            </p>
+          </div>
 
-        {/* Roles as Chips */}
-        <div>
-          <h2 className="text-lg font-medium">Roles:</h2>
-          <div className="mt-2 flex flex-wrap gap-2">
-            {job.roles.length === 0 ? (
-              <span className="text-gray-500">No roles added</span>
-            ) : (
-              job.roles.map((role, idx) => (
-                <span
-                  key={idx}
-                  className="px-3 py-1 rounded-full bg-primary/20 text-primary text-sm font-medium"
-                >
-                  {role.name}
-                </span>
-              ))
-            )}
+          <div>
+            <h2 className="text-lg font-medium">Roles:</h2>
+            <div className="mt-2 flex flex-wrap gap-2">
+              {job.roles.length === 0 ? (
+                <span className="text-gray-500">No roles added</span>
+              ) : (
+                job.roles.map((role, idx) => (
+                  <span
+                    key={idx}
+                    className="px-3 rounded-full bg-primary/20 text-primary text-sm font-medium"
+                  >
+                    {role.name}
+                  </span>
+                ))
+              )}
+            </div>
           </div>
         </div>
+
+        {/* Delete Button */}
+        <button
+          className="mt-6 px-4 py-2 bg-red-600 text-white rounded-md cursor-pointer"
+          onClick={handleDeleteJob}
+        >
+          Delete Job
+        </button>
       </div>
 
-      {/* Delete Button */}
-      <button
-        className="mt-6 px-4 py-2 bg-red-600 text-white rounded-md cursor-pointer"
-        onClick={handleDeleteJob}
-      >
-        Delete Job
-      </button>
+      <div className="p-6 w-full bg-white rounded-lg shadow-md border border-gray-200">
+        {/* Header Row */}
+        <div className="flex justify-between items-center mb-6">
+          <Title text1="Applied" text2="Students" />
+
+          <div className="inline-flex items-center gap-2">
+            <p>Select role :</p>
+            <select
+              value={role}
+              onChange={(e) => setRole(e.target.value)}
+              className="px-3 py-1 border rounded-md bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary"
+            >
+              <option value="" disabled>
+                Select a role
+              </option>
+              {job.roles.map((r) => (
+                <option key={r.name} value={r.name}>
+                  {r.name}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        {/* Table */}
+        <div className="max-w-full overflow-x-auto">
+          <table className="w-full border-collapse rounded-md overflow-hidden text-nowrap">
+            <thead>
+              <tr className="bg-primary text-left text-white">
+                <th className="p-2 font-medium pl-5">Enrollment No.</th>
+                <th className="p-2 font-medium">Name</th>
+                <th className="p-2 font-medium">Branch</th>
+                <th className="p-2 font-medium">Accepted Terms</th>
+                <th className="p-2 font-medium">Applied At</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              {appliedStudents.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="p-4 text-center text-gray-500">
+                    No students applied for this role.
+                  </td>
+                </tr>
+              ) : (
+                appliedStudents.map((item, index) => (
+                  <tr
+                    key={index}
+                    className="border-b border-primary/10 bg-primary/5 even:bg-primary/10 hover:bg-primary-dull/20 cursor-pointer"
+                    onClick={() =>
+                      navigate(`/students/${item.student.user.enrollNumber}`)
+                    }
+                  >
+                    <td className="p-2 pl-5">
+                      {item.student.user.enrollNumber}
+                    </td>
+                    <td className="p-2">{item.student.fullName}</td>
+                    <td className="p-2">{item.student.branch}</td>
+
+                    <td className="p-2">{item.acceptedTerms ? "Yes" : "No"}</td>
+                    <td className="p-2">
+                      {new Date(item.appliedAt).toLocaleString()}
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   );
 };

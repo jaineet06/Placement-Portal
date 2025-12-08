@@ -145,7 +145,16 @@ const getAllJobs = async (req, res) => {
 const getJobById = async (req, res) => {
   try {
     const { jobId } = req.params;
-    const job = await Job.findById(jobId);
+    const job = await Job.findById(jobId)
+      .populate({
+        path: "roles.applicants.student",
+        populate: {
+          path: "user",
+          model: "user",
+          select: "enrollNumber",
+        },
+      });
+
 
     if (!job) return res.json({ success: false, message: "Job not found!" });
 
@@ -236,9 +245,6 @@ const changeStatus = async (req, res) => {
     res.json({ success: false, error: error.message });
   }
 };
-
-
-
 
 export {
   getStudentByEnrollment,

@@ -338,11 +338,11 @@ const applyToJob = async (req, res) => {
 
             // Check if already applied
             const alreadyApplied = roleObj.applicants.some(
-                s => s.student.toString() === studentId
+                s => s.student.equals(student._id)
             );
 
             if (!alreadyApplied) {
-                roleObj.applicants.push({ student: studentId, acceptedTerms, appliedAt: Date.now() });
+                roleObj.applicants.push({ student: student._id, acceptedTerms, appliedAt: Date.now() });
                 appliedRoles.push(selectedRole);
             }
         }
@@ -396,7 +396,7 @@ const fetchAllAppliedJobs = async (req, res) => {
             let appliedAt = null;
 
             job.roles.forEach(role => {
-                const applicant = role.applicants.find(a => a.student.toString() === userId)
+                const applicant = role.applicants.find(a => a.student.toString() === student._id.toString())
 
                 if (applicant) appliedRoles.push(role.name)
                 if (!appliedAt || applicant.appliedAt < appliedAt) {
