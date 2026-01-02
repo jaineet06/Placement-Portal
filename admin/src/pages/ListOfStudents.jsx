@@ -20,13 +20,15 @@ const ListOfStudents = () => {
   const [totalPages, setTotalPages] = useState(1);
   const navigate = useNavigate();
   const [limit, setLimit] = useState(10);
+  const [searchQuery, setSearchQuery] = useState("");
+
   const [isOpen, setIsOpen] = useState(false);
 
   const fetchStudent = async () => {
     setLoading(true);
     try {
       const { data } = await axios.get(
-        `/api/student/get-all?page=${page}&limit=${limit}`
+        `/api/student/get-all?page=${page}&limit=${limit}&search=${searchQuery}`
       );
       if (data.success) {
         setStudents(data.students);
@@ -59,6 +61,23 @@ const ListOfStudents = () => {
     <>
       <div className="flex justify-between z-0">
         <Title text1={"All"} text2={"Students"} />
+
+        <div class="flex items-center border pl-4 gap-2 bg-white border-gray-500/30 h-[41px] rounded-full overflow-hidden max-w-md w-full">
+          <input
+            type="text"
+            class="w-full h-full outline-none text-sm "
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+          <button
+            type="submit"
+            onClick={fetchStudent}
+            class="bg-primary-dull hover:bg-primary w-32 h-8 rounded-full text-sm text-white mr-[5px] cursor-pointer"
+          >
+            Search
+          </button>
+        </div>
+
         <div className="flex items-center gap-2 text-sm">
           <span className="text-gray-700 font-medium">Select Entries</span>
           <div className="relative w-22">

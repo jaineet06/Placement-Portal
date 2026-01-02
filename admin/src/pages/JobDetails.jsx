@@ -56,6 +56,30 @@ const JobDetails = () => {
     }
   };
 
+  const handleExportCSV = async () => {
+    if (!role) return toast.error("Please select a role");
+
+    try {
+      const { data } = await axios.get(`/api/admin/export/${jobId}`, {
+        responseType: "blob",
+      });
+
+      const url = window.URL.createObjectURL(new Blob([data]));
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", `${job.companyName}-applicants.csv`);
+
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+
+      toast.success("CSV downloaded successfully!");
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to export CSV");
+    }
+  };
+
   useEffect(() => {
     fetchJobDetails();
   }, [jobId]);
@@ -222,6 +246,12 @@ const JobDetails = () => {
               )}
             </tbody>
           </table>
+          <button
+            onClick={handleExportCSV}
+            className="mt-4 px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-dull"
+          >
+            Export CSV
+          </button>
         </div>
       </div>
     </div>

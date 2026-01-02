@@ -43,6 +43,7 @@ const JobDetails = () => {
       return toast.error("Accept terms & conditions");
     }
 
+    console.log(user);
     const studentId = user._id;
     const jobId = id;
 
