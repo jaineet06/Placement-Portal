@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import Spinner from "../components/Spinner";
 import { useAdminContext } from "../context/AdminContext";
 import Title from "../components/Title";
-import { SquareCheck } from "lucide-react";
+import { SquareCheck, Trash2 } from "lucide-react";
 import toast from "react-hot-toast";
 
 const VerifyUsers = () => {
@@ -46,6 +46,21 @@ const VerifyUsers = () => {
     }
   };
 
+  const deleteUserById = async (id) => {
+    try {
+      const { data } = await axios.delete(`/api/auth/verify/delete/${id}`);
+      if (data.success) {
+        toast.success(data.message);
+        fetchNotVerifiedUsers();
+      } else {
+        toast.error(data.message);
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error(error.message);
+    }
+  };
+
   useEffect(() => {
     fetchNotVerifiedUsers();
   }, []);
@@ -70,6 +85,7 @@ const VerifyUsers = () => {
                 <th className="p-2 font-medium pl-5">User Name</th>
                 <th className="p-2 font-medium">Email</th>
                 <th className="p-2 font-medium">Verify</th>
+                <th />
               </tr>
             </thead>
             <tbody>
@@ -99,6 +115,12 @@ const VerifyUsers = () => {
                         </>
                       )}
                     </button>
+                  </td>
+                  <td
+                    onClick={() => deleteUserById(item._id)}
+                    className="text-red-700 cursor-pointer"
+                  >
+                    <Trash2 size={20} />
                   </td>
                 </tr>
               ))}

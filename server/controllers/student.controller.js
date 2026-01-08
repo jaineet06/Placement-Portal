@@ -249,7 +249,7 @@ const getStudentVefrification = async (req, res) => {
     try {
         const user = await User.findById(id)
         if (!user) {
-            return res.status(400).json({ success: false, message: "No User exists" });
+            return res.json({ success: false, message: "No User exists" });
         }
 
         return res.status(200).json({ success: true, isVerified: user.isVerified })
