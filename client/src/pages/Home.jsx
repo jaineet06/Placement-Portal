@@ -443,7 +443,7 @@ const Home = () => {
               </span>
               <span className="text-slate-700">|</span>
               <span className="text-primary font-bold hover:text-white transition-colors cursor-default">
-                Khushi Tiwari
+                Khooshi Tiwari
               </span>
             </div>
           </div>
