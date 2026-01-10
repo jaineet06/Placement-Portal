@@ -94,7 +94,7 @@ const StudentDetails = () => {
     <>
       <Title text1="Student" text2="Details" />
 
-      <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-6 mt-10">
+      <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-6 mt-10  ">
         <h1 className="text-xl font-semibold text-gray-800 border-b pb-3 mb-4">
           Personal Details
         </h1>
@@ -120,7 +120,7 @@ const StudentDetails = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
           <div>
             <label className="text-sm text-gray-500">Enrollment No</label>
-            <p className="text-gray-800">{student.enrollmentNo}</p>
+            <p className="text-gray-800">{student.user?.enrollNumber}</p>
           </div>
           <div>
             <label className="text-sm text-gray-500">Branch</label>

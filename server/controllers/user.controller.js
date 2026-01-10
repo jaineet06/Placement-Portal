@@ -1,13 +1,13 @@
-import User from "../models/user.model.js"
+import User from "../models/user.model.js";
 import jwt from 'jsonwebtoken'
 import bcrypt from "bcryptjs"
 
 //Student register
 const registerUser = async (req, res) => {
 
-    const { name, email, password } = req.body
+    const { name, email, password, enrollNumber } = req.body
 
-    if (!name || !email || !password) {
+    if (!name || !email || !password || !enrollNumber) {
         return res.json({ success: false, message: "Enter all credentials properly!" })
     }
 
@@ -20,6 +20,7 @@ const registerUser = async (req, res) => {
         const user = new User({
             name,
             email,
+            enrollNumber,
             password,
             role: 'student'
         })
@@ -145,4 +146,17 @@ const verifyUser = async (req, res) => {
     }
 }
 
-export { loginUser, logoutUser, registerUser, getUserProfile, getAllUsers, verifyUser }
+const deleteUnverifyUser = async (req, res) => {
+    const { id } = req.params;
+    console.log(id);
+
+    try {
+        await User.findByIdAndDelete(id);
+        return res.json({ success: true, message: "User deleted succesfully" })
+    } catch (error) {
+        console.log(error.message);
+        return res.json({ success: false, message: "Internal Server Error" })
+    }
+}
+
+export { loginUser, logoutUser, registerUser, getUserProfile, getAllUsers, verifyUser, deleteUnverifyUser }

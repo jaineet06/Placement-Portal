@@ -11,7 +11,7 @@ axios.defaults.withCredentials = true;
 export const AppContextProvider = (props) => {
   const [user, setUser] = useState(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [showUserLogin, setShowUserLogin] = useState(false);
+  const [showUserLogin, setShowUserLogin] = useState(true);
   const [verified, setVerified] = useState(null);
 
   const fetchUser = async () => {
@@ -21,6 +21,7 @@ export const AppContextProvider = (props) => {
       if (data.success) {
         setUser(data.user);
         setIsLoggedIn(true);
+        setShowUserLogin(false);
       }
     } catch (error) {
       setUser(null);
@@ -30,7 +31,11 @@ export const AppContextProvider = (props) => {
   const getStudentVerification = async () => {
     try {
       const { data } = await axios.get("/api/student/is-verifed");
-      setVerified(data.success && data.isVerified);
+      if (!data.success) {
+        setShowUserLogin(true);
+      } else {
+        setVerified(data.isVerified);
+      }
     } catch (error) {
       toast.error(error.message);
       setVerified(false);

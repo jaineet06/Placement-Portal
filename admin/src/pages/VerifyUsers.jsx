@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import Spinner from "../components/Spinner";
 import { useAdminContext } from "../context/AdminContext";
 import Title from "../components/Title";
-import { SquareCheck } from "lucide-react";
+import { SquareCheck, Trash2 } from "lucide-react";
 import toast from "react-hot-toast";
 
 const VerifyUsers = () => {
@@ -46,6 +46,21 @@ const VerifyUsers = () => {
     }
   };
 
+  const deleteUserById = async (id) => {
+    try {
+      const { data } = await axios.delete(`/api/auth/verify/delete/${id}`);
+      if (data.success) {
+        toast.success(data.message);
+        fetchNotVerifiedUsers();
+      } else {
+        toast.error(data.message);
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error(error.message);
+    }
+  };
+
   useEffect(() => {
     fetchNotVerifiedUsers();
   }, []);
@@ -66,9 +81,11 @@ const VerifyUsers = () => {
           <table className="w-full border-collapse rounded-md overflow-hidden text-nowrap">
             <thead>
               <tr className="bg-primary text-left text-white">
+                <th className="p-2 font-medium">Enrollment No</th>
                 <th className="p-2 font-medium pl-5">User Name</th>
                 <th className="p-2 font-medium">Email</th>
                 <th className="p-2 font-medium">Verify</th>
+                <th />
               </tr>
             </thead>
             <tbody>
@@ -77,6 +94,7 @@ const VerifyUsers = () => {
                   key={index}
                   className="border-b border-primary/10 bg-primary/5 even:bg-primary/10"
                 >
+                  <td className="p-2">{item.enrollNumber}</td>
                   <td className="p-2 pl-5">{item.name}</td>
                   <td className="p-2">{item.email}</td>
                   <td className="p-2">
@@ -97,6 +115,12 @@ const VerifyUsers = () => {
                         </>
                       )}
                     </button>
+                  </td>
+                  <td
+                    onClick={() => deleteUserById(item._id)}
+                    className="text-red-700 cursor-pointer"
+                  >
+                    <Trash2 size={20} />
                   </td>
                 </tr>
               ))}

@@ -1,3 +1,4 @@
+import Job from "../models/job.model.js";
 import Student from "../models/student.model.js";
 import User from "../models/user.model.js";
 import deleteFromCloudinary from "../utils/deleteFromCloudinary.js";
@@ -6,14 +7,14 @@ import uploadToCloudinary from "../utils/uploadToCloudinary.js";
 //To create a Student
 const createStudent = async (req, res) => {
     const { id } = req.user;
-    const { enrollmentNo, fullName, parentName, branch, birthDate, category, mobile, alternateMobile, parentMobile } = req.body
+    const { fullName, parentName, branch, birthDate, category, mobile, alternateMobile, parentMobile } = req.body
 
     try {
 
-        const isExist = await Student.findOne({ enrollmentNo })
-        if (isExist) {
-            return res.status(400).json({ success: false, message: "Student with this enrollment number already exists." })
-        }
+        // const isExist = await Student.findOne({ enrollmentNo })
+        // if (isExist) {
+        //     return res.status(400).json({ success: false, message: "Student with this enrollment number already exists." })
+        // }
 
         // let resumePath = "";
         // let profilePicPath = "";
@@ -69,7 +70,7 @@ const createStudent = async (req, res) => {
 
         const newStudent = new Student({
             user: id,
-            enrollmentNo,
+            // enrollmentNo,
             fullName,
             parentName,
             parentMobile,
@@ -96,9 +97,21 @@ const getStudents = async (req, res) => {
     try {
         const page = Number(req.query.page) || 1
         const limit = Number(req.query.limit) || 10
+        const searchQuery = req.query.search || ""
         const skip = (page - 1) * limit
 
-        const students = await Student.find({}).skip(skip).limit(limit)
+        let filter = {};
+        if (searchQuery) {
+            const regex = new RegExp(searchQuery, "i");
+            filter.fullName = regex;
+        }
+
+
+        const students = await Student.find(filter)
+            .populate("user", "enrollNumber fullName email")
+            .skip(skip)
+            .limit(limit);
+
 
         const total = await Student.countDocuments()
 
@@ -113,9 +126,22 @@ const getStudent = async (req, res) => {
     const { id } = req.user;
     try {
         const student = await Student.findOne({ user: id })
-        res.json({ success: true, message: "Students fetched Succesfully", student });
+        //     res.json({ success: true, message: "Students fetched Succesfully", student });
+
+        const userData = await User.findById(id).select("enrollNumber");
+
+        return res.json({
+            success: true,
+            message: "Student fetched successfully",
+            student: {
+                ...student._doc,
+                enrollNumber: userData.enrollNumber,
+            },
+        });
+
     } catch (error) {
-        return res.json({ success: false, message: "Server Error" });
+        console.error("Get Student Error:", error.message);
+        return res.status(500).json({ success: false, message: "Server Error" });
     }
 }
 
@@ -158,14 +184,15 @@ const uploadStudentFiles = async (req, res) => {
                     return res.json({ success: false, message: "Resume size must be less than 2MB" });
                 }
 
-                if (student.resume.url) {
+                if (student.resume && student.resume.public_id) {
+
                     await deleteFromCloudinary(student.resume.public_id, "raw")
                 }
 
                 resumePath = await uploadToCloudinary(
                     resume.path,
                     "students/resumes",
-                    `${student.enrollmentNo}-resume`,
+                    `${student.id}-resume`,
                     "raw"
                 )
             }
@@ -181,14 +208,15 @@ const uploadStudentFiles = async (req, res) => {
                     return res.json({ success: false, message: "Profile image must be under 1MB." });
                 }
 
-                if (student.profilePath.url) {
+                if (student.profilePath && student.profilePath.public_id) {
+
                     await deleteFromCloudinary(student.profilePath.public_id, "image")
                 }
 
                 profilePicPath = await uploadToCloudinary(
                     profile.path,
                     "students/profilePics",
-                    `${student.enrollmentNo}-profile`,
+                    `${student.id}-profile`,
                     "image"
                 );
             }
@@ -221,7 +249,7 @@ const getStudentVefrification = async (req, res) => {
     try {
         const user = await User.findById(id)
         if (!user) {
-            return res.status(400).json({ success: false, message: "No User exists" });
+            return res.json({ success: false, message: "No User exists" });
         }
 
         return res.status(200).json({ success: true, isVerified: user.isVerified })
@@ -255,4 +283,151 @@ const getStudentFiles = async (req, res) => {
     }
 };
 
-export { createStudent, getStudents, getStudent, uploadStudentFiles, getStudentVefrification, studentExist, getStudentFiles }
+
+//To fetch all current openings for the student
+const fetchAllJobs = async (req, res) => {
+    try {
+        const jobs = await Job.find({}).sort({ createdAt: -1 }).select("-roles.applicants")
+        if (!jobs) {
+            return res.json({ success: false, message: "No currrent openings" })
+        }
+
+        return res.json({ success: true, message: "Jobs fetched successfully!", jobs })
+    } catch (error) {
+        console.log(error);
+        return res.json({ success: false, message: "Internal Server Error" })
+    }
+}
+
+const fetchJobById = async (req, res) => {
+    const { jobId } = req.params;
+    try {
+        const job = await Job.findById(jobId).select("-roles.applicants")
+        if (!job) {
+            return res.json({ success: false, message: "No job with specific id" })
+        }
+        return res.json({ success: true, message: "Job fetched successfully!", job })
+    } catch (error) {
+        console.log(error);
+        return res.json({ success: false, message: "Internal Server Error" })
+    }
+}
+
+
+//Apply to job
+const applyToJob = async (req, res) => {
+    try {
+        const { studentId, jobId } = req.params;
+        const { roles, acceptedTerms } = req.body;
+
+        if (!roles || !Array.isArray(roles) || roles.length === 0) {
+            return res.json({ success: false, message: "Select at least one role" });
+        }
+
+        if (!acceptedTerms) {
+            return res.json({ success: false, message: "You must accept terms & conditions" });
+        }
+
+        const student = await Student.findOne({ user: studentId });
+        if (!student) return res.json({ success: false, message: "Student not found." });
+
+        const job = await Job.findById(jobId);
+        if (!job) return res.json({ success: false, message: "Job not found." });
+
+        if (job.status === "Closed") {
+            return res.json({ success: false, message: "Applications are closed" });
+        }
+
+        const appliedRoles = [];
+
+        for (const selectedRole of roles) {
+            const roleObj = job.roles.find(r => r.name === selectedRole);
+            if (!roleObj) continue;
+
+            // Check if already applied
+            const alreadyApplied = roleObj.applicants.some(
+                s => s.student.equals(student._id)
+            );
+
+            if (!alreadyApplied) {
+                roleObj.applicants.push({ student: student._id, acceptedTerms, appliedAt: Date.now() });
+                appliedRoles.push(selectedRole);
+            }
+        }
+
+        if (appliedRoles.length === 0) {
+            return res.json({
+                success: false,
+                message: "You have already applied for all selected roles.",
+            });
+        }
+
+        const exists = student.appliedJobs.some(
+            entry => entry.job.toString() === jobId
+        );
+        if (!exists) {
+            student.appliedJobs.push({ job: jobId });
+        }
+
+        await student.save();
+        await job.save();
+
+        return res.json({
+            success: true,
+            message: `Applied successfully for: ${appliedRoles.join(", ")}`,
+        });
+
+    } catch (error) {
+        console.error(error);
+        return res.json({
+            success: false,
+            message: "Server error while applying to job.",
+        });
+    }
+};
+
+//To fetch all student applied jobs
+const fetchAllAppliedJobs = async (req, res) => {
+    const { userId } = req.params;
+
+    try {
+        const student = await Student.findOne({ user: userId }).populate("appliedJobs.job")
+        if (!student) {
+            return res.json({ success: false, message: "No student found" })
+        }
+
+        const appliedJobs = student.appliedJobs.map(({ job }) => {
+
+            if (!job) return null;
+
+            const appliedRoles = []
+            let appliedAt = null;
+
+            job.roles.forEach(role => {
+                const applicant = role.applicants.find(a => a.student.toString() === student._id.toString())
+
+                if (applicant) appliedRoles.push(role.name)
+                if (!appliedAt || applicant.appliedAt < appliedAt) {
+
+                    appliedAt = applicant.appliedAt
+                }
+            })
+
+            return {
+                name: job.companyName,
+                title: job.title,
+                location: job.location,
+                appliedRoles,
+                appliedAt
+            }
+        }).filter(r => r !== null)
+
+        return res.json({ success: true, appliedJobs })
+    } catch (error) {
+        console.error(error);
+        return res.json({ success: false, message: "Server error fetching applied jobs." });
+    }
+}
+
+
+export { createStudent, getStudents, getStudent, uploadStudentFiles, getStudentVefrification, studentExist, getStudentFiles, fetchAllJobs, fetchJobById, applyToJob, fetchAllAppliedJobs }
