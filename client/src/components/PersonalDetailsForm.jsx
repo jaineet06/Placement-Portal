@@ -132,10 +132,12 @@ const PersonalDetailsForm = () => {
       <p className="mt-2 text-sm font-normal">Fetching details...</p>
     </div>
   ) : (
-    <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-6">
-      <h2 className="text-xl font-semibold text-gray-800 border-b pb-3 mb-4">
-        Personal Details
-      </h2>
+    <div className="relative max-w-3xl mx-auto">
+      <div className="absolute -top-16 -left-16 w-56 h-56 rounded-full bg-gradient-to-br from-primary/20 to-blue-100/10 blur-3xl opacity-80 pointer-events-none transform -rotate-12"></div>
+      <div className="p-6 space-y-6 relative bg-white/30 bg-gradient-to-br from-white/30 via-white/30 to-blue-50/30 backdrop-blur-md rounded-xl shadow-xl border border-white/20 ring-1 ring-white/10">
+        <h2 className="text-xl font-semibold text-gray-800 border-b pb-3 mb-4">
+          Personal Details
+        </h2>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
         {Object.entries({
@@ -158,7 +160,7 @@ const PersonalDetailsForm = () => {
                 value={personalFormData[field]}
                 onChange={(e) => handleChange(field, e.target.value)}
                 disabled={isStudent}
-                className="w-full rounded-lg border-gray-300 text-sm px-3 py-2 border focus:border-blue-500 focus:ring focus:ring-blue-100 disabled:bg-gray-100"
+                className="w-full rounded-lg border-gray-300 text-sm px-3 py-2 border bg-white/10 focus:border-blue-500 focus:ring focus:ring-blue-100 disabled:bg-gray-100"
               >
                 <option value="">Select Branch</option>
                 <option value="Computer Engineering">
@@ -166,11 +168,11 @@ const PersonalDetailsForm = () => {
                 </option>
               </select>
             ) : field === "category" ? (
-              <select
+                <select
                 value={personalFormData[field]}
                 onChange={(e) => handleChange(field, e.target.value)}
                 disabled={isStudent}
-                className="w-full rounded-lg border-gray-300 border text-sm px-3 py-2 focus:border-blue-500 focus:ring focus:ring-blue-100 disabled:bg-gray-100"
+                className="w-full rounded-lg border-gray-300 border text-sm px-3 py-2 bg-white/10 focus:border-blue-500 focus:ring focus:ring-blue-100 disabled:bg-gray-100"
               >
                 <option value="">Select Category</option>
                 <option value="General">General</option>
@@ -186,14 +188,14 @@ const PersonalDetailsForm = () => {
                 value={personalFormData[field]}
                 onChange={(e) => handleChange(field, e.target.value)}
                 disabled={isStudent}
-                className="w-full rounded-lg border-gray-300 border text-sm px-3 py-2 focus:border-blue-500 focus:ring focus:ring-blue-100 disabled:bg-gray-100"
+                className="w-full rounded-lg border-gray-300 border text-sm px-3 py-2 bg-white/10 focus:border-blue-500 focus:ring focus:ring-blue-100 disabled:bg-gray-100"
               />
             ) : field === "enrollmentNo" ? ( // added condition to disable enrollmentNo input
                 <input
                 type="text"
                 value={personalFormData[field]}
                 disabled={true}
-                className="w-full rounded-lg border-gray-300 border text-sm px-3 py-2 bg-gray-100 cursor-not-allowed"
+                className="w-full rounded-lg border-gray-300 border text-sm px-3 py-2 bg-white/10 cursor-not-allowed opacity-80"
                 />
             )
              :(
@@ -202,7 +204,7 @@ const PersonalDetailsForm = () => {
                 value={personalFormData[field]}
                 onChange={(e) => handleChange(field, e.target.value)}
                 disabled={isStudent}
-                className="w-full rounded-lg border-gray-300 border text-sm px-3 py-2 focus:border-blue-500 focus:ring focus:ring-blue-100 disabled:bg-gray-100"
+                className="w-full rounded-lg border-gray-300 border text-sm px-3 py-2 bg-white/10 focus:border-blue-500 focus:ring focus:ring-blue-100 disabled:bg-gray-100"
               />
             )}
           </div>
@@ -217,12 +219,13 @@ const PersonalDetailsForm = () => {
           ${
             isStudent
               ? "bg-gray-400 cursor-not-allowed"
-              : "bg-blue-600 hover:bg-blue-700 cursor-pointer"
+              : "bg-primary hover:bg-primary-dull cursor-pointer"
           }`}
         >
           {saving ? "Saving..." : "Save Details"}
         </button>
       </div>
+    </div>
     </div>
   );
 };

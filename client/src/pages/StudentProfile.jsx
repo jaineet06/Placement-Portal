@@ -56,16 +56,16 @@ const StudentProfile = () => {
       </h1>
 
       {/* Tabs */}
-      <div className="mb-6 flex flex-wrap gap-3 justify-center">
+      <div className="mb-6 flex flex-wrap gap-5 justify-center">
         {tabs.map(({ id, label }) => (
           <button
             key={id}
             onClick={() => setActiveTab(id)}
-            className={`rounded-md px-5 py-2 text-sm font-medium transition cursor-pointer
+            className={`rounded-2xl px-6 py-3 text-sm font-medium transition cursor-pointer
               ${
                 activeTab === id
-                  ? "bg-blue-600 text-white"
-                  : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                  ? "bg-primary text-white"
+                  : "bg-primary/10 text-primary hover:bg-primary/20"
               }`}
           >
             {label}
