@@ -100,14 +100,16 @@ const UploadFiles = () => {
       <p className="mt-2 text-sm font-normal">Fetching details...</p>
     </div>
   ) : (
-    <div className="max-w-2xl mx-auto p-6 space-y-6 bg-white shadow rounded-lg">
-      <h2 className="text-xl font-semibold text-gray-700">Upload Files</h2>
+    <div className="relative max-w-2xl mx-auto">
+      <div className="absolute -top-12 -right-12 w-48 h-48 rounded-full bg-gradient-to-br from-primary/20 to-blue-100/10 blur-3xl opacity-80 pointer-events-none transform rotate-12"></div>
+      <div className="p-6 space-y-6 bg-white/30 bg-gradient-to-br from-white/30 via-white/30 to-blue-50/30 backdrop-blur-md rounded-xl shadow-xl border border-white/20">
+        <h2 className="text-xl font-semibold text-gray-700">Upload Files</h2>
 
       {/* Resume Upload */}
       <div
         onDrop={(e) => handleFileDrop(e, "resume")}
         onDragOver={(e) => e.preventDefault()}
-        className={dropZoneClass}
+        className={`${dropZoneClass} bg-white/5`}
         onClick={() => document.getElementById("resumeInput").click()}
       >
         <input
@@ -144,7 +146,7 @@ const UploadFiles = () => {
       <div
         onDrop={(e) => handleFileDrop(e, "profile")}
         onDragOver={(e) => e.preventDefault()}
-        className={dropZoneClass}
+        className={`${dropZoneClass} bg-white/5`}
         onClick={() => document.getElementById("profileInput").click()}
       >
         <input
@@ -172,13 +174,13 @@ const UploadFiles = () => {
       </div>
 
       {/* Upload Button */}
-      <button
-        onClick={handleUpload}
-        disabled={uploading}
-        className="w-full py-2 px-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:opacity-50"
-      >
-        {uploading ? "Uploading..." : "Upload Files"}
-      </button>
+        <button
+          onClick={handleUpload}
+          disabled={uploading}
+          className="w-full py-2 px-4 bg-primary text-white rounded-lg hover:bg-primary-dull transition disabled:opacity-50"
+        >
+          {uploading ? "Uploading..." : "Upload Files"}
+        </button>
 
       {/* Profile Modal */}
       {showProfileModal && (
@@ -204,6 +206,7 @@ const UploadFiles = () => {
           </div>
         </div>
       )}
+      </div>
     </div>
   );
 };

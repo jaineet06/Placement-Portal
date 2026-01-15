@@ -105,10 +105,12 @@ const AddressForm = () => {
       <p className="mt-2 text-sm font-normal">Fetching details...</p>
     </div>
   ) : (
-    <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-6">
-      <h2 className="text-xl font-semibold text-gray-800 border-b pb-3 mb-4">
-        Address Details
-      </h2>
+    <div className="relative max-w-3xl mx-auto">
+      <div className="absolute -top-16 -right-12 w-64 h-64 rounded-full bg-gradient-to-br from-primary/20 to-blue-100/10 blur-3xl opacity-80 pointer-events-none transform rotate-12"></div>
+      <div className="p-6 space-y-6 relative bg-white/30 bg-gradient-to-br from-white/30 via-white/30 to-blue-50/30 backdrop-blur-md rounded-xl shadow-xl border border-white/20 ring-1 ring-white/10">
+        <h2 className="text-xl font-semibold text-gray-800 border-b pb-3 mb-4">
+          Address Details
+        </h2>
 
       {["permanent", "current"].map((type) => (
         <div key={type} className="mb-6">
@@ -142,7 +144,7 @@ const AddressForm = () => {
                   type="text"
                   value={addressFormData[type][field]}
                   onChange={(e) => handleChange(type, field, e.target.value)}
-                  className="w-full rounded-lg border border-gray-300 text-sm px-3 py-2 focus:border-blue-500 focus:ring focus:ring-blue-100 "
+                  className="w-full rounded-lg border border-gray-300 text-sm px-3 py-2 bg-white/10 focus:border-blue-500 focus:ring focus:ring-blue-100 "
                 />
               </div>
             ))}
@@ -153,11 +155,12 @@ const AddressForm = () => {
       <div className="flex justify-end pt-4">
         <button
           onClick={handleSubmit}
-          className={`px-5 py-2 rounded-lg text-white text-sm font-medium shadow-md transition cursor-pointer bg-blue-600 hover:bg-blue-700`}
+          className={`px-5 py-2 rounded-lg text-white text-sm font-medium shadow-md transition cursor-pointer bg-primary hover:bg-primary-dull`}
         >
           {saving ? "Saving..." : "Save Details"}
         </button>
       </div>
+    </div>
     </div>
   );
 };
