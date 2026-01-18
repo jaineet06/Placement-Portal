@@ -2,6 +2,14 @@ import React, { useState, useEffect } from "react";
 import { useAppContext } from "../context/AppContext";
 import { toast } from "react-hot-toast";
 import Spinner from "./Spinner";
+import {
+  GraduationCap,
+  BookOpen,
+  Plus,
+  Trash2,
+  Save,
+  Info,
+} from "lucide-react";
 
 const defaultEducationData = {
   ssc: { percentage: "", passoutYear: "" },
@@ -19,7 +27,6 @@ const EducationForm = () => {
   const { axios, verified } = useAppContext();
   const [loading, setLoading] = useState(false);
 
-  // Load existing education data
   const loadData = async () => {
     setLoading(true);
     try {
@@ -36,7 +43,6 @@ const EducationForm = () => {
         spi: Array.isArray(data.education?.spi) ? data.education.spi : [""],
       });
     } catch (err) {
-      console.error(err);
       toast.error("Failed to load education data.");
     } finally {
       setLoading(false);
@@ -54,7 +60,6 @@ const EducationForm = () => {
     }));
   };
 
-  // Validation with toasts
   const validate = () => {
     for (let section of ["ssc", "hsc", "diploma"]) {
       const { percentage, passoutYear } = educationFormData[section];
@@ -72,37 +77,11 @@ const EducationForm = () => {
         return false;
       }
     }
-
-    for (let i = 0; i < educationFormData.spi.length; i++) {
-      const score = educationFormData.spi[i];
-      if (score && (score < 0 || score > 10)) {
-        toast.error(`SPI Semester ${i + 1} must be between 0 and 10`);
-        return false;
-      }
-    }
-
-    if (
-      educationFormData.cpi &&
-      (educationFormData.cpi < 0 || educationFormData.cpi > 10)
-    ) {
-      toast.error("CPI must be between 0 and 10");
-      return false;
-    }
-
-    if (
-      educationFormData.cgpa &&
-      (educationFormData.cgpa < 0 || educationFormData.cgpa > 10)
-    ) {
-      toast.error("CGPA must be between 0 and 10");
-      return false;
-    }
-
     return true;
   };
 
   const handleSubmit = async () => {
     if (!validate()) return;
-
     setSaving(true);
     try {
       const payload = {
@@ -127,18 +106,16 @@ const EducationForm = () => {
         cgpa: Number(educationFormData.cgpa) || 0,
       };
 
-      const isHscFilled = payload.hsc.percentage > 0;
-      const isDiplomaFilled = payload.diploma.percentage > 0;
-      if (isHscFilled && isDiplomaFilled) {
-        toast.error("Please provide either HSC or Diploma, not both.");
+      if (payload.hsc?.percentage > 0 && payload.diploma?.percentage > 0) {
+        toast.error("Provide either HSC or Diploma, not both.");
         setSaving(false);
         return;
       }
-      if (!isHscFilled) delete payload.hsc;
-      if (!isDiplomaFilled) delete payload.diploma;
+      if (!payload.hsc?.percentage) delete payload.hsc;
+      if (!payload.diploma?.percentage) delete payload.diploma;
 
       await axios.post("/api/education/add", payload);
-      toast.success("Education details saved successfully.");
+      toast.success("Education credentials saved.");
     } catch (err) {
       toast.error(err.response?.data?.message || err.message);
     } finally {
@@ -146,173 +123,205 @@ const EducationForm = () => {
     }
   };
 
-  return loading ? (
-    <div className="flex flex-col items-center justify-center w-full h-full min-h-[60vh]">
-      <Spinner />
-      <p className="mt-2 text-sm font-normal">Fetching details...</p>
-    </div>
-  ) : (
-    <div className="relative max-w-3xl mx-auto">
-      <div className="absolute -bottom-16 -left-12 w-56 h-56 rounded-full bg-gradient-to-br from-primary/20 to-blue-100/10 blur-3xl opacity-80 pointer-events-none transform -rotate-6"></div>
-      <div className="p-6 space-y-6 relative bg-white/30 bg-gradient-to-br from-white/30 via-white/30 to-blue-50/30 backdrop-blur-md rounded-xl shadow-xl border border-white/20 ring-1 ring-white/10">
-        <h2 className="text-xl font-semibold text-gray-800 border-b pb-3 mb-4">
-          Education Details
-        </h2>
+  if (loading)
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[400px]">
+        <Spinner />
+        <p className="mt-4 text-slate-500 font-medium animate-pulse">
+          Analyzing academic records...
+        </p>
+      </div>
+    );
 
-      {/* Make main form content scrollable to match AddressForm */}
-      <div className="h-[60vh] overflow-auto pr-2 space-y-6">
-      {/* SSC / HSC / Diploma */}
-      {["ssc", "hsc", "diploma"].map((section) => (
-        <div key={section} className="mb-6">
-          <h3 className="text-lg font-medium text-gray-700 uppercase mb-3">
-            {section}
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-600 mb-1">
-                Percentage
-              </label>
-              <input
-                type="number"
-                placeholder="Percentage"
-                value={educationFormData[section].percentage}
-                onChange={(e) =>
-                  handleChange(section, "percentage", e.target.value)
-                }
-                min="0"
-                max="100"
-                step="0.01"
-                className="w-full rounded-lg border border-gray-300 text-sm px-3 py-2 bg-white/10 focus:border-blue-500 focus:ring focus:ring-blue-100"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-600 mb-1">
-                Passout Year
-              </label>
-              <input
-                type="number"
-                placeholder="Passout Year"
-                value={educationFormData[section].passoutYear}
-                onChange={(e) =>
-                  handleChange(section, "passoutYear", e.target.value)
-                }
-                min="1900"
-                max={new Date().getFullYear() + 1}
-                className="w-full rounded-lg border border-gray-300 text-sm px-3 py-2 bg-white/10 focus:border-blue-500 focus:ring focus:ring-blue-100"
-              />
-            </div>
-          </div>
+  return (
+    <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <div className="flex items-center gap-3">
+        <div className="p-2.5 bg-primary/10 rounded-xl text-primary">
+          <GraduationCap size={24} />
         </div>
-      ))}
+        <div>
+          <h2 className="text-xl font-black text-slate-900 tracking-tight">
+            Academic Profile
+          </h2>
+          <p className="text-xs text-slate-400 font-bold uppercase tracking-widest mt-0.5 italic">
+            Provide SSC and either HSC or Diploma
+          </p>
+        </div>
+      </div>
 
-      {/* SPI Scores */}
-      <div className="mb-6">
-        <h3 className="text-lg font-medium text-gray-700 uppercase mb-3">
-          SPI Scores
-        </h3>
-        {educationFormData.spi.map((score, idx) => (
-          <div key={idx} className="mb-2">
-            <label className="block text-sm font-medium text-gray-600 mb-1">
-              SPI Semester {idx + 1}
-            </label>
-            <div className="flex items-center gap-2">
-              <input
-                type="number"
-                placeholder={`SPI Semester ${idx + 1}`}
-                value={score}
-                onChange={(e) => {
-                  const newSpi = [...educationFormData.spi];
-                  newSpi[idx] = e.target.value;
-                  setEducationFormData((prev) => ({ ...prev, spi: newSpi }));
-                }}
-                min="0"
-                max="10"
-                step="0.01"
-                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white/10 focus:border-blue-500 focus:ring focus:ring-blue-100"
-              />
-              {educationFormData.spi.length > 1 && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    const newSpi = educationFormData.spi.filter(
-                      (_, i) => i !== idx
-                    );
-                    setEducationFormData((prev) => ({
-                      ...prev,
-                      spi: newSpi.length ? newSpi : [""],
-                    }));
-                  }}
-                  className="text-red-500 font-bold text-xl leading-none px-2 hover:text-red-700"
-                >
-                  &times;
-                </button>
-              )}
-            </div>
-          </div>
-        ))}
-        {educationFormData.spi.length < 8 &&
-          educationFormData.spi[educationFormData.spi.length - 1] !== "" && (
-            <button
-              type="button"
-              onClick={() =>
-                setEducationFormData((prev) => ({
-                  ...prev,
-                  spi: [...prev.spi, ""],
-                }))
-              }
-              className="mt-2 text-primary hover:underline"
+      <div className="space-y-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {["ssc", "hsc", "diploma"].map((section) => (
+            <div
+              key={section}
+              className="p-5 bg-slate-50 border border-slate-200 rounded-2xl space-y-4 hover:border-primary/30 transition-colors"
             >
-              + Add SPI Semester
-            </button>
-          )}
-      </div>
-
-      {/* CPI / CGPA */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-        <div>
-          <label className="block text-sm font-medium text-gray-600 mb-1">CPI</label>
-          <input
-            type="number"
-            placeholder="CPI"
-            value={educationFormData.cpi}
-            onChange={(e) =>
-              setEducationFormData({ ...educationFormData, cpi: e.target.value })
-            }
-            min="0"
-            max="10"
-            step="0.01"
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white/10 focus:border-blue-500 focus:ring focus:ring-blue-100"
-          />
+              <h3 className="text-[11px] font-black text-primary uppercase tracking-[0.2em]">
+                {section}
+              </h3>
+              <div className="space-y-3">
+                <div className="space-y-1">
+                  <label className="text-[10px] font-black text-slate-500 uppercase">
+                    Percentage
+                  </label>
+                  <input
+                    type="number"
+                    value={educationFormData[section].percentage}
+                    onChange={(e) =>
+                      handleChange(section, "percentage", e.target.value)
+                    }
+                    className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm font-bold text-slate-800 focus:border-primary outline-none transition-all"
+                    placeholder="0.00"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] font-black text-slate-500 uppercase">
+                    Year
+                  </label>
+                  <input
+                    type="number"
+                    value={educationFormData[section].passoutYear}
+                    onChange={(e) =>
+                      handleChange(section, "passoutYear", e.target.value)
+                    }
+                    className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm font-bold text-slate-800 focus:border-primary outline-none transition-all"
+                    placeholder="YYYY"
+                  />
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-600 mb-1">CGPA</label>
-          <input
-            type="number"
-            placeholder="CGPA"
-            value={educationFormData.cgpa}
-            onChange={(e) =>
-              setEducationFormData({ ...educationFormData, cgpa: e.target.value })
-            }
-            min="0"
-            max="10"
-            step="0.01"
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white/10 focus:border-blue-500 focus:ring focus:ring-blue-100"
-          />
+
+        <div className="bg-white border border-slate-100 rounded-[2rem] p-6 space-y-6">
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest flex items-center gap-2">
+              <BookOpen size={16} className="text-primary" /> Semester SPI
+              Scores
+            </h3>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+            {educationFormData.spi.map((score, idx) => (
+              <div
+                key={idx}
+                className="relative group animate-in zoom-in-95 duration-200"
+              >
+                <label className="text-[9px] font-black text-slate-400 uppercase tracking-tighter mb-1 block">
+                  Sem {idx + 1}
+                </label>
+                <div className="flex items-center gap-1">
+                  <input
+                    type="number"
+                    value={score}
+                    onChange={(e) => {
+                      const newSpi = [...educationFormData.spi];
+                      newSpi[idx] = e.target.value;
+                      setEducationFormData((prev) => ({
+                        ...prev,
+                        spi: newSpi,
+                      }));
+                    }}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm font-black text-primary text-center focus:bg-white focus:border-primary outline-none transition-all"
+                    placeholder="0.00"
+                  />
+                  {educationFormData.spi.length > 1 && (
+                    <button
+                      onClick={() => {
+                        const newSpi = educationFormData.spi.filter(
+                          (_, i) => i !== idx
+                        );
+                        setEducationFormData((prev) => ({
+                          ...prev,
+                          spi: newSpi.length ? newSpi : [""],
+                        }));
+                      }}
+                      className="absolute -top-1 -right-1 bg-red-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
+                    >
+                      <Trash2 size={10} />
+                    </button>
+                  )}
+                </div>
+              </div>
+            ))}
+
+            {educationFormData.spi.length < 8 && (
+              <button
+                type="button"
+                onClick={() =>
+                  setEducationFormData((prev) => ({
+                    ...prev,
+                    spi: [...prev.spi, ""],
+                  }))
+                }
+                className="flex flex-col items-center justify-center border-2 border-dashed border-slate-200 rounded-xl hover:border-primary hover:bg-primary/5 transition-all text-slate-400 hover:text-primary py-2"
+              >
+                <Plus size={18} />
+                <span className="text-[9px] font-black uppercase">Add Sem</span>
+              </button>
+            )}
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-slate-900 rounded-[2rem] p-8 text-white">
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest">
+                Aggregate CPI
+              </label>
+              <Info size={12} className="text-slate-500" />
+            </div>
+            <input
+              type="number"
+              value={educationFormData.cpi}
+              onChange={(e) =>
+                setEducationFormData({
+                  ...educationFormData,
+                  cpi: e.target.value,
+                })
+              }
+              className="w-full bg-white/10 border border-white/10 rounded-xl px-4 py-3 text-xl font-black text-primary placeholder:text-white/20 outline-none focus:bg-white/20 transition-all"
+              placeholder="0.00"
+            />
+          </div>
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest">
+                Final CGPA
+              </label>
+              <Info size={12} className="text-slate-500" />
+            </div>
+            <input
+              type="number"
+              value={educationFormData.cgpa}
+              onChange={(e) =>
+                setEducationFormData({
+                  ...educationFormData,
+                  cgpa: e.target.value,
+                })
+              }
+              className="w-full bg-white/10 border border-white/10 rounded-xl px-4 py-3 text-xl font-black text-primary placeholder:text-white/20 outline-none focus:bg-white/20 transition-all"
+              placeholder="0.00"
+            />
+          </div>
         </div>
       </div>
 
-      {/* Save Button */}
-      </div>
-
-      <div className="flex justify-end">
+      <div className="flex justify-end pt-4">
         <button
           onClick={handleSubmit}
-          className="px-5 py-2 rounded-lg text-white text-sm font-medium shadow-md transition bg-primary cursor-pointer hover:bg-primary-dull"
+          disabled={saving}
+          className="flex items-center gap-2 px-12 py-4 bg-primary text-white rounded-2xl font-bold text-sm hover:bg-primary-dull hover:shadow-xl hover:shadow-primary/20 transition-all active:scale-95"
         >
-          {saving ? "Saving..." : "Save Details"}
+          {saving ? (
+            <div className="h-5 w-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+          ) : (
+            <>
+              <Save size={18} /> Lock Education Data
+            </>
+          )}
         </button>
       </div>
-    </div>
     </div>
   );
 };

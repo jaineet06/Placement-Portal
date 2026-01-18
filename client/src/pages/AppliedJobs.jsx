@@ -1,13 +1,23 @@
 import React, { useEffect, useState } from "react";
 import { useAppContext } from "../context/AppContext";
 import toast from "react-hot-toast";
-import Title from "../components/Title";
 import Spinner from "../components/Spinner";
+import {
+  Briefcase,
+  Building2,
+  MapPin,
+  Calendar,
+  Clock,
+  ChevronRight,
+} from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const AppliedJobs = () => {
   const { axios, user } = useAppContext();
   const [appliedJobs, setAppliedJobs] = useState([]);
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
+
   const fetchJobs = async () => {
     try {
       setLoading(true);
@@ -20,7 +30,6 @@ const AppliedJobs = () => {
         toast.error(data.message);
       }
     } catch (error) {
-      console.log(error);
       toast.error("Internal server error");
     } finally {
       setLoading(false);
@@ -34,65 +43,150 @@ const AppliedJobs = () => {
 
   if (loading)
     return (
-      <div className="flex flex-col justify-center items-center h-full">
+      <div className="flex flex-col justify-center items-center h-[60vh]">
         <Spinner />
-        <p className="text-sm mt-2 font-normal">Fetching job...</p>
+        <p className="text-slate-500 text-sm mt-4 font-medium animate-pulse">
+          Syncing your applications...
+        </p>
       </div>
     );
 
   return (
-    <>
-      <Title text1={"Applied"} text2={"Jobs"} />
+    <div className="p-8 max-w-7xl mx-auto space-y-8">
+      <div className="space-y-1">
+        <h2 className="text-3xl font-black text-slate-900 tracking-tight">
+          Application <span className="text-primary italic">History</span>
+        </h2>
+        <p className="text-slate-500 font-medium">
+          Track and manage your professional journey
+        </p>
+      </div>
 
       {appliedJobs.length === 0 ? (
-        <div className="flex items-center justify-center h-full">
-          <p className="text-2xl font-medium">
+        <div className="flex flex-col items-center justify-center py-24 bg-white rounded-[2.5rem] border-2 border-dashed border-slate-100 shadow-sm">
+          <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mb-6">
+            <Briefcase size={32} className="text-slate-300" />
+          </div>
+          <p className="text-xl font-bold text-slate-400">
             You haven't applied for any jobs yet.
           </p>
+          <button
+            onClick={() => navigate("/company")}
+            className="mt-4 text-primary font-bold hover:underline"
+          >
+            Explore current openings →
+          </button>
         </div>
       ) : (
-        <div className="overflow-x-auto mt-6">
-          <table className="w-full border-collapse rounded-md overflow-hidden">
-            <thead>
-              <tr className="bg-primary text-left text-white">
-                <th className="p-2 pl-5">Company</th>
-                <th className="p-2 pl-5">Title</th>
-                <th className="p-2 pl-5">Location</th>
-                <th className="p-2 pl-5">Roles</th>
-                <th className="p-2">Applied Date</th>
-              </tr>
-            </thead>
-
-            <tbody>
-              {appliedJobs.map((job) => (
-                <tr
-                  key={job._id}
-                  className="border-b border-primary/10 bg-primary/5 even:bg-primary/10 hover:bg-primary-dull/20 cursor-pointer"
-                  onClick={() => navigate(`/company/${job._id}`)}
-                >
-                  <td className="p-2 pl-5">{job.name}</td>
-                  <td className="p-2 pl-5">{job.title}</td>
-                  <td className="p-2 pl-5">{job.location}</td>
-
-                  {/* FIXED → show roles */}
-                  <td className="p-2 pl-5">
-                    {job.appliedRoles?.length > 0
-                      ? job.appliedRoles.join(", ")
-                      : "—"}
-                  </td>
-
-                  <td className="p-2 pl-5">
-                    {job.appliedAt
-                      ? new Date(job.appliedAt).toLocaleDateString()
-                      : "—"}
-                  </td>
+        <div className="bg-white rounded-[2.5rem] border border-slate-100 shadow-sm overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-slate-900 text-white">
+                  <th className="px-8 py-5 text-xs font-black uppercase tracking-widest">
+                    Company & Role
+                  </th>
+                  <th className="px-8 py-5 text-xs font-black uppercase tracking-widest hidden md:table-cell">
+                    Location
+                  </th>
+                  <th className="px-8 py-5 text-xs font-black uppercase tracking-widest">
+                    Applied Roles
+                  </th>
+                  <th className="px-8 py-5 text-xs font-black uppercase tracking-widest">
+                    Date Applied
+                  </th>
+                  <th className="px-8 py-5 text-xs font-black uppercase tracking-widest text-right">
+                    Action
+                  </th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-slate-50">
+                {appliedJobs.map((job) => (
+                  <tr
+                    key={job._id}
+                    className="group hover:bg-slate-50/50 transition-colors cursor-default"
+                  >
+                    <td className="px-8 py-6">
+                      <div className="flex items-center gap-4">
+                        <div className="w-10 h-10 bg-primary/5 rounded-xl flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-all duration-300 shadow-sm">
+                          <Building2 size={20} />
+                        </div>
+                        <div>
+                          <p className="font-black text-slate-900 leading-none mb-1">
+                            {job.name}
+                          </p>
+                          <p className="text-sm text-slate-500 font-medium">
+                            {job.title}
+                          </p>
+                        </div>
+                      </div>
+                    </td>
+
+                    <td className="px-8 py-6 hidden md:table-cell">
+                      <div className="flex items-center gap-1.5 text-slate-600 text-sm font-semibold">
+                        <MapPin size={14} className="text-primary/60" />
+                        {job.location}
+                      </div>
+                    </td>
+
+                    <td className="px-8 py-6">
+                      <div className="flex flex-wrap gap-1">
+                        {job.appliedRoles?.length > 0 ? (
+                          job.appliedRoles.map((role, i) => (
+                            <span
+                              key={i}
+                              className="px-2 py-1 bg-slate-100 text-slate-600 rounded-md text-[10px] font-bold uppercase"
+                            >
+                              {role}
+                            </span>
+                          ))
+                        ) : (
+                          <span className="text-slate-300 text-xs italic font-medium">
+                            —
+                          </span>
+                        )}
+                      </div>
+                    </td>
+
+                    <td className="px-8 py-6">
+                      <div className="flex items-center gap-2 text-slate-600 text-sm font-semibold">
+                        <Clock size={14} className="text-primary/60" />
+                        {job.appliedAt
+                          ? new Date(job.appliedAt).toLocaleDateString("en-GB")
+                          : "—"}
+                      </div>
+                    </td>
+
+                    {/* <td className="px-8 py-6 text-right">
+                      <button
+                        onClick={() => navigate(`/company/${job._id}`)}
+                        className="p-2 hover:bg-white hover:shadow-md rounded-full text-slate-400 hover:text-primary transition-all active:scale-90 border border-transparent hover:border-slate-100"
+                      >
+                        <ChevronRight size={20} />
+                      </button>
+                    </td> */}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
-    </>
+
+      <div className="flex items-center gap-3 p-4 bg-primary/5 rounded-2xl border border-primary/10">
+        <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center text-primary shadow-sm">
+          <Calendar size={16} />
+        </div>
+        <p className="text-xs text-slate-600 font-medium">
+          Note: For changes in your application or role preferences, please
+          contact the{" "}
+          <span className="text-primary font-bold uppercase tracking-tighter">
+            Placement Coordinator
+          </span>{" "}
+          directly.
+        </p>
+      </div>
+    </div>
   );
 };
 
