@@ -14,6 +14,8 @@ const jobSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    jobType: { type: String, required: true, enum: ["Full Time", "Internship", "Internship + FTE"] },
+    rounds: [{ type: String, required: true }],
     roles: [
       {
         name: {
@@ -46,3 +48,8 @@ const jobSchema = new mongoose.Schema(
 
 const Job = mongoose.model("Job", jobSchema);
 export default Job;
+
+/**
+ * Job type
+ * Rounds
+ */

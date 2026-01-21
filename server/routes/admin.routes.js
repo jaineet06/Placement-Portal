@@ -1,6 +1,6 @@
 import e from "express";
 import { authorizeRoles, authUser } from "../middlewares/auth.js";
-import { deleteStudent, getAddressByEnrollment, getEducation, getStudentByEnrollment, createJob, getAllJobs, getJobById, deleteJob, changeStatus, exportAppliedStudentToCSV } from "../controllers/admin.controller.js";
+import { deleteStudent, getAddressByEnrollment, getEducation, getStudentByEnrollment, createJob, getAllJobs, getJobById, deleteJob, changeStatus, exportAppliedStudentToCSV, changeApplicationStatus } from "../controllers/admin.controller.js";
 
 const adminRouter = e.Router()
 
@@ -21,6 +21,8 @@ adminRouter.delete("/delete-job/:jobId", authUser, authorizeRoles("admin"), dele
 adminRouter.post("/update-status/:jobId", authUser, authorizeRoles("admin"), changeStatus)
 
 adminRouter.get("/export/:jobId", authUser, authorizeRoles("admin"), exportAppliedStudentToCSV)
+
+adminRouter.post("/job/change-status", authUser, authorizeRoles("admin"), changeApplicationStatus)
 
 
 export default adminRouter

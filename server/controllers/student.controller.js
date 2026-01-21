@@ -396,7 +396,7 @@ const fetchAllAppliedJobs = async (req, res) => {
             return res.json({ success: false, message: "No student found" })
         }
 
-        const appliedJobs = student.appliedJobs.map(({ job }) => {
+        const appliedJobs = student.appliedJobs.map(({ job, status }) => {
 
             if (!job) return null;
 
@@ -418,7 +418,8 @@ const fetchAllAppliedJobs = async (req, res) => {
                 title: job.title,
                 location: job.location,
                 appliedRoles,
-                appliedAt
+                appliedAt,
+                status
             }
         }).filter(r => r !== null)
 

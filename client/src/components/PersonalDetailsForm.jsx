@@ -2,6 +2,13 @@ import { useEffect, useState } from "react";
 import { toast } from "react-hot-toast";
 import { useAppContext } from "../context/AppContext";
 import Spinner from "./Spinner";
+import {
+  UserCircle,
+  Save,
+  AlertCircle,
+  Phone,
+  Fingerprint,
+} from "lucide-react";
 
 const defaultPersonalData = {
   fullName: "",
@@ -23,38 +30,26 @@ const PersonalDetailsForm = () => {
 
   const { axios, verified } = useAppContext();
 
-
   const loadData = async () => {
-   
-
     setLoading(true);
     try {
-
-      // to fetch userschema data 
       const userRes = await axios.get("/api/auth/me");
-      const user = userRes.data.user || {}; 
-
-      // const studentRes = await axios.get("/api/student/get");
-      // const student = studentRes.data.student || {};
+      const user = userRes.data.user || {};
 
       let student = {};
       try {
-      const studentRes = await axios.get("/api/student/get");
-      if (studentRes.data.success) {
-        student = studentRes.data.student;
-      }
+        const studentRes = await axios.get("/api/student/get");
+        if (studentRes.data.success) {
+          student = studentRes.data.student;
+        }
       } catch {
-      // no student found → no error toast
-      student = {};
+        student = {};
       }
-
-      
-
 
       setPersonalFormData({
         fullName: student.fullName || "",
         parentName: student.parentName || "",
-        enrollmentNo: user.enrollNumber || "", // fetched from user schema
+        enrollmentNo: user.enrollNumber || "",
         branch: student.branch || "",
         birthDate: student.birthDate?.split("T")[0] || "",
         category: student.category || "",
@@ -63,25 +58,16 @@ const PersonalDetailsForm = () => {
         parentMobile: student.parentMobile || "",
       });
     } catch (err) {
-      console.error(err);
       toast.error("Failed to load student data.");
     } finally {
       setLoading(false);
     }
-
-    
   };
 
-
-    
   const getIsStudent = async () => {
     try {
       const { data } = await axios.get("/api/student/is-student");
-      if (data.isStudent) {
-        setIsStudent(true);
-      } else {
-        setIsStudent(false);
-      }
+      setIsStudent(!!data.isStudent);
     } catch (error) {
       toast.error(error.message);
     }
@@ -95,30 +81,22 @@ const PersonalDetailsForm = () => {
   }, [verified]);
 
   const handleChange = (field, value) => {
-    setPersonalFormData((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
+    setPersonalFormData((prev) => ({ ...prev, [field]: value }));
   };
 
   const handleSubmitPersonal = async (e) => {
     e.preventDefault();
-
     const confirmation = window.confirm(
-      "Once submitted, these details will be stored permanently and cannot be updated.\nDo you want to proceed?"
+      "Once submitted, these details will be stored permanently and cannot be updated. Proceed?"
     );
-
-    if (!confirmation) {
-      return;
-    }
+    if (!confirmation) return;
 
     setSaving(true);
     try {
-      // Remove enrollmentNo before sending
-    const { enrollmentNo, ...studentData } = personalFormData;
-
-      await axios.post("/api/student/create", studentData); // chnaged from personalFormData to studentData
+      const { enrollmentNo, ...studentData } = personalFormData;
+      await axios.post("/api/student/create", studentData);
       toast.success("Personal details saved successfully.");
+      setIsStudent(true);
     } catch (error) {
       toast.error(error.response?.data?.message || error.message);
     } finally {
@@ -126,41 +104,61 @@ const PersonalDetailsForm = () => {
     }
   };
 
-  return loading ? (
-    <div className="flex flex-col items-center justify-center w-full h-full min-h-[60vh]">
-      <Spinner />
-      <p className="mt-2 text-sm font-normal">Fetching details...</p>
-    </div>
-  ) : (
-    <div className="relative max-w-3xl mx-auto">
-      <div className="absolute -top-16 -left-16 w-56 h-56 rounded-full bg-gradient-to-br from-primary/20 to-blue-100/10 blur-3xl opacity-80 pointer-events-none transform -rotate-12"></div>
-      <div className="p-6 space-y-6 relative bg-white/30 bg-gradient-to-br from-white/30 via-white/30 to-blue-50/30 backdrop-blur-md rounded-xl shadow-xl border border-white/20 ring-1 ring-white/10">
-        <h2 className="text-xl font-semibold text-gray-800 border-b pb-3 mb-4">
-          Personal Details
-        </h2>
+  if (loading)
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[400px]">
+        <Spinner />
+        <p className="mt-4 text-slate-500 font-medium animate-pulse">
+          Syncing profile data...
+        </p>
+      </div>
+    );
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+  return (
+    <div className="space-y-8">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <div className="p-2.5 bg-primary/10 rounded-xl text-primary">
+            <UserCircle size={24} />
+          </div>
+          <h2 className="text-xl font-black text-slate-900 tracking-tight">
+            Personal Information
+          </h2>
+        </div>
+
+        {isStudent && (
+          <div className="flex items-center gap-2 px-4 py-2 bg-slate-100 rounded-xl border border-slate-200 text-slate-500 text-xs font-bold uppercase tracking-wider">
+            <AlertCircle size={14} /> Read-only mode
+          </div>
+        )}
+      </div>
+
+      <form className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {Object.entries({
-          fullName: "Full Name",
-          parentName: "Parent Name",
-         enrollmentNo: "Enrollment No",
-          branch: "Branch",
-          birthDate: "Birth Date",
-          category: "Category",
-          mobile: "Mobile",
-          alternateMobile: "Alternate Mobile",
-          parentMobile: "Parent Mobile",
-        }).map(([field, label]) => (
-          <div key={field}>
-            <label className="block text-sm font-medium text-gray-600 mb-1">
-              {label}
+          fullName: { label: "Full Name", icon: null },
+          parentName: { label: "Parent/Guardian Name", icon: null },
+          enrollmentNo: {
+            label: "Enrollment Number",
+            icon: <Fingerprint size={14} />,
+          },
+          branch: { label: "Academic Branch", icon: null },
+          birthDate: { label: "Date of Birth", icon: null },
+          category: { label: "Category", icon: null },
+          mobile: { label: "Student Mobile", icon: <Phone size={14} /> },
+          alternateMobile: { label: "Alternate Mobile", icon: null },
+          parentMobile: { label: "Parent Mobile", icon: null },
+        }).map(([field, info]) => (
+          <div key={field} className="space-y-1.5">
+            <label className="text-[11px] font-black text-slate-500 uppercase tracking-widest ml-1 flex items-center gap-1.5">
+              {info.icon} {info.label}
             </label>
+
             {field === "branch" ? (
               <select
                 value={personalFormData[field]}
                 onChange={(e) => handleChange(field, e.target.value)}
                 disabled={isStudent}
-                className="w-full rounded-lg border-gray-300 text-sm px-3 py-2 border bg-white/10 focus:border-blue-500 focus:ring focus:ring-blue-100 disabled:bg-gray-100"
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-semibold text-slate-900 outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all disabled:opacity-70 disabled:bg-slate-100"
               >
                 <option value="">Select Branch</option>
                 <option value="Computer Engineering">
@@ -168,64 +166,61 @@ const PersonalDetailsForm = () => {
                 </option>
               </select>
             ) : field === "category" ? (
-                <select
+              <select
                 value={personalFormData[field]}
                 onChange={(e) => handleChange(field, e.target.value)}
                 disabled={isStudent}
-                className="w-full rounded-lg border-gray-300 border text-sm px-3 py-2 bg-white/10 focus:border-blue-500 focus:ring focus:ring-blue-100 disabled:bg-gray-100"
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-semibold text-slate-900 outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all disabled:opacity-70 disabled:bg-slate-100"
               >
                 <option value="">Select Category</option>
-                <option value="General">General</option>
-                <option value="OBC">OBC</option>
-                <option value="SC">SC</option>
-                <option value="ST">ST</option>
-                <option value="EWS">EWS</option>
-                <option value="Other">Other</option>
+                {["General", "OBC", "SC", "ST", "EWS", "Other"].map((cat) => (
+                  <option key={cat} value={cat}>
+                    {cat}
+                  </option>
+                ))}
               </select>
-            ) : field === "birthDate" ? (
+            ) : (
               <input
-                type="date"
+                type={field === "birthDate" ? "date" : "text"}
                 value={personalFormData[field]}
                 onChange={(e) => handleChange(field, e.target.value)}
-                disabled={isStudent}
-                className="w-full rounded-lg border-gray-300 border text-sm px-3 py-2 bg-white/10 focus:border-blue-500 focus:ring focus:ring-blue-100 disabled:bg-gray-100"
-              />
-            ) : field === "enrollmentNo" ? ( // added condition to disable enrollmentNo input
-                <input
-                type="text"
-                value={personalFormData[field]}
-                disabled={true}
-                className="w-full rounded-lg border-gray-300 border text-sm px-3 py-2 bg-white/10 cursor-not-allowed opacity-80"
-                />
-            )
-             :(
-              <input
-                type="text"
-                value={personalFormData[field]}
-                onChange={(e) => handleChange(field, e.target.value)}
-                disabled={isStudent}
-                className="w-full rounded-lg border-gray-300 border text-sm px-3 py-2 bg-white/10 focus:border-blue-500 focus:ring focus:ring-blue-100 disabled:bg-gray-100"
+                disabled={isStudent || field === "enrollmentNo"}
+                placeholder={`Enter ${info.label.toLowerCase()}`}
+                className={`w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-semibold text-slate-900 outline-none transition-all
+                  ${
+                    isStudent || field === "enrollmentNo"
+                      ? "cursor-not-allowed bg-slate-100 opacity-70"
+                      : "focus:border-primary focus:ring-4 focus:ring-primary/10"
+                  }`}
               />
             )}
           </div>
         ))}
-      </div>
 
-      <div className="flex justify-end pt-4">
-        <button
-          onClick={handleSubmitPersonal}
-          disabled={saving || isStudent}
-          className={`px-5 py-2 rounded-lg text-white text-sm font-medium shadow-md transition 
-          ${
-            isStudent
-              ? "bg-gray-400 cursor-not-allowed"
-              : "bg-primary hover:bg-primary-dull cursor-pointer"
-          }`}
-        >
-          {saving ? "Saving..." : "Save Details"}
-        </button>
-      </div>
-    </div>
+        <div className="md:col-span-2 pt-6 border-t border-slate-50 flex flex-col md:flex-row items-center justify-between gap-4">
+          <p className="text-xs text-slate-400 font-medium italic">
+            * Ensure all details match your official college records.
+          </p>
+          <button
+            onClick={handleSubmitPersonal}
+            disabled={saving || isStudent}
+            className={`flex items-center gap-2 px-8 py-3.5 rounded-2xl font-bold text-sm transition-all shadow-lg
+              ${
+                isStudent
+                  ? "bg-slate-100 text-slate-400 cursor-not-allowed shadow-none"
+                  : "bg-primary text-white hover:bg-primary-dull hover:shadow-primary/20 active:scale-95 cursor-pointer"
+              }`}
+          >
+            {saving ? (
+              <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+            ) : (
+              <>
+                <Save size={18} /> Save Details
+              </>
+            )}
+          </button>
+        </div>
+      </form>
     </div>
   );
 };

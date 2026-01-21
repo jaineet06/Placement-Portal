@@ -2,7 +2,6 @@ import { useState } from "react";
 import { useAdminContext } from "../context/AdminContext";
 import toast from "react-hot-toast";
 import Title from "../components/Title";
-import Spinner from "../components/Spinner";
 import { Trash2 as DeleteIcon } from "lucide-react";
 
 const CreateJob = () => {
@@ -15,6 +14,9 @@ const CreateJob = () => {
   const [location, setLocation] = useState("");
   const [lastDate, setLastDate] = useState("");
   const [loading, setLoading] = useState(false);
+  const [jobType, setJobType] = useState(""); // Missing Field 1
+  const [rounds, setRounds] = useState([]); // Missing Field 2
+  const [addRound, setAddRound] = useState("");
 
   const handleRoleAdd = () => {
     if (!addRole.trim()) return;
@@ -22,19 +24,25 @@ const CreateJob = () => {
     setAddRole("");
   };
 
-  const handleRoleRemove = (role) => {
-    setRoles((prev) => prev.filter((r) => r !== role));
+  const handleRoundAdd = () => {
+    if (!addRound.trim()) return;
+    setRounds((prev) => [...prev, addRound.trim()]);
+    setAddRound("");
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!name || !title || !description || !lastDate) {
+    if (!name || !title || !description || !lastDate || !jobType) {
       toast.error("All fields are required!");
       return;
     }
     if (roles.length === 0) {
       toast.error("Please add at least one role!");
+      return;
+    }
+    if (rounds.length === 0) {
+      toast.error("Please add at least one round!");
       return;
     }
 
@@ -47,6 +55,8 @@ const CreateJob = () => {
         description,
         location,
         lastDate,
+        jobType,
+        rounds,
         roles,
       });
 
@@ -57,7 +67,9 @@ const CreateJob = () => {
         setDescription("");
         setLocation("");
         setLastDate("");
+        setJobType("");
         setRoles([]);
+        setRounds([]);
       } else {
         toast.error(data.message || "Failed to create job");
       }
@@ -107,18 +119,22 @@ const CreateJob = () => {
           />
         </div>
 
-        {/* Location */}
+        {/* Job Type Dropdown */}
         <div>
           <label className="block text-sm font-medium text-gray-700">
-            Location
+            Job Type
           </label>
-          <input
-            type="text"
-            value={location}
-            onChange={(e) => setLocation(e.target.value)}
-            className="mt-1 block w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
-            placeholder="Location (Optional)"
-          />
+          <select
+            value={jobType}
+            onChange={(e) => setJobType(e.target.value)}
+            className="mt-1 block w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary bg-white"
+            required
+          >
+            <option value="">Select Type</option>
+            <option value="Full Time">Full Time</option>
+            <option value="Internship">Internship</option>
+            <option value="Internship + FTE">Internship + FTE</option>
+          </select>
         </div>
 
         {/* Last Date */}
@@ -135,7 +151,21 @@ const CreateJob = () => {
           />
         </div>
 
-        {/* Description (full width) */}
+        {/* Location */}
+        <div className="md:col-span-2">
+          <label className="block text-sm font-medium text-gray-700">
+            Location
+          </label>
+          <input
+            type="text"
+            value={location}
+            onChange={(e) => setLocation(e.target.value)}
+            className="mt-1 block w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+            placeholder="Location (Optional)"
+          />
+        </div>
+
+        {/* Description */}
         <div className="md:col-span-2">
           <label className="block text-sm font-medium text-gray-700">
             Job Description
@@ -171,8 +201,6 @@ const CreateJob = () => {
               Add Role
             </button>
           </div>
-
-          {/* Display Roles*/}
           {roles.length > 0 && (
             <div className="mt-3 flex flex-wrap gap-2">
               {roles.map((role, idx) => (
@@ -182,7 +210,7 @@ const CreateJob = () => {
                 >
                   <span>{role}</span>
                   <DeleteIcon
-                    onClick={() => handleRoleRemove(role)}
+                    onClick={() => setRoles(roles.filter((r) => r !== role))}
                     width={15}
                     className="cursor-pointer text-red-500 hover:text-red-700"
                   />
@@ -192,7 +220,47 @@ const CreateJob = () => {
           )}
         </div>
 
-        {/* Submit Button (full width) */}
+        {/* Rounds input (Missing Field 2 UI) */}
+        <div className="md:col-span-2">
+          <label className="block text-sm font-medium text-gray-700">
+            Interview Rounds
+          </label>
+          <div className="mt-1 flex gap-3">
+            <input
+              type="text"
+              value={addRound}
+              onChange={(e) => setAddRound(e.target.value)}
+              className="flex-1 px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+              placeholder="e.g. Online Assessment, Technical Interview"
+            />
+            <button
+              type="button"
+              onClick={handleRoundAdd}
+              className="bg-primary/80 text-white px-4 py-2 rounded-md hover:bg-primary cursor-pointer"
+            >
+              Add Round
+            </button>
+          </div>
+          {rounds.length > 0 && (
+            <div className="mt-3 flex flex-wrap gap-2">
+              {rounds.map((round, idx) => (
+                <div
+                  key={idx}
+                  className="flex items-center gap-2 bg-blue-50 text-blue-600 border border-blue-100 px-4 py-2 rounded-full text-sm"
+                >
+                  <span>{round}</span>
+                  <DeleteIcon
+                    onClick={() => setRounds(rounds.filter((r) => r !== round))}
+                    width={15}
+                    className="cursor-pointer text-red-500 hover:text-red-700"
+                  />
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Submit Button */}
         <div className="md:col-span-2 flex justify-start">
           <button
             type="submit"
@@ -201,14 +269,7 @@ const CreateJob = () => {
             }`}
             disabled={loading}
           >
-            {loading ? (
-              <>
-                <div className="animate-spin rounded-full h-5 w-5 border-2 border-white/50 border-t-white" />
-                <span>Creating...</span>
-              </>
-            ) : (
-              "Create Job"
-            )}
+            {loading ? "Creating..." : "Create Job"}
           </button>
         </div>
       </form>
