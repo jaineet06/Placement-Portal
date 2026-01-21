@@ -166,9 +166,9 @@ const getJobById = async (req, res) => {
 //create job :
 const createJob = async (req, res) => {
   try {
-    const { name, roles, title, description, lastDate, location } = req.body;
+    const { name, roles, title, description, lastDate, location, jobType, rounds } = req.body;
 
-    if (!name || !title || !description || !lastDate) {
+    if (!name || !title || !description || !lastDate || !jobType) {
       return res.json({
         success: false,
         message: "All fields are required",
@@ -179,6 +179,13 @@ const createJob = async (req, res) => {
       return res.json({
         success: false,
         message: "At least one role is required",
+      });
+    }
+
+    if (!rounds || !Array.isArray(rounds) || rounds.length === 0) {
+      return res.json({
+        success: false,
+        message: "At least one round is required",
       });
     }
 
@@ -193,6 +200,8 @@ const createJob = async (req, res) => {
       description,
       lastDate,
       location,
+      jobType,
+      rounds,
       roles: roleObject,
     });
 
@@ -310,6 +319,45 @@ const exportAppliedStudentToCSV = async (req, res) => {
 
 }
 
+//Change status of student application
+
+const changeApplicationStatus = async (req, res) => {
+
+  const { status, jobId, id } = req.body
+  try {
+
+    console.log(id);
+    console.log(jobId);
+
+    const updatedStudent = await Student.findOneAndUpdate(
+      {
+        user: id,
+        "appliedJobs.job": jobId
+      },
+      {
+        $set: { "appliedJobs.$.status": status }
+      },
+      { new: true }
+    );
+
+    if (!updatedStudent) {
+      return res.json({
+        success: false,
+        message: "Student or Job application not found."
+      });
+    }
+
+    return res.json({
+      success: true,
+      message: "Status updated successfully"
+    });
+
+  } catch (error) {
+    console.error(error);
+    return res.json({ success: false, message: "Server Error" });
+  }
+}
+
 export {
   getStudentByEnrollment,
   getAddressByEnrollment,
@@ -320,5 +368,6 @@ export {
   createJob,
   deleteJob,
   changeStatus,
-  exportAppliedStudentToCSV
+  exportAppliedStudentToCSV,
+  changeApplicationStatus
 };

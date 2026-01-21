@@ -2,14 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useAppContext } from "../context/AppContext";
 import toast from "react-hot-toast";
 import Spinner from "../components/Spinner";
-import {
-  Briefcase,
-  Building2,
-  MapPin,
-  Calendar,
-  Clock,
-  ChevronRight,
-} from "lucide-react";
+import { Briefcase, Building2, MapPin, Calendar, Clock } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 const AppliedJobs = () => {
@@ -95,7 +88,7 @@ const AppliedJobs = () => {
                   <th className="px-8 py-5 text-xs font-black uppercase tracking-widest">
                     Date Applied
                   </th>
-                  <th className="px-8 py-5 text-xs font-black uppercase tracking-widest text-right">
+                  <th className="px-8 py-5 text-xs font-black uppercase tracking-widest text-center">
                     Action
                   </th>
                 </tr>
@@ -157,14 +150,17 @@ const AppliedJobs = () => {
                       </div>
                     </td>
 
-                    {/* <td className="px-8 py-6 text-right">
-                      <button
-                        onClick={() => navigate(`/company/${job._id}`)}
-                        className="p-2 hover:bg-white hover:shadow-md rounded-full text-slate-400 hover:text-primary transition-all active:scale-90 border border-transparent hover:border-slate-100"
-                      >
-                        <ChevronRight size={20} />
-                      </button>
-                    </td> */}
+                    <td
+                      className={`px-8 py-6 text-center text-sm font-semibold ${
+                        job.status === "Selected"
+                          ? " text-green-700"
+                          : job.status === "Rejected"
+                          ? " text-red-700 "
+                          : " text-blue-700 "
+                      }`}
+                    >
+                      {job.status}
+                    </td>
                   </tr>
                 ))}
               </tbody>

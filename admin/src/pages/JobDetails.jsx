@@ -9,11 +9,11 @@ const JobDetails = () => {
   const { jobId } = useParams();
   const navigate = useNavigate();
   const { axios } = useAdminContext();
+
   const [job, setJob] = useState(null);
   const [loading, setLoading] = useState(false);
-
   const [appliedStudents, setAppliedStudents] = useState([]);
-  const [role, setRole] = useState(null);
+  const [role, setRole] = useState("");
 
   const fetchJobDetails = async () => {
     setLoading(true);
@@ -21,62 +21,92 @@ const JobDetails = () => {
       const { data } = await axios.get(`/api/admin/get/${jobId}`);
       if (data.success) {
         setJob(data.job);
-        setRole(data.job.roles[0].name);
-      } else toast.error(data.message || "Job not found");
+        if (data.job.roles && data.job.roles.length > 0) {
+          setRole(data.job.roles[0].name);
+        }
+      } else {
+        toast.error(data.message || "Job not found");
+      }
     } catch (error) {
-      console.log(error);
+      console.error(error);
       toast.error("Failed to fetch job details");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleRoleChange = (role) => {
-    const selectedRole = job.roles.find((r) => r.name === role);
-    if (!selectedRole) {
-      return toast.error("No role found in job");
-    }
-    setAppliedStudents(selectedRole.applicants || []);
-    console.log(selectedRole.applicants);
-  };
-
-  const handleDeleteJob = async () => {
-    if (!window.confirm("Are you sure you want to delete this job?")) return;
+  const handleStatusUpdate = async (studentUserId, newStatus) => {
     try {
-      const { data } = await axios.delete(`/api/admin/delete-job/${jobId}`);
+      const { data } = await axios.post(`/api/admin/job/change-status`, {
+        id: studentUserId,
+        jobId,
+        status: newStatus,
+      });
+
       if (data.success) {
-        toast.success("Job deleted successfully!");
-        navigate("/jobs");
-      } else {
-        toast.error(data.message);
+        toast.success("Status updated successfully");
+        setAppliedStudents((prev) =>
+          prev.map((item) =>
+            item.student.user._id === studentUserId
+              ? { ...item, currentStatus: newStatus }
+              : item
+          )
+        );
       }
     } catch (error) {
-      console.log(error);
-      toast.error("Failed to delete job");
+      toast.error("Failed to update status");
+    }
+  };
+
+  const handleRoleChange = (selectedRoleName) => {
+    if (!job) return;
+    const selectedRole = job.roles.find((r) => r.name === selectedRoleName);
+    if (selectedRole) {
+      const processedApplicants = selectedRole.applicants.map((app) => {
+        const matchingJob = app.student.appliedJobs.find(
+          (aj) => aj.job === jobId
+        );
+        return {
+          ...app,
+          currentStatus: matchingJob ? matchingJob.status : "In Consideration",
+        };
+      });
+      setAppliedStudents(processedApplicants);
     }
   };
 
   const handleExportCSV = async () => {
     if (!role) return toast.error("Please select a role");
-
     try {
       const { data } = await axios.get(`/api/admin/export/${jobId}`, {
         responseType: "blob",
       });
-
       const url = window.URL.createObjectURL(new Blob([data]));
       const link = document.createElement("a");
       link.href = url;
-      link.setAttribute("download", `${job.companyName}-applicants.csv`);
-
+      link.setAttribute(
+        "download",
+        `${job.companyName}-${role}-applicants.csv`
+      );
       document.body.appendChild(link);
       link.click();
       link.remove();
-
       toast.success("CSV downloaded successfully!");
     } catch (error) {
-      console.error(error);
       toast.error("Failed to export CSV");
+    }
+  };
+
+  const handleDeleteJob = async () => {
+    if (!window.confirm("Are you sure?")) return;
+    try {
+      const { data } = await axios.delete(`/api/admin/delete-job/${jobId}`);
+      if (data.success) {
+        toast.success("Job deleted");
+        navigate("/jobs");
+      }
+    } catch (error) {
+      toast.error("Delete failed");
     }
   };
 
@@ -85,114 +115,75 @@ const JobDetails = () => {
   }, [jobId]);
 
   useEffect(() => {
-    if (!role) return;
-    handleRoleChange(role);
-  }, [role]);
+    if (role) handleRoleChange(role);
+  }, [role, job]);
 
-  if (loading) {
+  if (loading)
     return (
-      <div className="flex flex-col justify-center items-center h-full">
+      <div className="flex justify-center h-screen items-center">
         <Spinner />
-        <p className="text-sm mt-2 font-normal">Loading job details...</p>
       </div>
     );
-  }
-
-  if (!job) {
-    return (
-      <div className="flex flex-col items-center justify-center h-full">
-        <p className="text-2xl font-medium">Job not found</p>
-        <button
-          className="mt-4 px-4 py-2 bg-primary text-white rounded-md cursor-pointer"
-          onClick={() => navigate("/jobs")}
-        >
-          Go Back
-        </button>
-      </div>
-    );
-  }
+  if (!job) return <div className="text-center mt-10">Job not found</div>;
 
   const isExpired = new Date(job.lastDate) < new Date();
 
   return (
-    <div className="flex flex-col w-full gap-4">
-      <div className="p-6 space-y-4 bg-white rounded-lg shadow-md w-full border border-gray-200">
+    <div className="flex flex-col w-full gap-6 p-4">
+      {/* Job Info Card */}
+      <div className="p-6 bg-white rounded-lg shadow-sm border border-gray-200">
         <Title text1="Job" text2="Details" />
-
-        <div className="space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
           <div>
-            <h2 className="text-lg font-medium">Company:</h2>
-            <p className="mt-1">{job.companyName}</p>
+            <p className="text-sm text-gray-500">Company</p>
+            <p className="font-medium text-lg">{job.companyName}</p>
           </div>
-
           <div>
-            <h2 className="text-lg font-medium">Title:</h2>
-            <p className="mt-1">{job.title}</p>
+            <p className="text-sm text-gray-500">Title</p>
+            <p className="font-medium text-lg">{job.title}</p>
           </div>
-
-          <div>
-            <h2 className="text-lg font-medium">Description:</h2>
-            <p className="mt-1 whitespace-pre-line">{job.description}</p>
-          </div>
-
-          <div>
-            <h2 className="text-lg font-medium">Location:</h2>
-            <p className="mt-1">{job.location || "Not specified"}</p>
-          </div>
-
-          <div>
-            <h2 className="text-lg font-medium">Last Date:</h2>
-            <p
-              className={`mt-1 font-medium ${isExpired ? "text-red-600" : ""}`}
-            >
-              {new Date(job.lastDate).toLocaleDateString()}
-              {isExpired && " (Expired)"}
+          <div className="md:col-span-2">
+            <p className="text-sm text-gray-500">Description</p>
+            <p className="text-gray-700 whitespace-pre-line">
+              {job.description}
             </p>
           </div>
-
           <div>
-            <h2 className="text-lg font-medium">Roles:</h2>
-            <div className="mt-2 flex flex-wrap gap-2">
-              {job.roles.length === 0 ? (
-                <span className="text-gray-500">No roles added</span>
-              ) : (
-                job.roles.map((role, idx) => (
-                  <span
-                    key={idx}
-                    className="px-3 rounded-full bg-primary/20 text-primary text-sm font-medium"
-                  >
-                    {role.name}
-                  </span>
-                ))
-              )}
-            </div>
+            <p className="text-sm text-gray-500">Location</p>
+            <p>{job.location}</p>
+          </div>
+          <div>
+            <p className="text-sm text-gray-500">Deadline</p>
+            <p className={isExpired ? "text-red-500 font-bold" : ""}>
+              {new Date(job.lastDate).toLocaleDateString()}{" "}
+              {isExpired && "(Expired)"}
+            </p>
           </div>
         </div>
-
-        {/* Delete Button */}
         <button
-          className="mt-6 px-4 py-2 bg-red-600 text-white rounded-md cursor-pointer"
           onClick={handleDeleteJob}
+          className="mt-6 px-4 py-2 bg-red-50 text-red-600 border border-red-200 rounded-md hover:bg-red-600 hover:text-white transition-all"
         >
           Delete Job
         </button>
       </div>
 
-      <div className="p-6 w-full bg-white rounded-lg shadow-md border border-gray-200">
-        {/* Header Row */}
-        <div className="flex justify-between items-center mb-6">
+      {/* Applicants Table */}
+      <div className="p-6 bg-white rounded-lg shadow-sm border border-gray-200">
+        <div className="flex justify-between items-center mb-4">
           <Title text1="Applied" text2="Students" />
-
-          <div className="inline-flex items-center gap-2">
-            <p>Select role :</p>
+          <div className="flex gap-4 items-center">
+            <button
+              onClick={handleExportCSV}
+              className="px-4 py-2 bg-primary text-white text-sm rounded-md hover:bg-primary/90 transition-all"
+            >
+              Export CSV
+            </button>
             <select
               value={role}
               onChange={(e) => setRole(e.target.value)}
-              className="px-3 py-1 border rounded-md bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary"
+              className="border p-2 rounded-md bg-gray-50 shadow-sm outline-none focus:ring-2 focus:ring-primary text-sm"
             >
-              <option value="" disabled>
-                Select a role
-              </option>
               {job.roles.map((r) => (
                 <option key={r.name} value={r.name}>
                   {r.name}
@@ -202,56 +193,72 @@ const JobDetails = () => {
           </div>
         </div>
 
-        {/* Table */}
-        <div className="max-w-full overflow-x-auto">
-          <table className="w-full border-collapse rounded-md overflow-hidden text-nowrap">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-primary text-left text-white">
-                <th className="p-2 font-medium pl-5">Enrollment No.</th>
-                <th className="p-2 font-medium">Name</th>
-                <th className="p-2 font-medium">Branch</th>
-                <th className="p-2 font-medium">Accepted Terms</th>
-                <th className="p-2 font-medium">Applied At</th>
+              <tr className="bg-primary text-white">
+                <th className="p-3 pl-5">Enrollment No.</th>
+                <th className="p-3">Name</th>
+                <th className="p-3">Branch</th>
+                <th className="p-3">Applied Date</th>
+                <th className="p-3">Status</th>
               </tr>
             </thead>
-
             <tbody>
               {appliedStudents.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="p-4 text-center text-gray-500">
-                    No students applied for this role.
+                  <td colSpan={5} className="p-10 text-center text-gray-400">
+                    No applicants found.
                   </td>
                 </tr>
               ) : (
                 appliedStudents.map((item, index) => (
                   <tr
                     key={index}
-                    className="border-b border-primary/10 bg-primary/5 even:bg-primary/10 hover:bg-primary-dull/20 cursor-pointer"
+                    className="border-b hover:bg-gray-50 cursor-pointer"
                     onClick={() =>
                       navigate(`/students/${item.student.user.enrollNumber}`)
                     }
                   >
-                    <td className="p-2 pl-5">
+                    <td className="p-3 pl-5 font-medium">
                       {item.student.user.enrollNumber}
                     </td>
-                    <td className="p-2">{item.student.fullName}</td>
-                    <td className="p-2">{item.student.branch}</td>
-
-                    <td className="p-2">{item.acceptedTerms ? "Yes" : "No"}</td>
-                    <td className="p-2">
-                      {new Date(item.appliedAt).toLocaleString()}
+                    <td className="p-3">{item.student.fullName}</td>
+                    <td className="p-3 text-sm text-gray-600">
+                      {item.student.branch}
+                    </td>
+                    <td className="p-3 text-sm">
+                      {new Date(item.appliedAt).toLocaleDateString()}
+                    </td>
+                    <td className="p-3" onClick={(e) => e.stopPropagation()}>
+                      <select
+                        value={item.currentStatus}
+                        onChange={(e) =>
+                          handleStatusUpdate(
+                            item.student.user._id,
+                            e.target.value
+                          )
+                        }
+                        className={`text-xs font-bold px-2 py-1 rounded-full border cursor-pointer outline-none ${
+                          item.currentStatus === "Selected"
+                            ? "bg-green-100 text-green-700 border-green-300"
+                            : item.currentStatus === "Rejected"
+                            ? "bg-red-100 text-red-700 border-red-300"
+                            : "bg-blue-100 text-blue-700 border-blue-300"
+                        }`}
+                      >
+                        <option value="In Consideration">
+                          In Consideration
+                        </option>
+                        <option value="Selected">Selected</option>
+                        <option value="Rejected">Rejected</option>
+                      </select>
                     </td>
                   </tr>
                 ))
               )}
             </tbody>
           </table>
-          <button
-            onClick={handleExportCSV}
-            className="mt-4 px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-dull"
-          >
-            Export CSV
-          </button>
         </div>
       </div>
     </div>
