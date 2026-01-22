@@ -1,8 +1,10 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useAdminContext } from "../context/AdminContext";
 import toast from "react-hot-toast";
 import Title from "../components/Title";
 import { Trash2 as DeleteIcon } from "lucide-react";
+import Quill from "quill";
+import "quill/dist/quill.snow.css";
 
 const CreateJob = () => {
   const { axios } = useAdminContext();
@@ -10,13 +12,24 @@ const CreateJob = () => {
   const [roles, setRoles] = useState([]);
   const [addRole, setAddRole] = useState("");
   const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
+  //const [description, setDescription] = useState("");
   const [location, setLocation] = useState("");
   const [lastDate, setLastDate] = useState("");
   const [loading, setLoading] = useState(false);
   const [jobType, setJobType] = useState(""); // Missing Field 1
   const [rounds, setRounds] = useState([]); // Missing Field 2
   const [addRound, setAddRound] = useState("");
+
+  const editorRef = useRef(null);
+  const quillRef = useRef(null);
+
+  useEffect(() => {
+    if (editorRef.current && !quillRef.current) {
+      quillRef.current = new Quill(editorRef.current, {
+        theme: "snow",
+      });
+    }
+  }, []);
 
   const handleRoleAdd = () => {
     if (!addRole.trim()) return;
@@ -32,6 +45,7 @@ const CreateJob = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const description = quillRef.current.root.innerHTML;
 
     if (!name || !title || !description || !lastDate || !jobType) {
       toast.error("All fields are required!");
@@ -64,7 +78,7 @@ const CreateJob = () => {
         toast.success("Job created successfully!");
         setName("");
         setTitle("");
-        setDescription("");
+        //setDescription("");
         setLocation("");
         setLastDate("");
         setJobType("");
@@ -170,18 +184,16 @@ const CreateJob = () => {
           <label className="block text-sm font-medium text-gray-700">
             Job Description
           </label>
-          <textarea
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            className="mt-1 block w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
-            placeholder="Job Description"
-            rows={4}
-            required
-          />
+
+          <div
+            ref={editorRef}
+            className="mt-1 block w-full px-3 py-2 border rounded-md bg-white "
+            style={{ minHeight: "50px" }}
+          ></div>
         </div>
 
         {/* Roles input */}
-        <div className="md:col-span-2">
+        <div className="md:col-span-2 mt-15">
           <label className="block text-sm font-medium text-gray-700">
             Roles
           </label>

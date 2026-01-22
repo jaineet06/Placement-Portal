@@ -3,6 +3,7 @@ import { useAppContext } from "../context/AppContext";
 import { useParams, useNavigate } from "react-router-dom";
 import Spinner from "../components/Spinner";
 import toast from "react-hot-toast";
+import DOMPurify from "dompurify";
 import {
   Building2,
   MapPin,
@@ -28,7 +29,7 @@ const JobDetails = () => {
     setSelectedRole((prev) =>
       prev.includes(name)
         ? prev.filter((item) => item !== name)
-        : [...prev, name]
+        : [...prev, name],
     );
   };
 
@@ -53,7 +54,7 @@ const JobDetails = () => {
     try {
       const { data } = await axios.post(
         `/api/student/job/apply/${user._id}/${id}`,
-        { roles: selectedRole, acceptedTerms }
+        { roles: selectedRole, acceptedTerms },
       );
 
       if (data.success) {
@@ -164,13 +165,12 @@ const JobDetails = () => {
           <div className="bg-white rounded-[2rem] border border-slate-100 p-8 shadow-sm">
             <div className="flex items-center gap-2 mb-6 text-slate-800">
               <Info className="text-primary" size={20} />
-              <h3 className="text-xl font-black uppercase tracking-tight">
-                Job Description
-              </h3>
+              <div className="rich-text"
+                dangerouslySetInnerHTML={{
+                  __html: DOMPurify.sanitize(job.description),
+                }}
+              ></div>
             </div>
-            <p className="text-slate-600 leading-relaxed whitespace-pre-line font-medium">
-              {job.description}
-            </p>
           </div>
 
           <div className="bg-white rounded-[2rem] border border-slate-100 p-8 shadow-sm">
