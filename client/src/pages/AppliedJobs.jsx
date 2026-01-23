@@ -4,9 +4,10 @@ import toast from "react-hot-toast";
 import Spinner from "../components/Spinner";
 import { Briefcase, Building2, MapPin, Calendar, Clock } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import PendingVerification from "../components/PendingVerification";
 
 const AppliedJobs = () => {
-  const { axios, user } = useAppContext();
+  const { axios, user, verified } = useAppContext();
   const [appliedJobs, setAppliedJobs] = useState([]);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -30,9 +31,11 @@ const AppliedJobs = () => {
   };
 
   useEffect(() => {
-    if (!user) return;
+    if (!verified) return;
     fetchJobs();
-  }, [user]);
+  }, [verified]);
+
+  if (!verified) return <PendingVerification />;
 
   if (loading)
     return (

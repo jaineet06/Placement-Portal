@@ -130,7 +130,7 @@ const JobDetails = () => {
 
   return (
     <div className="flex flex-col w-full gap-6 p-4">
-      {/* Job Info Card */}
+      
       <div className="p-6 bg-white rounded-lg shadow-sm border border-gray-200">
         <Title text1="Job" text2="Details" />
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
@@ -168,7 +168,7 @@ const JobDetails = () => {
         </button>
       </div>
 
-      {/* Applicants Table */}
+      
       <div className="p-6 bg-white rounded-lg shadow-sm border border-gray-200">
         <div className="flex justify-between items-center mb-4">
           <Title text1="Applied" text2="Students" />

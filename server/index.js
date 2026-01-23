@@ -9,7 +9,8 @@ import connectCloudinary from './configs/cloudinary.js'
 import addresRouter from './routes/address.route.js'
 import educationRouter from './routes/education.routes.js'
 import adminRouter from './routes/admin.routes.js'
-//import jobRouter from './routes/job.routes.js'
+import newsRouter from './routes/news.router.js'
+
 
 connectDB()
 connectCloudinary()
@@ -22,7 +23,7 @@ app.use(express.json())
 app.use(cookieParser())
 app.use(cors({ origin: allowedOrigins, credentials: true }))
 
-//Api endpoints
+
 app.get('/', (req, res) => {
     res.send("Api is working")
 })
@@ -32,6 +33,7 @@ app.use('/api/student', studentRouter)
 app.use('/api/address', addresRouter)
 app.use('/api/education', educationRouter)
 app.use('/api/admin', adminRouter)
+app.use('/api/news', newsRouter)
 
 app.listen(port, () => {
     console.log(`App is listening on http://localhost:${port}`)

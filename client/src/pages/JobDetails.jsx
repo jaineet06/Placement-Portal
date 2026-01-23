@@ -3,7 +3,6 @@ import { useAppContext } from "../context/AppContext";
 import { useParams, useNavigate } from "react-router-dom";
 import Spinner from "../components/Spinner";
 import toast from "react-hot-toast";
-import DOMPurify from "dompurify";
 import {
   Building2,
   MapPin,
@@ -13,10 +12,12 @@ import {
   ArrowLeft,
   Info,
   ShieldCheck,
+  Verified,
 } from "lucide-react";
+import PendingVerification from "../components/PendingVerification";
 
 const JobDetails = () => {
-  const { axios, user } = useAppContext();
+  const { axios, user, verified } = useAppContext();
   const { id } = useParams();
   const navigate = useNavigate();
   const [job, setJob] = useState(null);
@@ -29,7 +30,7 @@ const JobDetails = () => {
     setSelectedRole((prev) =>
       prev.includes(name)
         ? prev.filter((item) => item !== name)
-        : [...prev, name],
+        : [...prev, name]
     );
   };
 
@@ -54,7 +55,7 @@ const JobDetails = () => {
     try {
       const { data } = await axios.post(
         `/api/student/job/apply/${user._id}/${id}`,
-        { roles: selectedRole, acceptedTerms },
+        { roles: selectedRole, acceptedTerms }
       );
 
       if (data.success) {
@@ -72,12 +73,14 @@ const JobDetails = () => {
   };
 
   useEffect(() => {
-    fetchJob();
+    if (verified) fetchJob();
   }, []);
+
+  if (!verified) return <PendingVerification />;
 
   if (loading || !job) {
     return (
-      <div className="flex flex-col justify-center items-center h-[70vh]">
+      <div className="flex flex-col justify-center items-center h-[90vh]">
         <Spinner />
         <p className="text-slate-500 text-sm mt-4 font-medium animate-pulse">
           Loading job specifications...
@@ -140,7 +143,7 @@ const JobDetails = () => {
           {
             icon: <Briefcase />,
             label: "Job Type",
-            value: "Full-Time / Campus",
+            value: job.jobType,
           },
         ].map((item, i) => (
           <div
@@ -165,11 +168,57 @@ const JobDetails = () => {
           <div className="bg-white rounded-[2rem] border border-slate-100 p-8 shadow-sm">
             <div className="flex items-center gap-2 mb-6 text-slate-800">
               <Info className="text-primary" size={20} />
-              <div className="rich-text"
-                dangerouslySetInnerHTML={{
-                  __html: DOMPurify.sanitize(job.description),
-                }}
-              ></div>
+              <h3 className="text-xl font-black uppercase tracking-tight">
+                Job <span className="text-primary italic">Description</span>
+              </h3>
+            </div>
+            <div
+              className="rich-text"
+              dangerouslySetInnerHTML={{
+                __html: job.description,
+              }}
+            ></div>
+          </div>
+
+          <div className="bg-white rounded-[2rem] border border-slate-100 p-8 shadow-sm">
+            <div className="flex items-center gap-2 mb-6 text-slate-800">
+              <div className="p-2 bg-primary/10 rounded-lg text-primary">
+                <ShieldCheck size={20} />
+              </div>
+              <h3 className="text-xl font-black uppercase tracking-tight">
+                Recruitment <span className="text-primary italic">Path</span>
+              </h3>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {job.rounds && job.rounds.length > 0 ? (
+                job.rounds.map((roundName, index) => (
+                  <div
+                    key={index}
+                    className="flex items-center gap-4 p-5 bg-slate-50 border border-slate-100 rounded-2xl group hover:border-primary/30 hover:bg-white hover:shadow-md transition-all duration-300"
+                  >
+                    
+                    <div className="w-10 h-10 shrink-0 bg-white rounded-xl flex items-center justify-center font-black text-primary border border-slate-100 shadow-sm group-hover:bg-primary group-hover:text-white transition-all">
+                      {index + 1}
+                    </div>
+
+                    <div>
+                      <p className="text-sm font-black text-slate-400 uppercase tracking-widest text-[10px]">
+                        Round {index + 1}
+                      </p>
+                      <p className="text-lg font-bold text-slate-800 leading-tight">
+                        {roundName}
+                      </p>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="col-span-full py-6 text-center bg-slate-50 rounded-2xl border border-dashed border-slate-200">
+                  <p className="text-slate-400 font-medium italic">
+                    Standard recruitment process applies.
+                  </p>
+                </div>
+              )}
             </div>
           </div>
 

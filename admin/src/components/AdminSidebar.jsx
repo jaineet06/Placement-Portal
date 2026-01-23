@@ -6,6 +6,7 @@ import {
   ListChecks,
   Briefcase,
   FilePlus,
+  Newspaper,
 } from "lucide-react";
 
 const links = [
@@ -17,6 +18,7 @@ const links = [
   },
   { name: "Create Job", path: "/create-job", icon: <FilePlus size={20} /> },
   { name: "Job Listings", path: "/jobs", icon: <Briefcase size={20} /> },
+  { name: "News", path: "/news", icon: <Newspaper size={20} /> },
 ];
 
 const AdminSidebar = ({ expanded, setExpanded }) => {

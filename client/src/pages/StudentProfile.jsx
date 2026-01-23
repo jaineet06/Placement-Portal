@@ -13,14 +13,11 @@ import {
   ShieldAlert,
   Lock,
 } from "lucide-react";
+import PendingVerification from "../components/PendingVerification";
 
 const StudentProfile = () => {
   const [activeTab, setActiveTab] = useState("personal");
-  const { getStudentVerification, verified, isLoggedIn } = useAppContext();
-
-  useEffect(() => {
-    getStudentVerification();
-  }, []);
+  const { verified, isLoggedIn } = useAppContext();
 
   if (verified === null) {
     return (
@@ -50,20 +47,7 @@ const StudentProfile = () => {
   }
 
   if (!verified) {
-    return (
-      <div className="flex flex-col items-center justify-center h-[70vh] space-y-4 px-6 text-center">
-        <div className="p-4 bg-red-50 rounded-full text-red-600 animate-bounce">
-          <ShieldAlert size={40} />
-        </div>
-        <h1 className="text-2xl font-black text-slate-800 tracking-tight">
-          Verification Pending
-        </h1>
-        <p className="text-slate-500 font-medium max-w-md">
-          Your account is not yet verified by the Placement Cell. Please contact
-          the department admin for approval.
-        </p>
-      </div>
-    );
+    return <PendingVerification />;
   }
 
   const tabs = [
@@ -75,7 +59,7 @@ const StudentProfile = () => {
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8 space-y-8">
-      {/* Page Title */}
+      
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-slate-100 pb-6">
         <div>
           <h1 className="text-3xl font-black text-slate-900 tracking-tight">
@@ -93,10 +77,9 @@ const StudentProfile = () => {
       </div>
 
       <div className="flex flex-col lg:flex-row gap-8 items-start">
-        {/* Navigation Sidebar */}
-        {/* Navigation Sidebar - Scrollbar Hidden */}
+       
         <aside className="w-full lg:w-64 flex lg:flex-col gap-2 overflow-x-auto lg:overflow-visible pb-2 lg:pb-0 no-scrollbar">
-          {/* CSS Injection to hide scrollbars for this specific container */}
+          
           <style>{`
     .no-scrollbar::-webkit-scrollbar { display: none; }
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
@@ -123,7 +106,7 @@ const StudentProfile = () => {
           ))}
         </aside>
 
-        {/* Form Container */}
+        
         <main className="flex-1 bg-white rounded-[2.5rem] border border-slate-100 shadow-sm p-6 md:p-10 min-h-[500px]">
           <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
             {activeTab === "personal" && <PersonalDetailsForm />}

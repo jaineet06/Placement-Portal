@@ -1,23 +1,45 @@
 import { useState, useRef, useEffect } from "react";
 import { useAdminContext } from "../context/AdminContext";
 import toast from "react-hot-toast";
-import Title from "../components/Title";
-import { Trash2 as DeleteIcon } from "lucide-react";
+
+import {
+  Trash2 as DeleteIcon,
+  Plus,
+  UserCircle,
+  Mail,
+  Phone,
+  MapPin,
+  Briefcase,
+  PlusCircle,
+  Info,
+  Layers,
+  RotateCcw,
+} from "lucide-react";
 import Quill from "quill";
 import "quill/dist/quill.snow.css";
 
 const CreateJob = () => {
   const { axios } = useAdminContext();
+  const [loading, setLoading] = useState(false);
+
+ 
   const [name, setName] = useState("");
-  const [roles, setRoles] = useState([]);
-  const [addRole, setAddRole] = useState("");
   const [title, setTitle] = useState("");
-  //const [description, setDescription] = useState("");
   const [location, setLocation] = useState("");
   const [lastDate, setLastDate] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [jobType, setJobType] = useState(""); // Missing Field 1
-  const [rounds, setRounds] = useState([]); // Missing Field 2
+  const [jobType, setJobType] = useState("");
+
+
+  const [recruiter, setRecruiter] = useState({
+    hrName: "",
+    email: "",
+    contact: "",
+  });
+
+
+  const [roles, setRoles] = useState([]);
+  const [addRole, setAddRole] = useState("");
+  const [rounds, setRounds] = useState([]);
   const [addRound, setAddRound] = useState("");
 
   const editorRef = useRef(null);
@@ -25,21 +47,19 @@ const CreateJob = () => {
 
   useEffect(() => {
     if (editorRef.current && !quillRef.current) {
-      quillRef.current = new Quill(editorRef.current, {
-        theme: "snow",
-      });
+      quillRef.current = new Quill(editorRef.current, { theme: "snow" });
     }
   }, []);
 
   const handleRoleAdd = () => {
-    if (!addRole.trim()) return;
-    setRoles((prev) => [...prev, addRole.trim()]);
+    if (!addRole.trim() || roles.includes(addRole.trim())) return;
+    setRoles([...roles, addRole.trim()]);
     setAddRole("");
   };
 
   const handleRoundAdd = () => {
-    if (!addRound.trim()) return;
-    setRounds((prev) => [...prev, addRound.trim()]);
+    if (!addRound.trim() || rounds.includes(addRound.trim())) return;
+    setRounds([...rounds, addRound.trim()]);
     setAddRound("");
   };
 
@@ -47,21 +67,26 @@ const CreateJob = () => {
     e.preventDefault();
     const description = quillRef.current.root.innerHTML;
 
-    if (!name || !title || !description || !lastDate || !jobType) {
-      toast.error("All fields are required!");
-      return;
+    
+    if (
+      !name ||
+      !title ||
+      !description ||
+      !lastDate ||
+      !jobType ||
+      !recruiter.hrName ||
+      !recruiter.email ||
+      !recruiter.contact
+    ) {
+      return toast.error(
+        "Please fill all required fields including Recruiter details!"
+      );
     }
-    if (roles.length === 0) {
-      toast.error("Please add at least one role!");
-      return;
-    }
-    if (rounds.length === 0) {
-      toast.error("Please add at least one round!");
-      return;
+    if (roles.length === 0 || rounds.length === 0) {
+      return toast.error("Please add at least one Role and one Round!");
     }
 
     setLoading(true);
-
     try {
       const { data } = await axios.post("/api/admin/create", {
         name,
@@ -72,216 +97,292 @@ const CreateJob = () => {
         jobType,
         rounds,
         roles,
+        recruiter,
       });
 
       if (data.success) {
         toast.success("Job created successfully!");
+        
         setName("");
         setTitle("");
-        //setDescription("");
         setLocation("");
         setLastDate("");
         setJobType("");
+        setRecruiter({ hrName: "", email: "", contact: "" });
         setRoles([]);
         setRounds([]);
-      } else {
-        toast.error(data.message || "Failed to create job");
+        quillRef.current.root.innerHTML = "";
       }
     } catch (error) {
-      console.error("Error creating job:", error);
-      toast.error("Server error while creating job");
+      toast.error(error.response?.data?.message || "Server error");
     } finally {
       setLoading(false);
     }
   };
 
+  const inputStyles =
+    "mt-1 block w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all font-medium";
+  const labelStyles = "block text-sm font-bold text-slate-700 ml-1";
+
   return (
-    <div className="p-6 bg-white rounded-lg shadow-md w-full border border-gray-200">
-      <Title text1="Create" text2="Job" />
-
-      <form
-        className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6"
-        onSubmit={handleSubmit}
-      >
-        {/* Company Name */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700">
-            Company Name
-          </label>
-          <input
-            type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            className="mt-1 block w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
-            placeholder="Company name"
-            required
-          />
+    <div className="p-8 space-y-8 max-w-6xl mx-auto">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <div className="p-3 bg-primary/10 rounded-2xl text-primary">
+            <PlusCircle size={28} />
+          </div>
+          <div>
+            <h2 className="text-3xl font-black text-slate-900 tracking-tight">
+              Create <span className="text-primary italic">Opening</span>
+            </h2>
+            <p className="text-slate-500 font-medium">
+              Post new career opportunities for students
+            </p>
+          </div>
         </div>
+      </div>
 
-        {/* Job Title */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700">
-            Job Title
-          </label>
-          <input
-            type="text"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            className="mt-1 block w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
-            placeholder="Job Title"
-            required
-          />
-        </div>
+      <form onSubmit={handleSubmit} className="space-y-8">
+        
+        <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="md:col-span-2">
+            <h3 className="text-lg font-black text-slate-800 mb-4 flex items-center gap-2">
+              <Briefcase size={20} className="text-primary" /> Basic Information
+            </h3>
+          </div>
 
-        {/* Job Type Dropdown */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700">
-            Job Type
-          </label>
-          <select
-            value={jobType}
-            onChange={(e) => setJobType(e.target.value)}
-            className="mt-1 block w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary bg-white"
-            required
-          >
-            <option value="">Select Type</option>
-            <option value="Full Time">Full Time</option>
-            <option value="Internship">Internship</option>
-            <option value="Internship + FTE">Internship + FTE</option>
-          </select>
-        </div>
-
-        {/* Last Date */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700">
-            Last Date
-          </label>
-          <input
-            type="date"
-            value={lastDate}
-            onChange={(e) => setLastDate(e.target.value)}
-            className="mt-1 block w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
-            required
-          />
-        </div>
-
-        {/* Location */}
-        <div className="md:col-span-2">
-          <label className="block text-sm font-medium text-gray-700">
-            Location
-          </label>
-          <input
-            type="text"
-            value={location}
-            onChange={(e) => setLocation(e.target.value)}
-            className="mt-1 block w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
-            placeholder="Location (Optional)"
-          />
-        </div>
-
-        {/* Description */}
-        <div className="md:col-span-2">
-          <label className="block text-sm font-medium text-gray-700">
-            Job Description
-          </label>
-
-          <div
-            ref={editorRef}
-            className="mt-1 block w-full px-3 py-2 border rounded-md bg-white "
-            style={{ minHeight: "50px" }}
-          ></div>
-        </div>
-
-        {/* Roles input */}
-        <div className="md:col-span-2 mt-15">
-          <label className="block text-sm font-medium text-gray-700">
-            Roles
-          </label>
-          <div className="mt-1 flex gap-3">
+          <div>
+            <label className={labelStyles}>Company Name</label>
             <input
               type="text"
-              value={addRole}
-              onChange={(e) => setAddRole(e.target.value)}
-              className="flex-1 px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
-              placeholder="Add new role"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className={inputStyles}
+              placeholder="e.g. Google"
+              required
             />
-            <button
-              type="button"
-              onClick={handleRoleAdd}
-              className="bg-primary/80 text-white px-4 py-2 rounded-md hover:bg-primary cursor-pointer"
-            >
-              Add Role
-            </button>
           </div>
-          {roles.length > 0 && (
-            <div className="mt-3 flex flex-wrap gap-2">
-              {roles.map((role, idx) => (
-                <div
-                  key={idx}
-                  className="flex items-center gap-2 bg-primary/10 text-primary px-4 py-2 rounded-full text-sm"
-                >
-                  <span>{role}</span>
-                  <DeleteIcon
-                    onClick={() => setRoles(roles.filter((r) => r !== role))}
-                    width={15}
-                    className="cursor-pointer text-red-500 hover:text-red-700"
-                  />
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
 
-        {/* Rounds input (Missing Field 2 UI) */}
-        <div className="md:col-span-2">
-          <label className="block text-sm font-medium text-gray-700">
-            Interview Rounds
-          </label>
-          <div className="mt-1 flex gap-3">
+          <div>
+            <label className={labelStyles}>Job Title</label>
             <input
               type="text"
-              value={addRound}
-              onChange={(e) => setAddRound(e.target.value)}
-              className="flex-1 px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
-              placeholder="e.g. Online Assessment, Technical Interview"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              className={inputStyles}
+              placeholder="e.g. Software Engineer"
+              required
             />
-            <button
-              type="button"
-              onClick={handleRoundAdd}
-              className="bg-primary/80 text-white px-4 py-2 rounded-md hover:bg-primary cursor-pointer"
-            >
-              Add Round
-            </button>
           </div>
-          {rounds.length > 0 && (
-            <div className="mt-3 flex flex-wrap gap-2">
-              {rounds.map((round, idx) => (
-                <div
-                  key={idx}
-                  className="flex items-center gap-2 bg-blue-50 text-blue-600 border border-blue-100 px-4 py-2 rounded-full text-sm"
-                >
-                  <span>{round}</span>
-                  <DeleteIcon
-                    onClick={() => setRounds(rounds.filter((r) => r !== round))}
-                    width={15}
-                    className="cursor-pointer text-red-500 hover:text-red-700"
-                  />
-                </div>
-              ))}
+
+          <div>
+            <label className={labelStyles}>Job Type</label>
+            <select
+              value={jobType}
+              onChange={(e) => setJobType(e.target.value)}
+              className={inputStyles}
+              required
+            >
+              <option value="">Select Type</option>
+              <option value="Full Time">Full Time</option>
+              <option value="Internship">Internship</option>
+              <option value="Internship + FTE">Internship + FTE</option>
+            </select>
+          </div>
+
+          <div>
+            <label className={labelStyles}>Application Deadline</label>
+            <input
+              type="date"
+              value={lastDate}
+              onChange={(e) => setLastDate(e.target.value)}
+              className={inputStyles}
+              required
+            />
+          </div>
+
+          <div className="md:col-span-2">
+            <label className={labelStyles}>Work Location</label>
+            <div className="relative">
+              <MapPin
+                size={18}
+                className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
+              />
+              <input
+                type="text"
+                value={location}
+                onChange={(e) => setLocation(e.target.value)}
+                className={`${inputStyles} pl-12`}
+                placeholder="e.g. Remote, Vadodara, Noida"
+              />
             </div>
-          )}
+          </div>
         </div>
 
-        {/* Submit Button */}
-        <div className="md:col-span-2 flex justify-start">
+        
+        <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="md:col-span-3">
+            <h3 className="text-lg font-black text-slate-800 mb-4 flex items-center gap-2">
+              <UserCircle size={20} className="text-primary" /> Recruiter
+              Details
+            </h3>
+          </div>
+
+          <div>
+            <label className={labelStyles}>HR Name</label>
+            <input
+              type="text"
+              value={recruiter.hrName}
+              onChange={(e) =>
+                setRecruiter({ ...recruiter, hrName: e.target.value })
+              }
+              className={inputStyles}
+              placeholder="Contact Person"
+              required
+            />
+          </div>
+
+          <div>
+            <label className={labelStyles}>HR Email</label>
+            <div className="relative">
+              <Mail
+                size={18}
+                className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
+              />
+              <input
+                type="email"
+                value={recruiter.email}
+                onChange={(e) =>
+                  setRecruiter({ ...recruiter, email: e.target.value })
+                }
+                className={`${inputStyles} pl-12`}
+                placeholder="hr@company.com"
+                required
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className={labelStyles}>Contact No.</label>
+            <div className="relative">
+              <Phone
+                size={18}
+                className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
+              />
+              <input
+                type="text"
+                value={recruiter.contact}
+                onChange={(e) =>
+                  setRecruiter({ ...recruiter, contact: e.target.value })
+                }
+                className={`${inputStyles} pl-12`}
+                placeholder="+91 ..."
+                required
+              />
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm">
+          <h3 className="text-lg font-black text-slate-800 mb-4 flex items-center gap-2">
+            <Info size={20} className="text-primary" /> Job Description
+          </h3>
+          <div className="mt-4">
+            <div
+              ref={editorRef}
+              className="bg-slate-50 border-slate-200"
+              style={{ minHeight: "200px" }}
+            ></div>
+          </div>
+        </div>
+
+       
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          
+          <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm space-y-4">
+            <h3 className="text-lg font-black text-slate-800 mb-4 flex items-center gap-2">
+              <Layers size={20} className="text-primary" /> Target Roles
+            </h3>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={addRole}
+                onChange={(e) => setAddRole(e.target.value)}
+                className={inputStyles}
+                placeholder="e.g. Java Dev"
+              />
+              <button
+                type="button"
+                onClick={handleRoleAdd}
+                className="bg-slate-900 text-white px-4 rounded-xl hover:bg-black transition-all cursor-pointer"
+              >
+                <Plus />
+              </button>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {roles.map((r, i) => (
+                <span
+                  key={i}
+                  className="px-4 py-2 bg-primary/10 text-primary rounded-full text-xs font-black flex items-center gap-2"
+                >
+                  {r}{" "}
+                  <DeleteIcon
+                    size={14}
+                    className="cursor-pointer text-red-500"
+                    onClick={() => setRoles(roles.filter((x) => x !== r))}
+                  />
+                </span>
+              ))}
+            </div>
+          </div>
+
+          
+          <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm space-y-4">
+            <h3 className="text-lg font-black text-slate-800 mb-4 flex items-center gap-2">
+              <RotateCcw size={20} className="text-primary" /> Interview Rounds
+            </h3>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={addRound}
+                onChange={(e) => setAddRound(e.target.value)}
+                className={inputStyles}
+                placeholder="e.g. Technical Round"
+              />
+              <button
+                type="button"
+                onClick={handleRoundAdd}
+                className="bg-slate-900 text-white px-4 rounded-xl hover:bg-black transition-all cursor-pointer"
+              >
+                <Plus />
+              </button>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {rounds.map((r, i) => (
+                <span
+                  key={i}
+                  className="px-4 py-2 bg-blue-50 text-blue-600 rounded-full text-xs font-black flex items-center gap-2 border border-blue-100"
+                >
+                  {r}{" "}
+                  <DeleteIcon
+                    size={14}
+                    className="cursor-pointer text-red-500"
+                    onClick={() => setRounds(rounds.filter((x) => x !== r))}
+                  />
+                </span>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        
+        <div className="flex justify-end pt-4">
           <button
             type="submit"
-            className={`flex items-center gap-2 py-2 px-6 rounded-md text-white bg-primary hover:bg-primary-dull transition cursor-pointer ${
-              loading ? "opacity-70 cursor-not-allowed" : ""
-            }`}
             disabled={loading}
+            className="w-full md:w-auto px-12 py-4 bg-primary text-white font-black text-lg rounded-2xl hover:scale-105 active:scale-95 transition-all shadow-xl shadow-primary/20 cursor-pointer disabled:opacity-50"
           >
-            {loading ? "Creating..." : "Create Job"}
+            {loading ? "Processing..." : "Create Official Opening"}
           </button>
         </div>
       </form>

@@ -2,7 +2,6 @@ import User from "../models/user.model.js";
 import jwt from 'jsonwebtoken'
 import bcrypt from "bcryptjs"
 
-//Student register
 const registerUser = async (req, res) => {
 
     const { name, email, password, enrollNumber } = req.body
@@ -42,11 +41,11 @@ const registerUser = async (req, res) => {
         return res.json({ success: true, message: "Registerd Succesfully!", user: { email: user.email, name: user.name, role: user.role, isVerified: user.isVerified } })
     }
     catch (error) {
-        res.json({ msg: 'Server error', error: error.message });
+        res.json({ message: 'Server error', error: error.message });
     }
 }
 
-//Login
+
 const loginUser = async (req, res) => {
 
     const { email, password } = req.body
@@ -86,7 +85,7 @@ const loginUser = async (req, res) => {
     }
 }
 
-//Logout
+
 const logoutUser = async (req, res) => {
     try {
         const options = {

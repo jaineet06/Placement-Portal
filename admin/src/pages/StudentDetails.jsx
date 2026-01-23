@@ -99,7 +99,7 @@ const StudentDetails = () => {
           Personal Details
         </h1>
 
-        {/* Profile and Basic Info */}
+       
         <div className="flex items-center space-x-6 mb-6">
           <div className="w-20 h-20 rounded-full overflow-hidden">
             <img
@@ -116,7 +116,7 @@ const StudentDetails = () => {
           </div>
         </div>
 
-        {/* Details Grid */}
+  
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
           <div>
             <label className="text-sm text-gray-500">Enrollment No</label>
@@ -174,7 +174,7 @@ const StudentDetails = () => {
         </div>
       </div>
 
-      {/* Address Section */}
+     
       <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-6 mt-10">
         <h1 className="text-xl font-semibold text-gray-800 border-b pb-3 mb-4">
           Address Details
@@ -200,7 +200,7 @@ const StudentDetails = () => {
             )}
           </div>
 
-          {/* Current Address */}
+          
           <div>
             <h2 className="text-lg font-semibold text-gray-700 mb-2">
               Current Address
@@ -222,7 +222,7 @@ const StudentDetails = () => {
         </div>
       </div>
 
-      {/* Education Details Section */}
+      
       <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-6 mt-10">
         <h1 className="text-xl font-semibold text-gray-800 border-b pb-3 mb-4">
           Education Details
@@ -230,9 +230,9 @@ const StudentDetails = () => {
 
         {education ? (
           <>
-            {/* SSC + Either HSC or Diploma */}
+            
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 mb-6">
-              {/* SSC */}
+           
               <div>
                 <label className="text-sm text-gray-700 font-semibold">
                   SSC
@@ -245,7 +245,7 @@ const StudentDetails = () => {
                 </p>
               </div>
 
-              {/* HSC or Diploma */}
+              
               {education.hsc ? (
                 <div>
                   <label className="text-sm text-gray-700 font-semibold">
@@ -280,7 +280,7 @@ const StudentDetails = () => {
               )}
             </div>
 
-            {/* CPI and CGPA */}
+            
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 mb-6">
               <div>
                 <label className="text-sm text-gray-700 font-semibold">
@@ -296,7 +296,7 @@ const StudentDetails = () => {
               </div>
             </div>
 
-            {/* SPI List */}
+            
             <div className="mt-6">
               <label className="text-sm text-gray-700 font-semibold">SPI</label>
               <div className="flex flex-wrap gap-3 mt-2">

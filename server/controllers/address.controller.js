@@ -1,8 +1,8 @@
-// Address Controller Fix
+
 import Address from "../models/address.model.js";
 import Student from "../models/student.model.js";
 
-// Add or Update Address
+
 const addOrUpdateAddress = async (req, res) => {
     const { type, address, city, state, pincode, country = "India" } = req.body;
     const { id } = req.user;
@@ -44,7 +44,7 @@ const addOrUpdateAddress = async (req, res) => {
     }
 };
 
-// Get Addresses
+
 const getAddresses = async (req, res) => {
     const { id } = req.user;
     try {

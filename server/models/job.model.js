@@ -4,17 +4,33 @@ const jobSchema = new mongoose.Schema(
   {
     companyName: {
       type: String,
-      required: true
+      required: true,
+      trim: true
+    },
+    recruiter: {
+      hrName: { type: String, required: true, trim: true },
+      email: {
+        type: String,
+        required: true,
+        lowercase: true,
+        trim: true
+      },
+      contact: { type: String, required: true },
     },
     title: {
       type: String,
       required: true,
+      trim: true
     },
     description: {
       type: String,
       required: true,
     },
-    jobType: { type: String, required: true, enum: ["Full Time", "Internship", "Internship + FTE"] },
+    jobType: {
+      type: String,
+      required: true,
+      enum: ["Full Time", "Internship", "Internship + FTE"]
+    },
     rounds: [{ type: String, required: true }],
     roles: [
       {
@@ -29,11 +45,15 @@ const jobSchema = new mongoose.Schema(
           },
           acceptedTerms: { type: Boolean, required: true },
           appliedAt: { type: Date, default: Date.now }
-        }
-        ],
+        }],
       },
     ],
-    status: { type: String, required: true, default: "Open", enum: ["Open", "Closed"] },
+    status: {
+      type: String,
+      required: true,
+      default: "Open",
+      enum: ["Open", "Closed"]
+    },
     lastDate: {
       type: Date,
       required: true,
@@ -48,8 +68,3 @@ const jobSchema = new mongoose.Schema(
 
 const Job = mongoose.model("Job", jobSchema);
 export default Job;
-
-/**
- * Job type
- * Rounds
- */

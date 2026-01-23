@@ -1,43 +1,10 @@
-import { useState } from "react";
+
 import { ArrowRight, Sparkles, Megaphone } from "lucide-react";
 import { Link } from "react-router-dom";
 import Footer from "../components/Footer";
 import Announcements from "../components/Announcements";
 
 const Home = () => {
-  const [isPaused, setIsPaused] = useState(false);
-
-  const news = [
-    {
-      headline:
-        "GeM bid (QCBS) for Establishment of advanced manufacturing and robotics center of excellence",
-      link: "https://drive.google.com/file/d/1qDvzcaHLyQx95OYjMfNN3hIBFwVckLYj/view?usp=sharing",
-      tag: "Tender",
-    },
-    {
-      headline:
-        "Bid Document for Establishment of robotics center bid number. GEM/2025/B/5945450",
-      link: "https://drive.google.com/file/d/18SffKyZU4iBBx_m_0tQJJMBa5W4mm84P/view?usp=sharing",
-      tag: "New",
-    },
-    {
-      headline: "Dr Jay M Joshi Publish Paper in SCI index Journal",
-      link: "https://www.instagram.com/p/DR4JfFpk--n/",
-      tag: "Achievement",
-    },
-    {
-      headline:
-        "Students Paper Accepted in ICASSP 2026 conference at Barcelona, Spain",
-      link: "https://www.instagram.com/p/DRziLdjCPLu/",
-      tag: "Global",
-    },
-    {
-      headline: "Dr. A K Giri Design Patent granted on microgrid control unit",
-      link: "https://www.instagram.com/p/DRygHwCiHru/",
-      tag: "Patent",
-    },
-  ];
-
   return (
     <>
       <div className="flex items-center justify-center w-full py-2">
@@ -105,16 +72,9 @@ const Home = () => {
       </section>
 
       <div className="mt-10 mx-8">
-        <div className="flex items-center gap-2">
-          <Megaphone className="text-primary animate-bounce" size={20} />
-          <h2 className="font-bold text-slate-800 uppercase tracking-widest text-xs">
-            Latest Announcements
-          </h2>
-        </div>
-
         <Announcements />
 
-        {/* Principal's Section */}
+        
         <section className="mt-5 px-2">
           <div className="bg-white rounded-[2.5rem] border border-slate-100 shadow-sm overflow-hidden flex flex-col lg:flex-row items-stretch">
             <div className="lg:w-1/3 relative min-h-[350px]">
@@ -173,7 +133,7 @@ const Home = () => {
           </div>
         </section>
 
-        {/* HOD's Section */}
+        
         <section className="px-2 mt-12">
           <div className="flex flex-col lg:flex-row-reverse items-stretch bg-white rounded-[2.5rem] border border-slate-100 shadow-sm overflow-hidden">
             <div className="lg:w-1/3 relative min-h-[350px] bg-slate-200">

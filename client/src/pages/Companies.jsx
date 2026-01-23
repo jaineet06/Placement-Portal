@@ -9,11 +9,12 @@ import {
   Calendar,
   ArrowUpRight,
   Search,
-  Filter,
+  ShieldAlert,
 } from "lucide-react";
+import PendingVerification from "../components/PendingVerification";
 
 const Companies = () => {
-  const { axios } = useAppContext();
+  const { axios, verified } = useAppContext();
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -32,14 +33,18 @@ const Companies = () => {
   };
 
   useEffect(() => {
-    fetchJobs();
-  }, []);
+    if (verified) fetchJobs();
+  }, [verified]);
 
   const filteredJobs = jobs.filter(
     (job) =>
       job.companyName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       job.title.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  if (!verified) {
+    return <PendingVerification />;
+  }
 
   if (loading) {
     return (

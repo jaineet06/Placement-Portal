@@ -12,7 +12,7 @@ const JobListing = () => {
   const [statusLoading, setStatusLoading] = useState({});
   const navigate = useNavigate();
 
-  // Fetch jobs
+ 
   const fetchJobs = async () => {
     setLoading(true);
     try {
@@ -31,7 +31,7 @@ const JobListing = () => {
     fetchJobs();
   }, []);
 
-  // Update job status
+ 
   const handleStatusChange = async (jobId, newStatus) => {
     setStatusLoading((prev) => ({ ...prev, [jobId]: true }));
     try {
