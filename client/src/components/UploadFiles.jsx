@@ -233,7 +233,8 @@ const UploadFiles = () => {
       >
         {uploading ? (
           <>
-            <Spinner size="sm" /> Syncing Cloud...
+            <div className="animate-spin rounded-full h-6 w-6 border-2 border-primary-dull/25 border-t-white" />{" "}
+            Syncing Cloud...
           </>
         ) : (
           <>

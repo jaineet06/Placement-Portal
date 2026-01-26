@@ -1,10 +1,22 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useAdminContext } from "../context/AdminContext";
-import Title from "../components/Title";
 import toast from "react-hot-toast";
 import Spinner from "../components/Spinner";
-import { Trash2 } from "lucide-react";
+import {
+  Trash2,
+  User,
+  MapPin,
+  GraduationCap,
+  ChevronLeft,
+  Mail,
+  Phone,
+  Calendar,
+  Hash,
+  FileText,
+  Percent,
+  BookOpen,
+} from "lucide-react";
 
 const StudentDetails = () => {
   const { id } = useParams();
@@ -27,56 +39,21 @@ const StudentDetails = () => {
         const { data: eduData } = await axios.get(
           `/api/admin/education/${data.student.user._id}`
         );
-        if (eduData.success) {
-          setEducation(eduData.education);
-        } else {
-          toast.error(eduData.message);
-        }
-      } else {
-        toast.error(data.message);
+        if (eduData.success) setEducation(eduData.education);
       }
     } catch (error) {
-      console.error(error);
-      toast.error("Failed to fetch student details");
+      toast.error("Failed to fetch details");
     } finally {
       setLoading(false);
-    }
-  };
-
-  const deleteStudent = async () => {
-    if (
-      !window.confirm(
-        "This will permanently delete student and their related data"
-      )
-    )
-      return;
-
-    setDeleting(true);
-    try {
-      const { data } = await axios.delete(`/api/admin/delete/${userId}`);
-      if (data.success) {
-        toast.success(data.message);
-        navigate("/students");
-      }
-    } catch (error) {
-      console.error(error);
-      toast.error("Failed to fetch student details");
-    } finally {
-      setDeleting(false);
     }
   };
 
   const fetchAddresses = async () => {
     try {
       const { data } = await axios.get(`/api/admin/address/${id}`);
-      if (data.success) {
-        setAddress(data.address);
-      } else {
-        toast.error(data.message);
-      }
+      if (data.success) setAddress(data.address);
     } catch (error) {
       console.error(error);
-      toast.error("Failed to fetch address details");
     }
   };
 
@@ -85,258 +62,301 @@ const StudentDetails = () => {
     fetchAddresses();
   }, []);
 
-  return loading ? (
-    <div className="flex flex-col justify-center items-center h-full">
-      <Spinner />
-      <p className="text-sm mt-2 font-normal">Fetching student...</p>
+  const deleteStudent = async () => {
+    if (
+      !window.confirm("Permanently delete this student and all related data?")
+    )
+      return;
+    setDeleting(true);
+    try {
+      const { data } = await axios.delete(`/api/admin/delete/${userId}`);
+      if (data.success) {
+        toast.success(data.message);
+        navigate("/students");
+      }
+    } catch (error) {
+      toast.error("Delete failed");
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  if (loading)
+    return (
+      <div className="flex justify-center h-screen items-center">
+        <Spinner />
+      </div>
+    );
+
+  const LabelVal = ({ icon: Icon, label, value, isLink }) => (
+    <div className="space-y-1">
+      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
+        {Icon && <Icon size={12} />} {label}
+      </p>
+      {isLink ? (
+        <a
+          href={value}
+          target="_blank"
+          rel="noreferrer"
+          className="text-sm font-bold text-primary hover:underline truncate block"
+        >
+          View Document
+        </a>
+      ) : (
+        <p className="text-sm font-bold text-slate-700 break-words">
+          {value || "—"}
+        </p>
+      )}
     </div>
-  ) : (
-    <>
-      <Title text1="Student" text2="Details" />
+  );
 
-      <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-6 mt-10  ">
-        <h1 className="text-xl font-semibold text-gray-800 border-b pb-3 mb-4">
-          Personal Details
-        </h1>
-
-       
-        <div className="flex items-center space-x-6 mb-6">
-          <div className="w-20 h-20 rounded-full overflow-hidden">
-            <img
-              src={student.profilePath?.url || "/avatar.jpg"}
-              alt={student.fullName}
-              className="w-full h-full object-cover"
-            />
-          </div>
-          <div>
-            <p className="text-lg font-semibold text-gray-800">
-              {student.fullName}
-            </p>
-            <p className="text-sm text-gray-500">{student.user?.email}</p>
-          </div>
-        </div>
-
-  
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-          <div>
-            <label className="text-sm text-gray-500">Enrollment No</label>
-            <p className="text-gray-800">{student.user?.enrollNumber}</p>
-          </div>
-          <div>
-            <label className="text-sm text-gray-500">Branch</label>
-            <p className="text-gray-800">{student.branch}</p>
-          </div>
-          <div>
-            <label className="text-sm text-gray-500">Birth Date</label>
-            <p className="text-gray-800">
-              {new Date(student.birthDate).toLocaleDateString()}
-            </p>
-          </div>
-          <div>
-            <label className="text-sm text-gray-500">Category</label>
-            <p className="text-gray-800">{student.category}</p>
-          </div>
-          <div>
-            <label className="text-sm text-gray-500">Mobile</label>
-            <p className="text-gray-800">{student.mobile}</p>
-          </div>
-          <div>
-            <label className="text-sm text-gray-500">Alternate Mobile</label>
-            <p className="text-gray-800">
-              {student.alternateMobile || (
-                <span className="italic text-gray-500">Not Provided</span>
-              )}
-            </p>
-          </div>
-          <div>
-            <label className="text-sm text-gray-500">Parent Name</label>
-            <p className="text-gray-800">{student.parentName}</p>
-          </div>
-          <div>
-            <label className="text-sm text-gray-500">Parent Mobile</label>
-            <p className="text-gray-800">{student.parentMobile}</p>
-          </div>
-          <div className="flex flex-col">
-            <label className="text-sm text-gray-500">Resume</label>
-            {student.resume?.url ? (
-              <a
-                href={student.resume.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-blue-600 hover:underline"
-              >
-                View Resume
-              </a>
-            ) : (
-              <p className="text-gray-500 italic">Not uploaded</p>
-            )}
-          </div>
-        </div>
+  return (
+    <div className="p-8 space-y-8 max-w-7xl mx-auto min-h-screen bg-slate-50/30">
+      {/* Header */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <button
+          onClick={() => navigate(-1)}
+          className="flex items-center gap-2 text-slate-500 hover:text-primary font-bold transition-all w-fit"
+        >
+          <ChevronLeft size={20} /> Back to Directory
+        </button>
+        <button
+          onClick={deleteStudent}
+          disabled={deleting}
+          className="flex items-center gap-2 px-6 py-2.5 bg-red-50 text-red-600 rounded-xl font-bold border border-red-100 hover:bg-red-600 hover:text-white transition-all shadow-sm disabled:opacity-50"
+        >
+          {deleting ? (
+            "Deleting..."
+          ) : (
+            <>
+              <Trash2 size={18} /> Delete Student Record
+            </>
+          )}
+        </button>
       </div>
 
-     
-      <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-6 mt-10">
-        <h1 className="text-xl font-semibold text-gray-800 border-b pb-3 mb-4">
-          Address Details
-        </h1>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-          <div>
-            <h2 className="text-lg font-semibold text-gray-700 mb-2">
-              Permanent Address
-            </h2>
-            {address.permanent?.address ? (
-              <div className="text-gray-800">
-                <p>{address.permanent.address}</p>
-                <p>
-                  {address.permanent.city}, {address.permanent.state}
-                </p>
-                <p>
-                  {address.permanent.pincode}, {address.permanent.country}
-                </p>
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+        {/* LEFT COLUMN: Profile & Contact */}
+        <div className="space-y-6">
+          <div className="bg-white rounded-[2.5rem] border border-slate-200 p-8 shadow-sm text-center relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-full h-32 bg-slate-100/50" />
+            <div className="relative z-10 flex flex-col items-center">
+              <div className="w-32 h-32 rounded-full border-4 border-white shadow-xl overflow-hidden bg-slate-200 mb-4">
+                <img
+                  src={student.profilePath?.url || "/avatar.jpg"}
+                  alt={student.fullName}
+                  className="w-full h-full object-cover"
+                />
               </div>
-            ) : (
-              <p className="italic text-gray-500">Not Provided</p>
-            )}
+              <h2 className="text-2xl font-black text-slate-900 tracking-tight">
+                {student.fullName}
+              </h2>
+              <p className="text-primary font-bold text-sm bg-primary/5 px-3 py-1 rounded-full mt-2 inline-block">
+                {student.user?.enrollNumber}
+              </p>
+              <p className="text-slate-500 font-medium text-xs mt-2">
+                {student.branch}
+              </p>
+            </div>
           </div>
 
-          
-          <div>
-            <h2 className="text-lg font-semibold text-gray-700 mb-2">
-              Current Address
-            </h2>
-            {address.current?.address ? (
-              <div className="text-gray-800">
-                <p>{address.current.address}</p>
-                <p>
-                  {address.current.city}, {address.current.state}
-                </p>
-                <p>
-                  {address.current.pincode}, {address.current.country}
-                </p>
-              </div>
-            ) : (
-              <p className="italic text-gray-500">Not Provided</p>
-            )}
+          <div className="bg-white rounded-[2.5rem] border border-slate-200 p-8 shadow-sm space-y-6">
+            <h3 className="text-lg font-black text-slate-800 flex items-center gap-2 border-b border-slate-100 pb-4">
+              <User size={20} className="text-primary" /> Personal Info
+            </h3>
+            <div className="grid grid-cols-1 gap-5">
+              <LabelVal
+                icon={Mail}
+                label="Email Address"
+                value={student.user?.email}
+              />
+              <LabelVal
+                icon={Phone}
+                label="Student Mobile"
+                value={student.mobile}
+              />
+              <LabelVal
+                icon={Calendar}
+                label="Date of Birth"
+                value={new Date(student.birthDate).toLocaleDateString()}
+              />
+              <LabelVal icon={Hash} label="Category" value={student.category} />
+              <LabelVal
+                icon={User}
+                label="Parent Name"
+                value={student.parentName}
+              />
+              <LabelVal
+                icon={Phone}
+                label="Parent Mobile"
+                value={student.parentMobile}
+              />
+              <LabelVal
+                icon={FileText}
+                label="Resume"
+                value={student.resume?.url}
+                isLink
+              />
+            </div>
           </div>
         </div>
-      </div>
 
-      
-      <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-6 mt-10">
-        <h1 className="text-xl font-semibold text-gray-800 border-b pb-3 mb-4">
-          Education Details
-        </h1>
+        {/* MIDDLE COLUMN: Address */}
+        <div className="space-y-6">
+          <div className="bg-white rounded-[2.5rem] border border-slate-200 p-8 shadow-sm h-full">
+            <h3 className="text-lg font-black text-slate-800 flex items-center gap-2 border-b border-slate-100 pb-4 mb-6">
+              <MapPin size={20} className="text-primary" /> Address Details
+            </h3>
 
-        {education ? (
-          <>
-            
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 mb-6">
-           
-              <div>
-                <label className="text-sm text-gray-700 font-semibold">
-                  SSC
-                </label>
-                <p className="text-gray-800">
-                  {education.ssc?.percentage || "N/A"}%
+            <div className="space-y-8">
+              <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100">
+                <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-2">
+                  Permanent Address
                 </p>
-                <p className="text-xs text-gray-500">
-                  Year: {education.ssc?.passoutYear || "N/A"}
-                </p>
-              </div>
-
-              
-              {education.hsc ? (
-                <div>
-                  <label className="text-sm text-gray-700 font-semibold">
-                    HSC
-                  </label>
-                  <p className="text-gray-800">
-                    {education.hsc?.percentage || "N/A"}%
-                  </p>
-                  <p className="text-xs text-gray-500">
-                    Year: {education.hsc?.passoutYear || "N/A"}
-                  </p>
-                </div>
-              ) : education.diploma ? (
-                <div>
-                  <label className="text-sm text-gray-700 font-semibold">
-                    Diploma
-                  </label>
-                  <p className="text-gray-800">
-                    {education.diploma?.percentage || "N/A"}%
-                  </p>
-                  <p className="text-xs text-gray-500">
-                    Year: {education.diploma?.passoutYear || "N/A"}
-                  </p>
-                </div>
-              ) : (
-                <div>
-                  <label className="text-sm text-gray-700 font-semibold">
-                    HSC / Diploma
-                  </label>
-                  <p className="text-gray-500 italic">Not Provided</p>
-                </div>
-              )}
-            </div>
-
-            
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 mb-6">
-              <div>
-                <label className="text-sm text-gray-700 font-semibold">
-                  CPI
-                </label>
-                <p className="text-gray-800">{education.cpi || "N/A"}</p>
-              </div>
-              <div>
-                <label className="text-sm text-gray-700 font-semibold">
-                  CGPA
-                </label>
-                <p className="text-gray-800">{education.cgpa || "N/A"}</p>
-              </div>
-            </div>
-
-            
-            <div className="mt-6">
-              <label className="text-sm text-gray-700 font-semibold">SPI</label>
-              <div className="flex flex-wrap gap-3 mt-2">
-                {education.spi?.length > 0 ? (
-                  education.spi.map((score, index) => (
-                    <div
-                      key={index}
-                      className="bg-gray-100 px-4 py-2 rounded-full shadow-sm text-sm font-medium text-gray-700"
-                    >
-                      Sem {index + 1}: {score}
-                    </div>
-                  ))
+                {address.permanent?.address ? (
+                  <div className="text-sm font-bold text-slate-700 leading-relaxed">
+                    <p>{address.permanent.address}</p>
+                    <p>
+                      {address.permanent.city}, {address.permanent.state}
+                    </p>
+                    <p>
+                      {address.permanent.pincode}, {address.permanent.country}
+                    </p>
+                  </div>
                 ) : (
-                  <p className="text-gray-500 italic">No SPI data available</p>
+                  <p className="text-sm text-slate-400 italic">Not Provided</p>
+                )}
+              </div>
+
+              <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100">
+                <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-2">
+                  Current Address
+                </p>
+                {address.current?.address ? (
+                  <div className="text-sm font-bold text-slate-700 leading-relaxed">
+                    <p>{address.current.address}</p>
+                    <p>
+                      {address.current.city}, {address.current.state}
+                    </p>
+                    <p>
+                      {address.current.pincode}, {address.current.country}
+                    </p>
+                  </div>
+                ) : (
+                  <p className="text-sm text-slate-400 italic">Not Provided</p>
                 )}
               </div>
             </div>
-          </>
-        ) : (
-          <p className="text-gray-500 italic">No education data available</p>
-        )}
-      </div>
-      <button
-        type="button"
-        onClick={deleteStudent}
-        disabled={deleting}
-        className={`flex items-center mt-5 px-8 py-3 rounded text-white text-sm font-medium transition-transform active:scale-95 border border-red-700 bg-red-500 hover:bg-red-600 cursor-pointer ${
-          deleting ? "cursor-not-allowed opacity-70" : ""
-        }`}
-      >
-        {deleting ? (
-          <div className="animate-spin rounded-full h-5 w-5 border-3 border-white/50 border-t-white" />
-        ) : (
-          <div className="flex items-center justify-center">
-            <Trash2 className="w-4 h-4 mr-2" />
-            <p className="font-normal text-sm">Delete</p>
           </div>
-        )}
-      </button>
-    </>
+        </div>
+
+        {/* RIGHT COLUMN: Education */}
+        <div className="space-y-6">
+          <div className="bg-white rounded-[2.5rem] border border-slate-200 p-8 shadow-sm h-full">
+            <h3 className="text-lg font-black text-slate-800 flex items-center gap-2 border-b border-slate-100 pb-4 mb-6">
+              <GraduationCap size={20} className="text-primary" /> Academic
+              Record
+            </h3>
+
+            {education ? (
+              <div className="space-y-6">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="bg-primary/5 p-4 rounded-2xl text-center border border-primary/10">
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                      CPI
+                    </p>
+                    <p className="text-2xl font-black text-primary">
+                      {education.cpi || "—"}
+                    </p>
+                  </div>
+                  <div className="bg-primary/5 p-4 rounded-2xl text-center border border-primary/10">
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                      CGPA
+                    </p>
+                    <p className="text-2xl font-black text-primary">
+                      {education.cgpa || "—"}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between p-4 bg-slate-50 rounded-xl border border-slate-100">
+                    <span className="text-xs font-black text-slate-500 uppercase">
+                      SSC (10th)
+                    </span>
+                    <div className="text-right">
+                      <p className="text-sm font-bold text-slate-800">
+                        {education.ssc?.percentage}%
+                      </p>
+                      <p className="text-[10px] text-slate-400">
+                        {education.ssc?.passoutYear}
+                      </p>
+                    </div>
+                  </div>
+
+                  {education.hsc && (
+                    <div className="flex items-center justify-between p-4 bg-slate-50 rounded-xl border border-slate-100">
+                      <span className="text-xs font-black text-slate-500 uppercase">
+                        HSC (12th)
+                      </span>
+                      <div className="text-right">
+                        <p className="text-sm font-bold text-slate-800">
+                          {education.hsc?.percentage}%
+                        </p>
+                        <p className="text-[10px] text-slate-400">
+                          {education.hsc?.passoutYear}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  {education.diploma && (
+                    <div className="flex items-center justify-between p-4 bg-slate-50 rounded-xl border border-slate-100">
+                      <span className="text-xs font-black text-slate-500 uppercase">
+                        Diploma
+                      </span>
+                      <div className="text-right">
+                        <p className="text-sm font-bold text-slate-800">
+                          {education.diploma?.percentage}%
+                        </p>
+                        <p className="text-[10px] text-slate-400">
+                          {education.diploma?.passoutYear}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <div>
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 flex items-center gap-1">
+                    <BookOpen size={12} /> Semester SPI
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {education.spi?.length > 0 ? (
+                      education.spi.map((score, i) => (
+                        <div
+                          key={i}
+                          className="px-3 py-1.5 bg-slate-100 rounded-lg border border-slate-200 text-xs font-bold text-slate-600"
+                        >
+                          <span className="text-slate-400 mr-1">S{i + 1}:</span>
+                          {score}
+                        </div>
+                      ))
+                    ) : (
+                      <p className="text-xs text-slate-400 italic">No Data</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="text-center py-10 text-slate-400 text-sm font-medium italic">
+                Education details not yet updated.
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
   );
 };
 

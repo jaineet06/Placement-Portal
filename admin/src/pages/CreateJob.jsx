@@ -22,20 +22,17 @@ const CreateJob = () => {
   const { axios } = useAdminContext();
   const [loading, setLoading] = useState(false);
 
- 
   const [name, setName] = useState("");
   const [title, setTitle] = useState("");
   const [location, setLocation] = useState("");
   const [lastDate, setLastDate] = useState("");
   const [jobType, setJobType] = useState("");
 
-
   const [recruiter, setRecruiter] = useState({
     hrName: "",
     email: "",
     contact: "",
   });
-
 
   const [roles, setRoles] = useState([]);
   const [addRole, setAddRole] = useState("");
@@ -67,7 +64,6 @@ const CreateJob = () => {
     e.preventDefault();
     const description = quillRef.current.root.innerHTML;
 
-    
     if (
       !name ||
       !title ||
@@ -102,7 +98,7 @@ const CreateJob = () => {
 
       if (data.success) {
         toast.success("Job created successfully!");
-        
+
         setName("");
         setTitle("");
         setLocation("");
@@ -125,7 +121,7 @@ const CreateJob = () => {
   const labelStyles = "block text-sm font-bold text-slate-700 ml-1";
 
   return (
-    <div className="p-8 space-y-8 max-w-6xl mx-auto">
+    <div className="p-4 space-y-8 max-w-6xl mx-auto">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <div className="p-3 bg-primary/10 rounded-2xl text-primary">
@@ -143,7 +139,6 @@ const CreateJob = () => {
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-8">
-        
         <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="md:col-span-2">
             <h3 className="text-lg font-black text-slate-800 mb-4 flex items-center gap-2">
@@ -219,7 +214,6 @@ const CreateJob = () => {
           </div>
         </div>
 
-        
         <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="md:col-span-3">
             <h3 className="text-lg font-black text-slate-800 mb-4 flex items-center gap-2">
@@ -296,9 +290,7 @@ const CreateJob = () => {
           </div>
         </div>
 
-       
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          
           <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm space-y-4">
             <h3 className="text-lg font-black text-slate-800 mb-4 flex items-center gap-2">
               <Layers size={20} className="text-primary" /> Target Roles
@@ -336,7 +328,6 @@ const CreateJob = () => {
             </div>
           </div>
 
-          
           <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm space-y-4">
             <h3 className="text-lg font-black text-slate-800 mb-4 flex items-center gap-2">
               <RotateCcw size={20} className="text-primary" /> Interview Rounds
@@ -375,7 +366,6 @@ const CreateJob = () => {
           </div>
         </div>
 
-        
         <div className="flex justify-end pt-4">
           <button
             type="submit"

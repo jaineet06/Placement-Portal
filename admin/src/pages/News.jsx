@@ -79,7 +79,7 @@ const NewsManager = () => {
   };
 
   return (
-    <div className="p-8 space-y-10 max-w-6xl mx-auto min-h-screen bg-slate-50/50">
+    <div className="p-4 space-y-10 max-w-6xl mx-auto min-h-screen bg-slate-50/50">
       <div className="flex items-center gap-4">
         <div className="p-3 bg-primary/10 rounded-2xl text-primary">
           <Megaphone size={28} />
