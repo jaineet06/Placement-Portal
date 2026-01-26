@@ -11,11 +11,11 @@ const createStudent = async (req, res) => {
 
     try {
 
-       
+
 
         const newStudent = new Student({
             user: id,
-            
+
             fullName,
             parentName,
             parentMobile,
@@ -71,7 +71,7 @@ const getStudent = async (req, res) => {
     const { id } = req.user;
     try {
         const student = await Student.findOne({ user: id })
-       
+
 
         const userData = await User.findById(id).select("enrollNumber");
 
@@ -290,7 +290,7 @@ const applyToJob = async (req, res) => {
             const roleObj = job.roles.find(r => r.name === selectedRole);
             if (!roleObj) continue;
 
-            
+
             const alreadyApplied = roleObj.applicants.some(
                 s => s.student.equals(student._id)
             );

@@ -1,6 +1,8 @@
 import User from "../models/user.model.js";
 import jwt from 'jsonwebtoken'
 import bcrypt from "bcryptjs"
+import sendMail from "../configs/nodemailer.js";
+import { getSignupTemplate, getVerificationTemplate } from "../utils/mail-templates.js";
 
 const registerUser = async (req, res) => {
 
@@ -11,7 +13,7 @@ const registerUser = async (req, res) => {
     }
 
     try {
-        const userExists = await User.findOne({ email })
+        const userExists = await User.findOne({ $or: [{ email }, { enrollNumber }] })
         if (userExists) {
             return res.json({ success: false, message: "User already exists" })
         }
@@ -24,6 +26,8 @@ const registerUser = async (req, res) => {
             role: 'student'
         })
         await user.save()
+
+        await sendMail({ to: email, subject: "Registration Successful - Pending Verification", body: getSignupTemplate(name, email, password) })
 
         const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET_KEY)
 
@@ -137,6 +141,8 @@ const verifyUser = async (req, res) => {
 
         user.isVerified = true
         await user.save();
+
+        await sendMail({ to: user.email, subject: "Portal Access Granted - You are Verified! ✅", body: getVerificationTemplate(user.name) })
 
         return res.json({ success: true, message: "User verified succesfully" })
     } catch (error) {
