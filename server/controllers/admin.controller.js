@@ -11,13 +11,13 @@ const getStudentByEnrollment = async (req, res) => {
   const { id } = req.params;
 
   try {
-    
+
     const user = await User.findOne({ enrollNumber: id });
     if (!user) {
       return res.json({ success: false, message: "No Student found" });
     }
 
-    
+
     const isStudent = await Student.findOne({ user: user._id }).populate(
       "user",
       "name email phone enrollNumber"
@@ -355,9 +355,6 @@ const changeApplicationStatus = async (req, res) => {
 
   const { status, jobId, id } = req.body
   try {
-
-    console.log(id);
-    console.log(jobId);
 
     const updatedStudent = await Student.findOneAndUpdate(
       {

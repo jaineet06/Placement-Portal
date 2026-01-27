@@ -1,7 +1,9 @@
+import sendMail from "../configs/nodemailer.js";
 import Job from "../models/job.model.js";
 import Student from "../models/student.model.js";
 import User from "../models/user.model.js";
 import deleteFromCloudinary from "../utils/deleteFromCloudinary.js";
+import { getApplicationSubmittedTemplate } from "../utils/mail-templates.js";
 import uploadToCloudinary from "../utils/uploadToCloudinary.js";
 
 
@@ -274,7 +276,7 @@ const applyToJob = async (req, res) => {
             return res.json({ success: false, message: "You must accept terms & conditions" });
         }
 
-        const student = await Student.findOne({ user: studentId });
+        const student = await Student.findOne({ user: studentId }).populate("user", "enrollNumber name email");
         if (!student) return res.json({ success: false, message: "Student not found." });
 
         const job = await Job.findById(jobId);
@@ -317,6 +319,14 @@ const applyToJob = async (req, res) => {
 
         await student.save();
         await job.save();
+
+        await sendMail({
+            to: student.user.email, subject: `Application Received: ${job.companyName}`, body: getApplicationSubmittedTemplate(student.user.fullName, job.companyName, roles.join(", "), new Date().toLocaleDateString('en-IN', {
+                day: '2-digit',
+                month: 'long',
+                year: 'numeric'
+            }))
+        })
 
         return res.json({
             success: true,
