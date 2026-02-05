@@ -13,15 +13,15 @@ studentRouter.get('/is-verifed', authUser, getStudentVefrification)
 studentRouter.get('/is-student', authUser, studentExist)
 studentRouter.get('/get-files', authUser, getStudentFiles)
 
-//To fetch all jobs
+
 studentRouter.get('/job/get-all', authUser, fetchAllJobs)
-//To fetch a job by its id
+
 studentRouter.get('/job/:jobId', authUser, fetchJobById)
 
 
-//To apply for job
+
 studentRouter.post('/job/apply/:studentId/:jobId', authUser, applyToJob)
-//To fetch all student applied jobs
+
 studentRouter.get('/job/apply/get-all/:userId', authUser, fetchAllAppliedJobs)
 
 export default studentRouter

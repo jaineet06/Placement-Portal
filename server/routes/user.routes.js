@@ -4,7 +4,7 @@ import { authorizeRoles, authUser } from "../middlewares/auth.js";
 
 const userRouter = express.Router()
 
-//Student routes
+
 userRouter.post('/register', registerUser)
 
 userRouter.post('/login', loginUser)
@@ -12,7 +12,7 @@ userRouter.get('/logout', logoutUser)
 userRouter.get('/get-profile', authUser, getUserProfile)
 userRouter.get('/get-all', authUser, authorizeRoles("admin"), getAllUsers)
 userRouter.post('/verify-user', authUser, authorizeRoles("admin"), verifyUser)
-// Get currently logged-in user
+
 userRouter.get("/me", authUser, getUserProfile);
 
 userRouter.delete('/verify/delete/:id', authUser, authorizeRoles("admin"), deleteUnverifyUser)

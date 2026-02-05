@@ -11,13 +11,13 @@ const getStudentByEnrollment = async (req, res) => {
   const { id } = req.params;
 
   try {
-    // First find user by enrollNumber
+    
     const user = await User.findOne({ enrollNumber: id });
     if (!user) {
       return res.json({ success: false, message: "No Student found" });
     }
 
-    // Then find student by user ID
+    
     const isStudent = await Student.findOne({ user: user._id }).populate(
       "user",
       "name email phone enrollNumber"
@@ -127,7 +127,7 @@ const deleteStudent = async (req, res) => {
 
 
 
-// Get all jobs (for Admin Job Listing)
+
 const getAllJobs = async (req, res) => {
   try {
     const jobs = await Job.find({}).sort({ createdAt: -1 });
@@ -139,7 +139,7 @@ const getAllJobs = async (req, res) => {
 };
 
 
-//get a single job by Id:
+
 const getJobById = async (req, res) => {
   try {
     const { jobId } = req.params;
@@ -163,15 +163,31 @@ const getJobById = async (req, res) => {
 };
 
 
-//create job :
 const createJob = async (req, res) => {
   try {
-    const { name, roles, title, description, lastDate, location, jobType, rounds } = req.body;
+    const {
+      name,
+      roles,
+      title,
+      description,
+      lastDate,
+      location,
+      jobType,
+      rounds,
+      recruiter
+    } = req.body;
 
     if (!name || !title || !description || !lastDate || !jobType) {
       return res.json({
         success: false,
-        message: "All fields are required",
+        message: "Main job details are missing",
+      });
+    }
+
+    if (!recruiter || !recruiter.hrName || !recruiter.email || !recruiter.contact) {
+      return res.json({
+        success: false,
+        message: "Recruiter contact details are required",
       });
     }
 
@@ -194,7 +210,7 @@ const createJob = async (req, res) => {
       applicants: [],
     }));
 
-    await Job.create({
+    const newJob = await Job.create({
       companyName: name,
       title,
       description,
@@ -203,15 +219,29 @@ const createJob = async (req, res) => {
       jobType,
       rounds,
       roles: roleObject,
+      recruiter: {
+        hrName: recruiter.hrName.trim(),
+        email: recruiter.email.toLowerCase().trim(),
+        contact: recruiter.contact.trim(),
+      }
     });
 
-    res.json({ success: true, message: "Job created successfully!" });
+    return res.json({
+      success: true,
+      message: "Job created successfully!",
+      jobId: newJob._id
+    });
+
   } catch (error) {
-    res.json({ success: false, message: error.message });
+    console.error("Create Job Error:", error.message);
+    return res.json({
+      success: false,
+      message: "Internal Server Error",
+    });
   }
 };
 
-//delete a job a ID:
+
 const deleteJob = async (req, res) => {
   try {
     const { jobId } = req.params;
@@ -229,7 +259,7 @@ const deleteJob = async (req, res) => {
   }
 };
 
-//Change Status for the job
+
 const changeStatus = async (req, res) => {
   try {
     const { jobId } = req.params;
@@ -319,7 +349,7 @@ const exportAppliedStudentToCSV = async (req, res) => {
 
 }
 
-//Change status of student application
+
 
 const changeApplicationStatus = async (req, res) => {
 

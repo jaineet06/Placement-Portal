@@ -2,13 +2,15 @@ import { useEffect, useState } from "react";
 import Spinner from "../components/Spinner";
 import toast from "react-hot-toast";
 import { useAdminContext } from "../context/AdminContext";
-import Title from "../components/Title";
 import {
   ChevronDown,
+  Download,
+  Search,
+  Users,
   ChevronLeft,
   ChevronRight,
-  ChevronUp,
-  Download,
+  UserCircle,
+  Filter,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
@@ -21,7 +23,6 @@ const ListOfStudents = () => {
   const navigate = useNavigate();
   const [limit, setLimit] = useState(10);
   const [searchQuery, setSearchQuery] = useState("");
-
   const [isOpen, setIsOpen] = useState(false);
 
   const fetchStudent = async () => {
@@ -35,7 +36,6 @@ const ListOfStudents = () => {
         setTotalPages(data.total);
       }
     } catch (error) {
-      console.log(error);
       toast.error(error.message);
     } finally {
       setLoading(false);
@@ -52,131 +52,225 @@ const ListOfStudents = () => {
     fetchStudent();
   }, [page, limit]);
 
-  return loading ? (
-    <div className="flex flex-col justify-center items-center h-full">
-      <Spinner />
-      <p className="text-sm mt-2 font-normal">Fetching students...</p>
-    </div>
-  ) : (
-    <>
-      <div className="flex justify-between z-0">
-        <Title text1={"All"} text2={"Students"} />
-
-        <div class="flex items-center border pl-4 gap-2 bg-white border-gray-500/30 h-[41px] rounded-full overflow-hidden max-w-md w-full">
-          <input
-            type="text"
-            class="w-full h-full outline-none text-sm "
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-          <button
-            type="submit"
-            onClick={fetchStudent}
-            class="bg-primary-dull hover:bg-primary w-32 h-8 rounded-full text-sm text-white mr-[5px] cursor-pointer"
-          >
-            Search
-          </button>
+  return (
+    <div className="p-4 space-y-8 max-w-8xl mx-auto min-h-screen bg-slate-50/50">
+      {/* --- HEADER SECTION --- */}
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-slate-200 pb-8">
+        {/* Title */}
+        <div className="flex items-center gap-4">
+          <div className="w-14 h-14 bg-white rounded-2xl border border-slate-100 flex items-center justify-center text-primary shadow-sm">
+            <Users size={28} />
+          </div>
+          <div>
+            <h2 className="text-3xl font-black text-slate-900 tracking-tight leading-none">
+              Student <span className="text-primary italic">Directory</span>
+            </h2>
+            <p className="text-slate-500 font-medium text-sm mt-1">
+              View and manage registered students
+            </p>
+          </div>
         </div>
 
-        <div className="flex items-center gap-2 text-sm">
-          <span className="text-gray-700 font-medium">Select Entries</span>
-          <div className="relative w-22">
+        {/* Controls (Search + Filter) */}
+        <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+          {/* Search Bar - Unified Design */}
+          <div className="relative group w-full md:w-80">
+            <div className="flex items-center w-full bg-white border border-slate-200 rounded-xl shadow-sm focus-within:ring-4 focus-within:ring-primary/10 focus-within:border-primary transition-all overflow-hidden">
+              <div className="pl-4 text-slate-400">
+                <Search size={18} />
+              </div>
+              <input
+                type="text"
+                className="w-full px-3 py-3 outline-none text-sm font-medium text-slate-700 placeholder:text-slate-400"
+                placeholder="Search enrollment..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && fetchStudent()}
+              />
+              <button
+                onClick={fetchStudent}
+                className="bg-slate-900 text-white px-5 py-3 text-sm font-bold hover:bg-black transition-colors"
+              >
+                Search
+              </button>
+            </div>
+          </div>
+
+          {/* Rows Selector */}
+          <div className="relative min-w-[140px]">
             <button
               type="button"
               onClick={() => setIsOpen(!isOpen)}
-              className="w-full text-left px-4 pr-2 py-2 border rounded bg-white text-gray-800 border-gray-300 shadow-sm hover:bg-gray-50 focus:outline-none"
+              className="w-full flex items-center justify-between px-4 py-3 bg-white border border-slate-200 rounded-xl font-bold text-slate-700 text-sm shadow-sm hover:bg-slate-50 transition-all"
             >
-              <span>{limit}</span>
+              <span className="flex items-center gap-2">
+                <Filter size={16} className="text-slate-400" />
+                {limit} Rows
+              </span>
               <ChevronDown
-                className={`w-5 h-5 inline float-right transition-transform duration-200 ${
-                  isOpen ? "rotate-0" : "-rotate-90"
+                size={16}
+                className={`text-slate-400 transition-transform duration-200 ${
+                  isOpen ? "rotate-180" : ""
                 }`}
-                size={15}
               />
             </button>
 
             {isOpen && (
-              <ul className="absolute left-0 top-full z-50 w-full bg-white border border-gray-300 rounded shadow-md mt-1 py-2">
-                {[10, 25, 50].map((number) => (
-                  <li
+              <div className="absolute right-0 top-full mt-2 w-full bg-white border border-slate-100 rounded-xl shadow-xl overflow-hidden z-20 animate-in fade-in zoom-in-95 duration-200">
+                {[10, 25, 50, 100].map((number) => (
+                  <button
                     key={number}
-                    className="px-4 py-2 hover:bg-primary hover:text-white cursor-pointer"
+                    className={`w-full text-left px-4 py-3 text-sm font-bold transition-colors ${
+                      limit === number
+                        ? "bg-primary/5 text-primary"
+                        : "text-slate-600 hover:bg-slate-50"
+                    }`}
                     onClick={() => handleSelect(number)}
                   >
-                    {number}
-                  </li>
+                    {number} Entries
+                  </button>
                 ))}
-              </ul>
+              </div>
             )}
           </div>
         </div>
       </div>
-      <div className="max-w-full mt-6 overflow-x-auto">
-        <table className="w-full border-collapse rounded-md overflow-hidden text-nowrap">
-          <thead>
-            <tr className="bg-primary text-left text-white">
-              <th className="p-2 font-medium pl-5">Enrollment</th>
-              <th className="p-2 font-medium">Name</th>
-              <th className="p-2 font-medium">Branch</th>
-              <th className="p-2 font-medium">Mobile</th>
-              <th className="p-2 font-medium">Resume</th>
-            </tr>
-          </thead>
-          <tbody>
-            {students.map((item, index) => (
-              <tr
-                key={index}
-                className="border-b border-primary/10 bg-primary/5 even:bg-primary/10 hover:bg-primary-dull/20 cursor-pointer"
-                onClick={() => navigate(`/students/${item.user.enrollNumber}`)}
-              >
-                <td className="p-2 pl-5">{item.user.enrollNumber}</td>
-                <td className="p-2">{item.fullName}</td>
-                <td className="p-2">{item.branch}</td>
-                <td className="p-2">{item.mobile}</td>
-                <td className="p-2">
-                  {item.resume && item.resume.url ? (
-                    <a
-                      href={item.resume.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      download
-                      onClick={(e) => e.stopPropagation()}
-                      className="px-2 py-2 active:scale-95 transition bg-gray-500/15 border border-blue-500 rounded text-blue-500 text-sm font-medium flex items-center justify-center gap-1 cursor-pointer"
+
+      {/* --- TABLE SECTION --- */}
+      <div className="bg-white rounded-[2rem] border border-slate-200 shadow-sm overflow-hidden">
+        {loading ? (
+          <div className="flex flex-col justify-center items-center py-20">
+            <Spinner />
+            <p className="text-slate-500 text-sm mt-4 font-medium animate-pulse">
+              Syncing student records...
+            </p>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead className="bg-slate-50 border-b border-slate-100">
+                <tr>
+                  <th className="px-6 py-4 text-[11px] font-black text-slate-400 uppercase tracking-widest">
+                    Enrollment
+                  </th>
+                  <th className="px-6 py-4 text-[11px] font-black text-slate-400 uppercase tracking-widest">
+                    Student Info
+                  </th>
+                  <th className="px-6 py-4 text-[11px] font-black text-slate-400 uppercase tracking-widest">
+                    Branch
+                  </th>
+                  <th className="px-6 py-4 text-[11px] font-black text-slate-400 uppercase tracking-widest">
+                    Contact
+                  </th>
+                  <th className="px-6 py-4 text-[11px] font-black text-slate-400 uppercase tracking-widest text-center">
+                    Resume
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-50">
+                {students.length === 0 ? (
+                  <tr>
+                    <td colSpan="5" className="px-6 py-20 text-center">
+                      <div className="flex flex-col items-center justify-center text-slate-400">
+                        <UserCircle size={48} className="mb-4 text-slate-200" />
+                        <p className="font-bold">
+                          No students found matching your search.
+                        </p>
+                      </div>
+                    </td>
+                  </tr>
+                ) : (
+                  students.map((item, index) => (
+                    <tr
+                      key={index}
+                      onClick={() =>
+                        navigate(`/students/${item.user.enrollNumber}`)
+                      }
+                      className="group hover:bg-slate-50/80 transition-colors cursor-pointer"
                     >
-                      <Download size={20} />
-                      Download
-                    </a>
-                  ) : (
-                    <span className="text-gray-400 text-sm italic">
-                      No Resume
-                    </span>
-                  )}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+                      <td className="px-6 py-4">
+                        <span className="font-bold font-mono text-slate-600 bg-slate-100 px-2 py-1 rounded text-sm group-hover:bg-white group-hover:shadow-sm transition-all border border-transparent group-hover:border-slate-200">
+                          {item.user.enrollNumber}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-blue-600 text-white flex items-center justify-center font-bold text-sm shadow-md shadow-primary/20">
+                            {item.fullName.charAt(0)}
+                          </div>
+                          <div>
+                            <p className="font-bold text-slate-800 text-sm leading-tight">
+                              {item.fullName}
+                            </p>
+                            <p className="text-[10px] font-medium text-slate-400">
+                              {item.user.email}
+                            </p>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className="px-2 py-1 bg-white border border-slate-200 text-slate-600 rounded-md text-[10px] font-black uppercase tracking-wider">
+                          {item.branch}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 font-medium text-slate-600 text-sm">
+                        {item.mobile}
+                      </td>
+                      <td className="px-6 py-4 text-center">
+                        {item.resume && item.resume.url ? (
+                          <a
+                            href={item.resume.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            download
+                            onClick={(e) => e.stopPropagation()}
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 text-slate-600 rounded-lg hover:bg-primary hover:text-white transition-all border border-slate-200 hover:border-primary shadow-sm"
+                          >
+                            <Download size={14} />
+                            <span className="text-[10px] font-bold uppercase tracking-wide">
+                              PDF
+                            </span>
+                          </a>
+                        ) : (
+                          <span className="text-slate-300 text-[10px] font-bold uppercase tracking-widest">
+                            —
+                          </span>
+                        )}
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
-      <div className="flex justify-center gap-4 mt-6">
-        <button
-          disabled={page === 1}
-          onClick={() => setPage(page - 1)}
-          className={`px-4 py-2 rounded bg-primary text-white font-medium transition active:scale-95 disabled:opacity-50`}
-        >
-          Previous
-        </button>
-        <span className="flex items-center font-medium text-gray-700">
-          Page {page} of {totalPages}
-        </span>
-        <button
-          disabled={page === totalPages}
-          onClick={() => setPage(page + 1)}
-          className={`px-4 py-2 rounded bg-primary text-white font-medium transition active:scale-95 disabled:opacity-50`}
-        >
-          Next
-        </button>
-      </div>
-    </>
+
+      {/* --- PAGINATION SECTION --- */}
+      {!loading && students.length > 0 && (
+        <div className="flex items-center justify-between border-t border-slate-200 pt-6">
+          <p className="text-xs font-bold text-slate-400">
+            Page <span className="text-slate-800">{page}</span> of {totalPages}
+          </p>
+          <div className="flex gap-2">
+            <button
+              disabled={page === 1}
+              onClick={() => setPage(page - 1)}
+              className="flex items-center gap-1 px-4 py-2 rounded-lg bg-white border border-slate-200 text-slate-600 font-bold text-xs hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+            >
+              <ChevronLeft size={14} /> Prev
+            </button>
+            <button
+              disabled={page === totalPages}
+              onClick={() => setPage(page + 1)}
+              className="flex items-center gap-1 px-4 py-2 rounded-lg bg-slate-900 text-white font-bold text-xs hover:bg-black disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+            >
+              Next <ChevronRight size={14} />
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
   );
 };
 

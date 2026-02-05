@@ -44,6 +44,7 @@ export const AppContextProvider = (props) => {
 
   useEffect(() => {
     fetchUser();
+    getStudentVerification();
   }, []);
 
   const values = {

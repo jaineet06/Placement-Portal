@@ -1,15 +1,14 @@
 import React, { useEffect, useState } from "react";
 import Spinner from "../components/Spinner";
 import { useAdminContext } from "../context/AdminContext";
-import Title from "../components/Title";
-import { SquareCheck, Trash2 } from "lucide-react";
+import { UserCheck, Trash2, ShieldAlert, Mail, Hash } from "lucide-react";
 import toast from "react-hot-toast";
 
 const VerifyUsers = () => {
   const { axios } = useAdminContext();
   const [verifyUser, setVerfiyUser] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [verifying, setVerifying] = useState(false);
+  const [verifyingId, setVerifyingId] = useState(null); // Track specific user being verified
 
   const fetchNotVerifiedUsers = async () => {
     setLoading(true);
@@ -19,7 +18,6 @@ const VerifyUsers = () => {
         setVerfiyUser(data.users);
       }
     } catch (error) {
-      console.log(error);
       toast.error(error.message);
     } finally {
       setLoading(false);
@@ -27,7 +25,7 @@ const VerifyUsers = () => {
   };
 
   const verifyUserById = async (id) => {
-    setVerifying(true);
+    setVerifyingId(id);
     try {
       const { data } = await axios.post("/api/auth/verify-user", { id });
       if (data.success) {
@@ -39,24 +37,26 @@ const VerifyUsers = () => {
         toast.error(data.message);
       }
     } catch (error) {
-      console.log(error);
       toast.error(error.message);
     } finally {
-      setVerifying(false);
+      setVerifyingId(null);
     }
   };
 
   const deleteUserById = async (id) => {
+    if (
+      !window.confirm(
+        "Are you sure you want to reject and delete this registration?"
+      )
+    )
+      return;
     try {
       const { data } = await axios.delete(`/api/auth/verify/delete/${id}`);
       if (data.success) {
         toast.success(data.message);
         fetchNotVerifiedUsers();
-      } else {
-        toast.error(data.message);
       }
     } catch (error) {
-      console.log(error);
       toast.error(error.message);
     }
   };
@@ -64,71 +64,119 @@ const VerifyUsers = () => {
   useEffect(() => {
     fetchNotVerifiedUsers();
   }, []);
-  return loading ? (
-    <div className="flex flex-col justify-center items-center h-full">
-      <Spinner />
-      <p className="text-sm mt-2 font-normal">Fetching users...</p>
-    </div>
-  ) : (
-    <>
-      <Title text1={"Verfiy"} text2={"Users"} />
-      {verifyUser.length === 0 ? (
-        <div className="flex flex-col justify-center items-center mt-10 text-gray-500 text-lg font-medium">
-          All users are verified!
+
+  return (
+    <div className="p-4 space-y-8 max-w-8xl mx-auto min-h-screen bg-slate-50/30">
+      {/* Header */}
+      <div className="flex items-center gap-4">
+        <div className="p-3 bg-primary/10 rounded-2xl text-primary">
+          <ShieldAlert size={28} />
+        </div>
+        <div>
+          <h2 className="text-3xl font-black text-slate-900 tracking-tight">
+            Account <span className="text-primary italic">Verification</span>
+          </h2>
+          <p className="text-slate-500 font-medium">
+            Review and approve new student registrations
+          </p>
+        </div>
+      </div>
+
+      {loading ? (
+        <div className="flex flex-col justify-center items-center py-32 bg-white rounded-[2.5rem] border border-slate-100">
+          <Spinner />
+          <p className="text-slate-500 text-sm mt-4 font-medium animate-pulse">
+            Loading pending requests...
+          </p>
+        </div>
+      ) : verifyUser.length === 0 ? (
+        <div className="flex flex-col justify-center items-center py-24 bg-white rounded-[2.5rem] border-2 border-dashed border-slate-200">
+          <div className="p-4 bg-green-50 text-green-500 rounded-full mb-4">
+            <UserCheck size={40} />
+          </div>
+          <h3 className="text-xl font-bold text-slate-800">Queue is empty!</h3>
+          <p className="text-slate-500">
+            All student accounts are currently verified.
+          </p>
         </div>
       ) : (
-        <div className="max-w-4xl mt-6 overflow-x-auto">
-          <table className="w-full border-collapse rounded-md overflow-hidden text-nowrap">
-            <thead>
-              <tr className="bg-primary text-left text-white">
-                <th className="p-2 font-medium">Enrollment No</th>
-                <th className="p-2 font-medium pl-5">User Name</th>
-                <th className="p-2 font-medium">Email</th>
-                <th className="p-2 font-medium">Verify</th>
-                <th />
-              </tr>
-            </thead>
-            <tbody>
-              {verifyUser.map((item, index) => (
-                <tr
-                  key={index}
-                  className="border-b border-primary/10 bg-primary/5 even:bg-primary/10"
-                >
-                  <td className="p-2">{item.enrollNumber}</td>
-                  <td className="p-2 pl-5">{item.name}</td>
-                  <td className="p-2">{item.email}</td>
-                  <td className="p-2">
-                    <button
-                      type="button"
-                      onClick={() => verifyUserById(item._id)}
-                      className="px-6 py-2 active:scale-95 transition bg-gray-500/15 border border-blue-500 rounded text-blue-500 text-sm font-medium flex items-center justify-center gap-1 cursor-pointer"
-                    >
-                      {verifying ? (
-                        <>
-                          <div className="animate-spin rounded-full h-4 w-4 border-2 border-primary/50 border-t-primary" />
-                          <p>Verifying...</p>
-                        </>
-                      ) : (
-                        <>
-                          <SquareCheck size={15} />
-                          Verify
-                        </>
-                      )}
-                    </button>
-                  </td>
-                  <td
-                    onClick={() => deleteUserById(item._id)}
-                    className="text-red-700 cursor-pointer"
-                  >
-                    <Trash2 size={20} />
-                  </td>
+        <div className="bg-white rounded-[2.5rem] border border-slate-200 shadow-sm overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead className="bg-slate-50 border-b border-slate-100">
+                <tr>
+                  <th className="px-8 py-5 text-[13px] font-black text-slate-400 uppercase tracking-widest">
+                    Enrollment No
+                  </th>
+                  <th className="px-8 py-5 text-[13px] font-black text-slate-400 uppercase tracking-widest">
+                    User Details
+                  </th>
+                  <th className="px-8 py-5 text-[13px] font-black text-slate-400 uppercase tracking-widest text-center">
+                    Actions
+                  </th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-slate-50">
+                {verifyUser.map((item) => (
+                  <tr
+                    key={item._id}
+                    className="group hover:bg-slate-50/50 transition-colors"
+                  >
+                    <td className="px-8 py-5">
+                      <div className="flex items-center gap-2">
+                        <Hash size={14} className="text-primary/40" />
+                        <span className="font-black text-slate-600 tracking-tighter">
+                          {item.enrollNumber}
+                        </span>
+                      </div>
+                    </td>
+                    <td className="px-8 py-5">
+                      <div>
+                        <p className="font-bold text-slate-800 text-base">
+                          {item.name}
+                        </p>
+                        <p className="text-xs text-slate-400 font-medium flex items-center gap-1 mt-1">
+                          <Mail size={12} /> {item.email}
+                        </p>
+                      </div>
+                    </td>
+                    <td className="px-8 py-5">
+                      <div className="flex items-center justify-center gap-3">
+                        <button
+                          onClick={() => verifyUserById(item._id)}
+                          disabled={verifyingId === item._id}
+                          className="flex items-center gap-2 px-6 py-2.5 bg-primary text-white text-xs font-black uppercase tracking-widest rounded-xl hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 disabled:opacity-50 cursor-pointer"
+                        >
+                          {verifyingId === item._id ? (
+                            <>
+                              <div className="animate-spin rounded-full h-3 w-3 border-2 border-white/30 border-t-white" />
+                              Verifying
+                            </>
+                          ) : (
+                            <>
+                              <UserCheck size={16} />
+                              Approve
+                            </>
+                          )}
+                        </button>
+
+                        <button
+                          onClick={() => deleteUserById(item._id)}
+                          className="p-2.5 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all cursor-pointer"
+                          title="Reject User"
+                        >
+                          <Trash2 size={20} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
-    </>
+    </div>
   );
 };
 

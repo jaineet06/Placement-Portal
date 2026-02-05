@@ -9,15 +9,15 @@ adminRouter.get('/address/:id', authUser, authorizeRoles('admin'), getAddressByE
 adminRouter.get('/education/:userId', authUser, authorizeRoles('admin'), getEducation)
 adminRouter.delete('/delete/:userId', authUser, authorizeRoles('admin'), deleteStudent)
 
-//Create Job
+
 adminRouter.post("/create", authUser, authorizeRoles("admin"), createJob);
-// All jobs
+
 adminRouter.get("/get-all", authUser, authorizeRoles("admin"), getAllJobs);
-// Single Job
+
 adminRouter.get("/get/:jobId", authUser, authorizeRoles("admin"), getJobById);
-//Delete job by id
+
 adminRouter.delete("/delete-job/:jobId", authUser, authorizeRoles("admin"), deleteJob);
-// Update job status
+
 adminRouter.post("/update-status/:jobId", authUser, authorizeRoles("admin"), changeStatus)
 
 adminRouter.get("/export/:jobId", authUser, authorizeRoles("admin"), exportAppliedStudentToCSV)

@@ -4,73 +4,18 @@ import User from "../models/user.model.js";
 import deleteFromCloudinary from "../utils/deleteFromCloudinary.js";
 import uploadToCloudinary from "../utils/uploadToCloudinary.js";
 
-//To create a Student
+
 const createStudent = async (req, res) => {
     const { id } = req.user;
     const { fullName, parentName, branch, birthDate, category, mobile, alternateMobile, parentMobile } = req.body
 
     try {
 
-        // const isExist = await Student.findOne({ enrollmentNo })
-        // if (isExist) {
-        //     return res.status(400).json({ success: false, message: "Student with this enrollment number already exists." })
-        // }
-
-        // let resumePath = "";
-        // let profilePicPath = "";
-
-        // if (req.files) {
-        //     if (req.files.resume && req.files.resume[0]) {
-        //         const resume = req.files.resume[0]
-
-        //         if (resume.mimetype != "application/pdf") {
-        //             return res.status(400).json({ success: false, message: "Resume must be a PDF." });
-        //         }
-
-        //         if (resume.size > 2 * 1024 * 1024) {
-        //             return res.status(400).json({ success: false, message: "Resume must be under 2MB." });
-        //         }
-
-        //         const resumeResult = await uploadToCloudinary(
-        //             resume.path,
-        //             "students/resumes",
-        //             `${enrollmentNo}-resume`,
-        //             "raw"
-        //         )
-
-        //         resumePath = {
-        //             url: resumeResult.secure_url,
-        //             public_id: resumeResult.public_id
-        //         }
-        //     }
-
-        //     if (req.files.profilePath && req.files.profilePath[0]) {
-        //         const profile = req.files.profilePath[0]
-        //         const validTypes = ["image/jpeg", "image/png", "image/jpg"]
-        //         if (!validTypes.includes(profile.mimetype)) {
-        //             return res.status(400).json({ success: false, message: "Profile image must be JPG, PNG, or JPEG." });
-        //         }
-
-        //         if (profile.size > 1 * 1024 * 1024) {
-        //             return res.status(400).json({ success: false, message: "Profile image must be under 1MB." });
-        //         }
-
-        //         const profileResult = await uploadToCloudinary(
-        //             profile.path,
-        //             "students/profilePics",
-        //             `${enrollmentNo}-profile`,
-        //             "image"
-        //         );
-        //         profilePicPath = {
-        //             url: profileResult.secure_url,
-        //             public_id: profileResult.public_id
-        //         }
-        //     }
-        // }
+       
 
         const newStudent = new Student({
             user: id,
-            // enrollmentNo,
+            
             fullName,
             parentName,
             parentMobile,
@@ -92,41 +37,61 @@ const createStudent = async (req, res) => {
 
 }
 
-//Get list of all students (Admin)
+
 const getStudents = async (req, res) => {
     try {
-        const page = Number(req.query.page) || 1
-        const limit = Number(req.query.limit) || 10
-        const searchQuery = req.query.search || ""
-        const skip = (page - 1) * limit
+        const page = Number(req.query.page) || 1;
+        const limit = Number(req.query.limit) || 10;
+        const searchQuery = req.query.search || "";
+        const skip = (page - 1) * limit;
 
         let filter = {};
+
         if (searchQuery) {
             const regex = new RegExp(searchQuery, "i");
-            filter.fullName = regex;
-        }
 
+            // finding users matching enrollNumber
+            const users = await User.find({
+                enrollNumber: regex,
+            }).select("_id");
+
+            const userIds = users.map(u => u._id);
+
+            // search students
+            filter = {
+                $or: [
+                    { fullName: regex },
+                    { user: { $in: userIds } }
+                ]
+            };
+        }
 
         const students = await Student.find(filter)
             .populate("user", "enrollNumber fullName email")
             .skip(skip)
             .limit(limit);
 
+        const total = await Student.countDocuments(filter);
 
-        const total = await Student.countDocuments()
-
-        res.json({ success: true, message: "Students fetched Succesfully", students, total: Math.ceil(total / limit) });
+        res.json({
+            success: true,
+            message: "Students fetched successfully",
+            students,
+            total: Math.ceil(total / limit),
+        });
     } catch (error) {
+        console.error(error);
         return res.json({ success: false, message: "Server Error" });
     }
-}
+};
 
-//Get single student
+
+
 const getStudent = async (req, res) => {
     const { id } = req.user;
     try {
         const student = await Student.findOne({ user: id })
-        //     res.json({ success: true, message: "Students fetched Succesfully", student });
+       
 
         const userData = await User.findById(id).select("enrollNumber");
 
@@ -156,7 +121,7 @@ const studentExist = async (req, res) => {
     }
 }
 
-//update student files
+
 const uploadStudentFiles = async (req, res) => {
     const { id } = req.user
     try {
@@ -241,7 +206,7 @@ const uploadStudentFiles = async (req, res) => {
     }
 }
 
-//To check is student verified
+
 const getStudentVefrification = async (req, res) => {
 
     const { id } = req.user
@@ -284,10 +249,11 @@ const getStudentFiles = async (req, res) => {
 };
 
 
-//To fetch all current openings for the student
+
 const fetchAllJobs = async (req, res) => {
     try {
-        const jobs = await Job.find({}).sort({ createdAt: -1 }).select("-roles.applicants")
+        const jobs = await Job.find({}).sort({ createdAt: -1 }).select("-recruiter -roles.applicants")
+
         if (!jobs) {
             return res.json({ success: false, message: "No currrent openings" })
         }
@@ -302,7 +268,7 @@ const fetchAllJobs = async (req, res) => {
 const fetchJobById = async (req, res) => {
     const { jobId } = req.params;
     try {
-        const job = await Job.findById(jobId).select("-roles.applicants")
+        const job = await Job.findById(jobId).select("-roles.applicants -recruiter")
         if (!job) {
             return res.json({ success: false, message: "No job with specific id" })
         }
@@ -314,7 +280,7 @@ const fetchJobById = async (req, res) => {
 }
 
 
-//Apply to job
+
 const applyToJob = async (req, res) => {
     try {
         const { studentId, jobId } = req.params;
@@ -344,7 +310,7 @@ const applyToJob = async (req, res) => {
             const roleObj = job.roles.find(r => r.name === selectedRole);
             if (!roleObj) continue;
 
-            // Check if already applied
+            
             const alreadyApplied = roleObj.applicants.some(
                 s => s.student.equals(student._id)
             );
@@ -386,7 +352,6 @@ const applyToJob = async (req, res) => {
     }
 };
 
-//To fetch all student applied jobs
 const fetchAllAppliedJobs = async (req, res) => {
     const { userId } = req.params;
 

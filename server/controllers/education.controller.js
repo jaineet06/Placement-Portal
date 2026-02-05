@@ -13,7 +13,7 @@ const addOrUpdateEducation = async (req, res) => {
 
         let education = await Education.findOne({ user: id });
 
-        // Validate that either HSC or Diploma is provided, but not both
+       
         const hscProvided = hsc && hsc.percentage !== undefined && hsc.percentage !== null;
         const diplomaProvided = diploma && diploma.percentage !== undefined && diploma.percentage !== null;
 
@@ -30,7 +30,7 @@ const addOrUpdateEducation = async (req, res) => {
         }
 
         if (!education) {
-            // Create new education record
+            
             education = new Education({
                 user: id,
                 ssc,
@@ -43,7 +43,7 @@ const addOrUpdateEducation = async (req, res) => {
             await education.save();
             return res.status(201).json({ success: true, message: "Education details added successfully", education });
         } else {
-            // Update existing education record
+            
             if (ssc !== undefined) education.ssc = ssc;
             if (hsc !== undefined) education.hsc = hsc;
             if (diploma !== undefined) education.diploma = diploma;
@@ -68,9 +68,7 @@ const getEducation = async (req, res) => {
     const { id } = req.user;
     try {
         const education = await Education.findOne({ user: id });
-        // if (!education) {
-        //     return res.status(404).json({ success: false, message: "Education data not found" });
-        // }
+       
         return res.status(200).json({ success: true, education });
     } catch (error) {
         return res.status(500).json({ success: false, message: "Server error", error: error.message });
