@@ -40,31 +40,51 @@ const createStudent = async (req, res) => {
 
 const getStudents = async (req, res) => {
     try {
-        const page = Number(req.query.page) || 1
-        const limit = Number(req.query.limit) || 10
-        const searchQuery = req.query.search || ""
-        const skip = (page - 1) * limit
+        const page = Number(req.query.page) || 1;
+        const limit = Number(req.query.limit) || 10;
+        const searchQuery = req.query.search || "";
+        const skip = (page - 1) * limit;
 
         let filter = {};
+
         if (searchQuery) {
             const regex = new RegExp(searchQuery, "i");
-            filter.fullName = regex;
-        }
 
+            // finding users matching enrollNumber
+            const users = await User.find({
+                enrollNumber: regex,
+            }).select("_id");
+
+            const userIds = users.map(u => u._id);
+
+            // search students
+            filter = {
+                $or: [
+                    { fullName: regex },
+                    { user: { $in: userIds } }
+                ]
+            };
+        }
 
         const students = await Student.find(filter)
             .populate("user", "enrollNumber fullName email")
             .skip(skip)
             .limit(limit);
 
+        const total = await Student.countDocuments(filter);
 
-        const total = await Student.countDocuments()
-
-        res.json({ success: true, message: "Students fetched Succesfully", students, total: Math.ceil(total / limit) });
+        res.json({
+            success: true,
+            message: "Students fetched successfully",
+            students,
+            total: Math.ceil(total / limit),
+        });
     } catch (error) {
+        console.error(error);
         return res.json({ success: false, message: "Server Error" });
     }
-}
+};
+
 
 
 const getStudent = async (req, res) => {

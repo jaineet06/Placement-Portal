@@ -13,6 +13,7 @@ const AppliedJobs = () => {
   const navigate = useNavigate();
 
   const fetchJobs = async () => {
+   // console.log("fetchJobs called");
     try {
       setLoading(true);
       const { data } = await axios.get(
@@ -33,7 +34,7 @@ const AppliedJobs = () => {
   useEffect(() => {
     if (!verified) return;
     fetchJobs();
-  }, [verified]);
+  }, [verified ]);
 
   if (!verified) return <PendingVerification />;
 
