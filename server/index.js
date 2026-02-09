@@ -10,6 +10,8 @@ import addresRouter from './routes/address.route.js'
 import educationRouter from './routes/education.routes.js'
 import adminRouter from './routes/admin.routes.js'
 import newsRouter from './routes/news.router.js'
+import jobRouter from './routes/job.routes.js'
+import { success } from 'zod'
 
 
 connectDB()
@@ -34,6 +36,11 @@ app.use('/api/address', addresRouter)
 app.use('/api/education', educationRouter)
 app.use('/api/admin', adminRouter)
 app.use('/api/news', newsRouter)
+app.use('/api/job', jobRouter)
+
+app.use((res) => {
+    res.status(404).json({ success: false, message: "Page not found" })
+})
 
 app.listen(port, () => {
     console.log(`App is listening on http://localhost:${port}`)
