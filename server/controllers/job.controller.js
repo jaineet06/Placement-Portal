@@ -1,6 +1,7 @@
 import { changeJobStatusSchema, createJobSchema } from "../validations/job.validation.js"
-import { createJobService, deleteJobService, getApplicationsForJobByIdService, getJobByIdService } from "../services/job.service.js"
+import { createJobService, deleteJobService, exportRoleApplicantsToCSVService, getAllJobServices, getApplicationsForJobByIdService, getJobByIdService } from "../services/job.service.js"
 import Job from "#models/job.model.js"
+import Role from "#models/role.model.js"
 
 export const createJob = async (req, res) => {
     try {
@@ -101,5 +102,62 @@ export const getJobById = async (req, res) => {
             success: false,
             message: "Server error",
         })
+    }
+}
+
+export const getAllJobs = async (req, res) => {
+    try {
+        const jobs = await getAllJobServices();
+
+        return res.status(200).json({
+            success: true,
+            jobs
+        })
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: "Server error",
+        })
+    }
+}
+
+export const exportRoleApplicantsToCSV = async (req, res) => {
+    try {
+        const { roleId } = req.params
+
+        const role = await Role.findById(roleId)
+            .populate("jobId", "title companyName")
+            .lean()
+
+        const roleName = role.roleName
+        const companyName = role.jobId.companyName
+        const title = role.jobId.title
+
+        if (!role) {
+            return res.status(404).json({
+                success: false,
+                message: "No role found"
+            })
+        }
+
+        const csv = await exportRoleApplicantsToCSVService(roleId)
+
+        if (!csv) {
+            return res.status(404).json({
+                success: false,
+                message: "No applicants found"
+            })
+        }
+
+        res.setHeader("Content-Type", "text/csv")
+        res.setHeader(
+            "Content-Disposition",
+            `attachment; filename=${companyName}-${title}-${role}-applicants.csv`
+        )
+
+        return res.status(200).send(csv)
+
+    } catch (error) {
+        return res.status(500).json({ success: false, message: "Server error" })
     }
 }

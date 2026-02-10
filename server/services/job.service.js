@@ -1,6 +1,7 @@
 import Application from "#models/application.model.js";
 import Job from "#models/job.model.js"
 import Role from "#models/role.model.js";
+import { Parser } from "json2csv";
 
 export const createJobService = async ({
     companyName,
@@ -96,3 +97,48 @@ export const getApplicationsForJobByIdService = async (jobId) => {
         throw error
     }
 }
+
+export const getAllJobServices = async () => {
+    try {
+        const jobs = await Job.find().populate({ path: "roles.id", select: "roleName" }).sort({ createdAt: -1 }).lean()
+
+        return jobs.map((job) => ({
+            ...job,
+            rolesCount: job.roles.length
+        }));
+    } catch (error) {
+        console.error("Error in getting all jobs:", error)
+        throw error
+    }
+}
+
+export const exportRoleApplicantsToCSVService = async (roleId) => {
+    try {
+        const applications = await Application.find({ role: roleId }).populate({
+            path: "student",
+            populate: {
+                path: "user",
+                select: "enrollNumber email"
+            }
+        }).lean()
+
+        if (!applications.length) return null
+
+        const rows = applications.map((app) => ({
+            enrollNumber: app.student.user.enrollNumber,
+            name: app.student.fullName,
+            email: app.student.user.email,
+            mobile: app.student.mobile,
+            branch: app.student.branch,
+            resume: app.student.resume.url,
+            acceptedTerms: app.acceptedTerms,
+            appliedAt: app.appliedAt
+        }))
+
+        const parser = new Parser()
+        return parser.parse(rows)
+    } catch (error) {
+        console.error("Error in exporting applicants to CSV:", error)
+        throw error
+    }
+} 

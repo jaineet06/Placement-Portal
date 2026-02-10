@@ -124,84 +124,6 @@ const deleteStudent = async (req, res) => {
   }
 };
 
-const getAllJobs = async (req, res) => {
-  try {
-    const jobs = await Job.find({}).sort({ createdAt: -1 });
-    res.json({ success: true, jobs });
-  } catch (error) {
-    console.error("Fetch Jobs Error:", error.message);
-    res.json({ success: false, message: "Server Error" });
-  }
-};
-
-const exportAppliedStudentToCSV = async (req, res) => {
-  const { jobId } = req.params
-
-  try {
-
-    const job = await Job.findById(jobId).populate({
-      path: "roles.applicants.student",
-      populate: {
-        path: "user",
-        select: "name email enrollNumber"
-      }
-    });
-
-    if (!job) {
-      return res.json({ success: false, message: "Job not found" });
-    }
-
-    const appliedList = []
-
-    job.roles.forEach(role => {
-      role.applicants.forEach(app => {
-        if (!app.student || !app.student.user) return;
-
-        appliedList.push({
-          enrollNumber: app.student.user.enrollNumber,
-          name: app.student.fullName,
-          email: app.student.user.email,
-          branch: app.student.branch,
-          resume: app.student.resume.url,
-          role: role.name,
-          acceptedTerm: app.acceptedTerms ? "Yes" : "No",
-          appliedAt: app.appliedAt,
-        })
-      })
-    })
-
-    if (appliedList.length === 0) {
-      return res.json({ success: false, message: "No applicants found" });
-    }
-
-    const fields = [
-      { label: "Enrollment No.", value: "enrollNumber" },
-      { label: "Name", value: "name" },
-      { label: "Email", value: "email" },
-      { label: "Branch", value: "branch" },
-      { label: "resume", value: "resume" },
-      { label: "Role", value: "role" },
-      { label: "Accepted Terms", value: "acceptedTerm" },
-      { label: "Applied At", value: "appliedAt" },
-    ]
-
-    const parser = new Parser({ fields })
-    const csv = parser.parse(appliedList)
-
-    res.header("Content-Type", "text/csv")
-    res.attachment(`${job.companyName}-applicants.csv`)
-    res.send(csv)
-  } catch (error) {
-    console.error(error);
-    res.json({ message: "Failed to export CSV" });
-  }
-
-
-
-}
-
-
-
 const changeApplicationStatus = async (req, res) => {
 
   const { status, jobId, id } = req.body
@@ -244,7 +166,5 @@ export {
   getAddressByEnrollment,
   getEducation,
   deleteStudent,
-  getAllJobs,
-  exportAppliedStudentToCSV,
   changeApplicationStatus
 };
