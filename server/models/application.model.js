@@ -2,9 +2,9 @@ import mongoose from "mongoose";
 
 const applicationSchema = new mongoose.Schema(
     {
-        student: {
+        user: {
             type: mongoose.Schema.Types.ObjectId,
-            ref: "student",
+            ref: "user",
             required: true,
             index: true,
         },
@@ -32,7 +32,6 @@ const applicationSchema = new mongoose.Schema(
             type: String,
             enum: ["In Consideration", "Selected", "Rejected"],
             default: "In Consideration",
-            index: true,
         },
 
         appliedAt: {

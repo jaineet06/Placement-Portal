@@ -34,7 +34,7 @@ const JobDetails = () => {
   const fetchJobDetails = async () => {
     setLoading(true);
     try {
-      const { data } = await axios.get(`/api/admin/get/${jobId}`);
+      const { data } = await axios.get(`/api/job/get/${jobId}`);
       if (data.success) {
         setJob(data.job);
         if (data.job.roles?.length > 0) {
@@ -73,23 +73,6 @@ const JobDetails = () => {
     }
   };
 
-  const handleRoleChange = (selectedRoleName) => {
-    if (!job) return;
-    const selectedRole = job.roles.find((r) => r.name === selectedRoleName);
-    if (selectedRole) {
-      const processedApplicants = selectedRole.applicants.map((app) => {
-        const matchingJob = app.student.appliedJobs.find(
-          (aj) => aj.job === jobId
-        );
-        return {
-          ...app,
-          currentStatus: matchingJob ? matchingJob.status : "In Consideration",
-        };
-      });
-      setAppliedStudents(processedApplicants);
-    }
-  };
-
   const handleExportCSV = async () => {
     if (!role) return toast.error("Please select a role");
     try {
@@ -115,10 +98,10 @@ const JobDetails = () => {
   const handleDeleteJob = async () => {
     if (!window.confirm("Are you sure? This action cannot be undone.")) return;
     try {
-      const { data } = await axios.delete(`/api/admin/delete-job/${jobId}`);
+      const { data } = await axios.delete(`/api/job/delete/${jobId}`);
       if (data.success) {
         toast.success("Job deleted");
-        navigate("/admin/jobs");
+        navigate("/jobs");
       }
     } catch (error) {
       toast.error("Delete failed");
@@ -128,10 +111,6 @@ const JobDetails = () => {
   useEffect(() => {
     fetchJobDetails();
   }, [jobId]);
-
-  useEffect(() => {
-    if (role) handleRoleChange(role);
-  }, [role, job]);
 
   if (loading)
     return (
@@ -302,16 +281,6 @@ const JobDetails = () => {
             <h4 className="text-5xl font-black text-slate-900">
               {appliedStudents.length}
             </h4>
-            <div className="mt-4 flex flex-wrap gap-2">
-              {job.roles.map((r) => (
-                <span
-                  key={r.name}
-                  className="px-3 py-1 bg-primary/5 text-primary text-[10px] font-black rounded-lg border border-primary/10"
-                >
-                  {r.name}: {r.applicants.length}
-                </span>
-              ))}
-            </div>
           </div>
         </div>
       </div>
@@ -344,8 +313,8 @@ const JobDetails = () => {
               className="px-4 py-2.5 bg-slate-50 border border-slate-100 rounded-xl outline-none font-bold text-sm text-slate-600 cursor-pointer"
             >
               {job.roles.map((r) => (
-                <option key={r.name} value={r.name}>
-                  {r.name}
+                <option key={r.roleName} value={r.name}>
+                  {r.id.roleName}
                 </option>
               ))}
             </select>

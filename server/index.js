@@ -38,7 +38,7 @@ app.use('/api/admin', adminRouter)
 app.use('/api/news', newsRouter)
 app.use('/api/job', jobRouter)
 
-app.use((res) => {
+app.use((_, res) => {
     res.status(404).json({ success: false, message: "Page not found" })
 })
 

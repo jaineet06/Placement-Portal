@@ -84,8 +84,8 @@ const CreateJob = () => {
 
     setLoading(true);
     try {
-      const { data } = await axios.post("/api/admin/create", {
-        name,
+      const { data } = await axios.post("/api/job/create", {
+        companyName: name,
         title,
         description,
         location,

@@ -11,7 +11,8 @@ export const createJobService = async ({
     jobType,
     lastDate,
     location,
-    roles
+    roles,
+    rounds
 }) => {
     try {
         const job = await Job.create({
@@ -22,6 +23,7 @@ export const createJobService = async ({
             jobType,
             lastDate: new Date(lastDate),
             location,
+            rounds
         })
 
         const jobId = job._id;
@@ -141,4 +143,4 @@ export const exportRoleApplicantsToCSVService = async (roleId) => {
         console.error("Error in exporting applicants to CSV:", error)
         throw error
     }
-} 
+}

@@ -4,8 +4,6 @@ import Education from "../models/education.model.js";
 import Student from "../models/student.model.js";
 import User from "../models/user.model.js";
 import deleteFromCloudinary from "../utils/deleteFromCloudinary.js";
-import Job from "../models/job.model.js";
-import { Parser } from "json2csv"
 
 const getStudentByEnrollment = async (req, res) => {
   const { id } = req.params;

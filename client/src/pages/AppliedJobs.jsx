@@ -1,44 +1,17 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { useAppContext } from "../context/AppContext";
-import toast from "react-hot-toast";
 import Spinner from "../components/Spinner";
 import { Briefcase, Building2, MapPin, Calendar, Clock } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import PendingVerification from "../components/PendingVerification";
 
 const AppliedJobs = () => {
-  const { axios, user, verified } = useAppContext();
-  const [appliedJobs, setAppliedJobs] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const { appliedJobs, appliedJobsLoading, verified } = useAppContext();
   const navigate = useNavigate();
-
-  const fetchJobs = async () => {
-   // console.log("fetchJobs called");
-    try {
-      setLoading(true);
-      const { data } = await axios.get(
-        `/api/student/job/apply/get-all/${user._id}`
-      );
-      if (data.success) {
-        setAppliedJobs(data.appliedJobs);
-      } else {
-        toast.error(data.message);
-      }
-    } catch (error) {
-      toast.error("Internal server error");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    if (!verified) return;
-    fetchJobs();
-  }, [verified ]);
 
   if (!verified) return <PendingVerification />;
 
-  if (loading)
+  if (appliedJobsLoading)
     return (
       <div className="flex flex-col justify-center items-center h-[60vh]">
         <Spinner />
@@ -81,13 +54,13 @@ const AppliedJobs = () => {
               <thead>
                 <tr className="bg-slate-900 text-white">
                   <th className="px-8 py-5 text-xs font-black uppercase tracking-widest">
-                    Company & Role
+                    Company
                   </th>
                   <th className="px-8 py-5 text-xs font-black uppercase tracking-widest hidden md:table-cell">
                     Location
                   </th>
                   <th className="px-8 py-5 text-xs font-black uppercase tracking-widest">
-                    Applied Roles
+                    Applied Role
                   </th>
                   <th className="px-8 py-5 text-xs font-black uppercase tracking-widest">
                     Date Applied
@@ -98,10 +71,11 @@ const AppliedJobs = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-50">
-                {appliedJobs.map((job) => (
+                {appliedJobs.map((job, index) => (
                   <tr
-                    key={job._id}
-                    className="group hover:bg-slate-50/50 transition-colors cursor-default"
+                    key={job.jobId + job.roleId + index}
+                    onClick={() => job.jobId && navigate(`/company/${job.jobId}`)}
+                    className="group hover:bg-slate-50/50 transition-colors cursor-pointer"
                   >
                     <td className="px-8 py-6">
                       <div className="flex items-center gap-4">
@@ -110,7 +84,7 @@ const AppliedJobs = () => {
                         </div>
                         <div>
                           <p className="font-black text-slate-900 leading-none mb-1">
-                            {job.name}
+                            {job.companyName}
                           </p>
                           <p className="text-sm text-slate-500 font-medium">
                             {job.title}
@@ -128,20 +102,9 @@ const AppliedJobs = () => {
 
                     <td className="px-8 py-6">
                       <div className="flex flex-wrap gap-1">
-                        {job.appliedRoles?.length > 0 ? (
-                          job.appliedRoles.map((role, i) => (
-                            <span
-                              key={i}
-                              className="px-2 py-1 bg-slate-100 text-slate-600 rounded-md text-[10px] font-bold uppercase"
-                            >
-                              {role}
-                            </span>
-                          ))
-                        ) : (
-                          <span className="text-slate-300 text-xs italic font-medium">
-                            —
-                          </span>
-                        )}
+                        <span className="px-2 py-1 bg-slate-100 text-slate-600 rounded-md text-[10px] font-bold uppercase">
+                          {job.appliedRoleName}
+                        </span>
                       </div>
                     </td>
 

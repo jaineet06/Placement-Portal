@@ -15,7 +15,10 @@ export const createJobSchema = z.object({
         "Last date must be in the future"
     ),
     location: z.string().optional(),
-    roles: z.array(z.string().min(2)).min(1)
+    roles: z.array(z.string().min(2)).min(1),
+    rounds: z.array(
+        z.string().trim().min(1)
+    ).min(1, "At least one round is required")
 })
 
 export const changeJobStatusSchema = z.object({

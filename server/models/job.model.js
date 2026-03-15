@@ -19,7 +19,9 @@ const jobSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
-
+    rounds: [{
+      type: String, required: true
+    }],
     description: {
       type: String,
       required: true,
