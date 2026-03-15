@@ -1,9 +1,9 @@
-
 import Address from "../models/address.model.js";
 import Education from "../models/education.model.js";
 import Student from "../models/student.model.js";
 import User from "../models/user.model.js";
 import deleteFromCloudinary from "../utils/deleteFromCloudinary.js";
+import { updateApplicationStatusService } from "../services/job.service.js";
 
 const getStudentByEnrollment = async (req, res) => {
   const { id } = req.params;
@@ -123,41 +123,26 @@ const deleteStudent = async (req, res) => {
 };
 
 const changeApplicationStatus = async (req, res) => {
-
-  const { status, jobId, id } = req.body
+  const { status, jobId, userId, roleId } = req.body;
   try {
+    const application = await updateApplicationStatusService(userId, jobId, roleId, status);
 
-    console.log(id);
-    console.log(jobId);
-
-    const updatedStudent = await Student.findOneAndUpdate(
-      {
-        user: id,
-        "appliedJobs.job": jobId
-      },
-      {
-        $set: { "appliedJobs.$.status": status }
-      },
-      { new: true }
-    );
-
-    if (!updatedStudent) {
-      return res.json({
+    if (!application) {
+      return res.status(404).json({
         success: false,
-        message: "Student or Job application not found."
+        message: "Application not found.",
       });
     }
 
     return res.json({
       success: true,
-      message: "Status updated successfully"
+      message: "Status updated successfully",
     });
-
   } catch (error) {
     console.error(error);
-    return res.json({ success: false, message: "Server Error" });
+    return res.status(500).json({ success: false, message: "Server Error" });
   }
-}
+};
 
 export {
   getStudentByEnrollment,

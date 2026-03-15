@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import Application from "#models/application.model.js";
 import Job from "#models/job.model.js"
 import Role from "#models/role.model.js";
@@ -87,18 +88,66 @@ export const getJobByIdService = async (jobId) => {
 
 export const getApplicationsForJobByIdService = async (jobId) => {
     try {
-        const applications = Application.find({ job: jobId }).populate({
-            path: "student"
-        }).populate({
-            path: "role"
-        }).sort({ appliedAt: -1 }).lean()
-
-        return applications
+        const applications = await Application.aggregate([
+            { $match: { job: new mongoose.Types.ObjectId(jobId) } },
+            { $sort: { appliedAt: -1 } },
+            {
+                $lookup: {
+                    from: "users",
+                    localField: "user",
+                    foreignField: "_id",
+                    as: "userDoc"
+                }
+            },
+            { $unwind: "$userDoc" },
+            {
+                $lookup: {
+                    from: "students",
+                    localField: "user",
+                    foreignField: "user",
+                    as: "studentDoc"
+                }
+            },
+            { $unwind: "$studentDoc" },
+            {
+                $lookup: {
+                    from: "roles",
+                    localField: "role",
+                    foreignField: "_id",
+                    as: "roleDoc"
+                }
+            },
+            { $unwind: "$roleDoc" },
+            {
+                $project: {
+                    appliedAt: 1,
+                    status: 1,
+                    user: {
+                        _id: "$userDoc._id",
+                        enrollNumber: "$userDoc.enrollNumber",
+                        email: "$userDoc.email"
+                    },
+                    student: {
+                        fullName: "$studentDoc.fullName",
+                        branch: "$studentDoc.branch",
+                        user: {
+                            _id: "$userDoc._id",
+                            enrollNumber: "$userDoc.enrollNumber"
+                        }
+                    },
+                    role: {
+                        _id: "$roleDoc._id",
+                        roleName: "$roleDoc.roleName"
+                    }
+                }
+            }
+        ]);
+        return applications;
     } catch (error) {
-        console.error("Error in getting aaplications for job by id:", error)
-        throw error
+        console.error("Error in getting applications for job by id:", error);
+        throw error;
     }
-}
+};
 
 export const getAllJobServices = async () => {
     try {
@@ -116,31 +165,53 @@ export const getAllJobServices = async () => {
 
 export const exportRoleApplicantsToCSVService = async (roleId) => {
     try {
-        const applications = await Application.find({ role: roleId }).populate({
-            path: "student",
-            populate: {
-                path: "user",
-                select: "enrollNumber email"
-            }
-        }).lean()
+        const applications = await Application.find({ role: roleId })
+            .populate("user", "enrollNumber email")
+            .lean();
 
-        if (!applications.length) return null
+        if (!applications.length) return null;
 
-        const rows = applications.map((app) => ({
-            enrollNumber: app.student.user.enrollNumber,
-            name: app.student.fullName,
-            email: app.student.user.email,
-            mobile: app.student.mobile,
-            branch: app.student.branch,
-            resume: app.student.resume.url,
-            acceptedTerms: app.acceptedTerms,
-            appliedAt: app.appliedAt
-        }))
+        const userIds = applications.map((a) => a.user._id);
+        const Student = (await import("#models/student.model.js")).default;
+        const students = await Student.find({ user: { $in: userIds } })
+            .select("user fullName branch mobile resume")
+            .lean();
+        const studentByUser = Object.fromEntries(
+            students.map((s) => [s.user.toString(), s])
+        );
 
-        const parser = new Parser()
-        return parser.parse(rows)
+        const rows = applications.map((app) => {
+            const student = studentByUser[app.user._id.toString()] || {};
+            return {
+                enrollNumber: app.user?.enrollNumber ?? "",
+                name: student.fullName ?? "",
+                email: app.user?.email ?? "",
+                mobile: student.mobile ?? "",
+                branch: student.branch ?? "",
+                resume: student.resume?.url ?? "",
+                status: app.status ?? "",
+                appliedAt: app.appliedAt
+            };
+        });
+
+        const parser = new Parser();
+        return parser.parse(rows);
     } catch (error) {
-        console.error("Error in exporting applicants to CSV:", error)
-        throw error
+        console.error("Error in exporting applicants to CSV:", error);
+        throw error;
     }
-}
+};
+
+export const updateApplicationStatusService = async (userId, jobId, roleId, status) => {
+    try {
+        const application = await Application.findOneAndUpdate(
+            { user: userId, job: jobId, role: roleId },
+            { $set: { status } },
+            { new: true }
+        );
+        return application;
+    } catch (error) {
+        console.error("Error updating application status:", error);
+        throw error;
+    }
+};

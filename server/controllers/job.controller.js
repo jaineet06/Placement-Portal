@@ -98,6 +98,7 @@ export const getJobById = async (req, res) => {
             applications,
         })
     } catch (error) {
+        console.log(error);
         return res.status(500).json({
             success: false,
             message: "Server error",
@@ -129,16 +130,16 @@ export const exportRoleApplicantsToCSV = async (req, res) => {
             .populate("jobId", "title companyName")
             .lean()
 
-        const roleName = role.roleName
-        const companyName = role.jobId.companyName
-        const title = role.jobId.title
-
         if (!role) {
             return res.status(404).json({
                 success: false,
                 message: "No role found"
             })
         }
+
+        const roleName = role.roleName
+        const companyName = role.jobId?.companyName ?? "Company"
+        const title = role.jobId?.title ?? "Job"
 
         const csv = await exportRoleApplicantsToCSVService(roleId)
 
@@ -152,7 +153,7 @@ export const exportRoleApplicantsToCSV = async (req, res) => {
         res.setHeader("Content-Type", "text/csv")
         res.setHeader(
             "Content-Disposition",
-            `attachment; filename=${companyName}-${title}-${role}-applicants.csv`
+            `attachment; filename=${companyName}-${roleName}-applicants.csv`
         )
 
         return res.status(200).send(csv)
