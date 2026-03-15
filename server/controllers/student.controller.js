@@ -1,3 +1,5 @@
+import { applyJobService, fetchAllAppliedJobsService } from "#services/student.service.js";
+import { success } from "zod";
 import Job from "../models/job.model.js";
 import Student from "../models/student.model.js";
 import User from "../models/user.model.js";
@@ -11,11 +13,11 @@ const createStudent = async (req, res) => {
 
     try {
 
-       
+
 
         const newStudent = new Student({
             user: id,
-            
+
             fullName,
             parentName,
             parentMobile,
@@ -36,7 +38,6 @@ const createStudent = async (req, res) => {
     }
 
 }
-
 
 const getStudents = async (req, res) => {
     try {
@@ -85,13 +86,11 @@ const getStudents = async (req, res) => {
     }
 };
 
-
-
 const getStudent = async (req, res) => {
     const { id } = req.user;
     try {
         const student = await Student.findOne({ user: id })
-       
+
 
         const userData = await User.findById(id).select("enrollNumber");
 
@@ -120,7 +119,6 @@ const studentExist = async (req, res) => {
         return res.json({ success: false, message: "Server Error" });
     }
 }
-
 
 const uploadStudentFiles = async (req, res) => {
     const { id } = req.user
@@ -206,7 +204,6 @@ const uploadStudentFiles = async (req, res) => {
     }
 }
 
-
 const getStudentVefrification = async (req, res) => {
 
     const { id } = req.user
@@ -268,7 +265,10 @@ const fetchAllJobs = async (req, res) => {
 const fetchJobById = async (req, res) => {
     const { jobId } = req.params;
     try {
-        const job = await Job.findById(jobId).select("-roles.applicants -recruiter")
+        const job = await Job.findById(jobId).populate({
+            path: "roles.id",
+            select: "roleName"
+        }).select("-recruiter")
         if (!job) {
             return res.json({ success: false, message: "No job with specific id" })
         }
@@ -279,121 +279,63 @@ const fetchJobById = async (req, res) => {
     }
 }
 
-
-
 const applyToJob = async (req, res) => {
     try {
-        const { studentId, jobId } = req.params;
-        const { roles, acceptedTerms } = req.body;
+        const { jobId } = req.params
+        const { roles } = req.body
+        const userId = req.user.id
 
-        if (!roles || !Array.isArray(roles) || roles.length === 0) {
-            return res.json({ success: false, message: "Select at least one role" });
-        }
-
-        if (!acceptedTerms) {
-            return res.json({ success: false, message: "You must accept terms & conditions" });
-        }
-
-        const student = await Student.findOne({ user: studentId });
-        if (!student) return res.json({ success: false, message: "Student not found." });
-
-        const job = await Job.findById(jobId);
-        if (!job) return res.json({ success: false, message: "Job not found." });
-
-        if (job.status === "Closed") {
-            return res.json({ success: false, message: "Applications are closed" });
-        }
-
-        const appliedRoles = [];
-
-        for (const selectedRole of roles) {
-            const roleObj = job.roles.find(r => r.name === selectedRole);
-            if (!roleObj) continue;
-
-            
-            const alreadyApplied = roleObj.applicants.some(
-                s => s.student.equals(student._id)
-            );
-
-            if (!alreadyApplied) {
-                roleObj.applicants.push({ student: student._id, acceptedTerms, appliedAt: Date.now() });
-                appliedRoles.push(selectedRole);
-            }
-        }
-
-        if (appliedRoles.length === 0) {
-            return res.json({
+        if (!roles || roles.length === 0) {
+            return res.status(400).json({
                 success: false,
-                message: "You have already applied for all selected roles.",
+                message: "No roles selected",
             });
         }
 
-        const exists = student.appliedJobs.some(
-            entry => entry.job.toString() === jobId
-        );
-        if (!exists) {
-            student.appliedJobs.push({ job: jobId });
-        }
+        const student = await Student.findOne({ user: userId })
 
-        await student.save();
-        await job.save();
-
-        return res.json({
-            success: true,
-            message: `Applied successfully for: ${appliedRoles.join(", ")}`,
-        });
-
-    } catch (error) {
-        console.error(error);
-        return res.json({
-            success: false,
-            message: "Server error while applying to job.",
-        });
-    }
-};
-
-const fetchAllAppliedJobs = async (req, res) => {
-    const { userId } = req.params;
-
-    try {
-        const student = await Student.findOne({ user: userId }).populate("appliedJobs.job")
         if (!student) {
             return res.json({ success: false, message: "No student found" })
         }
 
-        const appliedJobs = student.appliedJobs.map(({ job, status }) => {
+        const job = await Job.findById(jobId)
 
-            if (!job) return null;
+        if (!job) {
+            return res.json({ success: false, message: "No job found" })
+        }
 
-            const appliedRoles = []
-            let appliedAt = null;
+        if (job.status === "Closed" || job.lastDate < new Date()) { return res.json({ success: false, message: "No longer accepting responses" }) }
 
-            job.roles.forEach(role => {
-                const applicant = role.applicants.find(a => a.student.toString() === student._id.toString())
+        const applications = await applyJobService(userId, jobId, roles)
 
-                if (applicant) appliedRoles.push(role.name)
-                if (!appliedAt || applicant.appliedAt < appliedAt) {
+        if (applications.length === 0) {
+            return res.json({ success: false, message: "Already applied for all roles" })
+        }
 
-                    appliedAt = applicant.appliedAt
-                }
-            })
+        return res.json({ success: true, message: "Successfully applied for roles" })
 
-            return {
-                name: job.companyName,
-                title: job.title,
-                location: job.location,
-                appliedRoles,
-                appliedAt,
-                status
-            }
-        }).filter(r => r !== null)
-
-        return res.json({ success: true, appliedJobs })
     } catch (error) {
-        console.error(error);
-        return res.json({ success: false, message: "Server error fetching applied jobs." });
+        return res.json({ success: false, message: "Server error while appling for jobs." });
     }
-}
+};
+
+const fetchAllAppliedJobs = async (req, res) => {
+    const userId = req.user?.id;
+    try {
+        if (!userId) {
+            return res.status(401).json({ success: false, message: "Unauthorized" });
+        }
+        const appliedJobs = await fetchAllAppliedJobsService(userId);
+        return res.json({
+            success: true,
+            message: "Applied jobs fetched successfully",
+            appliedJobs,
+        });
+    } catch (error) {
+        console.error("Fetch applied jobs error:", error);
+        return res.status(500).json({ success: false, message: "Server error while fetching applied jobs" });
+    }
+};
 
 
 export { createStudent, getStudents, getStudent, uploadStudentFiles, getStudentVefrification, studentExist, getStudentFiles, fetchAllJobs, fetchJobById, applyToJob, fetchAllAppliedJobs }

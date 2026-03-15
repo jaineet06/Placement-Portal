@@ -23,7 +23,7 @@ const JobListing = () => {
   const fetchJobs = async () => {
     setLoading(true);
     try {
-      const { data } = await axios.get("/api/admin/get-all");
+      const { data } = await axios.get("/api/job/get-all");
       if (data.success) setJobs(data.jobs);
       else toast.error(data.message);
     } catch (error) {
@@ -40,7 +40,7 @@ const JobListing = () => {
   const handleStatusChange = async (jobId, newStatus) => {
     setStatusLoading((prev) => ({ ...prev, [jobId]: true }));
     try {
-      const { data } = await axios.post(`/api/admin/update-status/${jobId}`, {
+      const { data } = await axios.put(`/api/job/change-status/${jobId}`, {
         status: newStatus,
       });
       if (data.success) {
@@ -141,7 +141,7 @@ const JobListing = () => {
                 {filteredJobs.map((job) => (
                   <tr
                     key={job._id}
-                    onClick={() => navigate(`/job/${job._id}`)}
+                    onClick={() => navigate(`/job/get/${job._id}`)}
                     className="group hover:bg-slate-50/50 transition-colors cursor-pointer"
                   >
                     <td className="px-8 py-5">

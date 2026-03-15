@@ -13,6 +13,8 @@ export const AppContextProvider = (props) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [showUserLogin, setShowUserLogin] = useState(true);
   const [verified, setVerified] = useState(null);
+  const [appliedJobs, setAppliedJobs] = useState([]);
+  const [appliedJobsLoading, setAppliedJobsLoading] = useState(false);
 
   const fetchUser = async () => {
     try {
@@ -42,10 +44,35 @@ export const AppContextProvider = (props) => {
     }
   };
 
+  const fetchAppliedJobs = async () => {
+    if (!user?._id) return;
+    setAppliedJobsLoading(true);
+    try {
+      const { data } = await axios.get(`/api/student/job/apply/get-all/${user._id}`);
+      if (data.success) {
+        setAppliedJobs(data.appliedJobs ?? []);
+      } else {
+        setAppliedJobs([]);
+      }
+    } catch {
+      setAppliedJobs([]);
+    } finally {
+      setAppliedJobsLoading(false);
+    }
+  };
+
   useEffect(() => {
     fetchUser();
     getStudentVerification();
   }, []);
+
+  useEffect(() => {
+    if (verified && user?._id) {
+      fetchAppliedJobs();
+    } else {
+      setAppliedJobs([]);
+    }
+  }, [verified, user]);
 
   const values = {
     user,
@@ -56,6 +83,9 @@ export const AppContextProvider = (props) => {
     setShowUserLogin,
     getStudentVerification,
     verified,
+    appliedJobs,
+    appliedJobsLoading,
+    fetchAppliedJobs,
   };
 
   return (

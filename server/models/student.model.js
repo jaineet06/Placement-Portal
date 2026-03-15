@@ -18,14 +18,6 @@ const studentSchema = new mongoose.Schema({
         url: { type: String, default: "" },
         public_id: { type: String, default: "" }
     },
-    appliedJobs: [
-        {
-            job: { type: mongoose.Schema.Types.ObjectId, ref: "Job" },
-            appliedAt: { type: Date, default: Date.now },
-            status: { type: String, default: 'In Consideration', enum: ["Selected", "Rejected", "In Consideration"] }
-        }
-    ]
-
 
 }, { timestamps: true })
 

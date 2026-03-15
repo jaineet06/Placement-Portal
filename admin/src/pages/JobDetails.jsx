@@ -27,18 +27,21 @@ const JobDetails = () => {
 
   const [job, setJob] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [appliedStudents, setAppliedStudents] = useState([]);
-  const [role, setRole] = useState("");
+  const [applications, setApplications] = useState([]);
+  const [selectedRoleId, setSelectedRoleId] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
 
   const fetchJobDetails = async () => {
     setLoading(true);
     try {
-      const { data } = await axios.get(`/api/admin/get/${jobId}`);
+      const { data } = await axios.get(`/api/job/get/${jobId}`);
       if (data.success) {
         setJob(data.job);
-        if (data.job.roles?.length > 0) {
-          setRole(data.job.roles[0].name);
+        setApplications(data.applications ?? []);
+        if (data.job?.roles?.length > 0 && data.job.roles[0].id?._id) {
+          setSelectedRoleId(data.job.roles[0].id._id);
+        } else {
+          setSelectedRoleId("");
         }
       } else {
         toast.error(data.message || "Job not found");
@@ -50,75 +53,70 @@ const JobDetails = () => {
     }
   };
 
-  const handleStatusUpdate = async (studentUserId, newStatus) => {
+  const handleStatusUpdate = async (userId, roleId, newStatus) => {
     try {
       const { data } = await axios.post(`/api/admin/job/change-status`, {
-        id: studentUserId,
+        userId,
         jobId,
+        roleId,
         status: newStatus,
       });
-
       if (data.success) {
         toast.success("Status updated successfully");
-        setAppliedStudents((prev) =>
+        setApplications((prev) =>
           prev.map((item) =>
-            item.student.user._id === studentUserId
-              ? { ...item, currentStatus: newStatus }
+            String(item.user?._id) === String(userId) && String(item.role?._id) === String(roleId)
+              ? { ...item, status: newStatus }
               : item
           )
         );
+      } else {
+        toast.error(data.message || "Failed to update status");
       }
     } catch (error) {
       toast.error("Failed to update status");
     }
   };
 
-  const handleRoleChange = (selectedRoleName) => {
-    if (!job) return;
-    const selectedRole = job.roles.find((r) => r.name === selectedRoleName);
-    if (selectedRole) {
-      const processedApplicants = selectedRole.applicants.map((app) => {
-        const matchingJob = app.student.appliedJobs.find(
-          (aj) => aj.job === jobId
-        );
-        return {
-          ...app,
-          currentStatus: matchingJob ? matchingJob.status : "In Consideration",
-        };
-      });
-      setAppliedStudents(processedApplicants);
-    }
-  };
-
   const handleExportCSV = async () => {
-    if (!role) return toast.error("Please select a role");
+    if (!selectedRoleId) return toast.error("Please select a role");
     try {
-      const { data } = await axios.get(`/api/admin/export/${jobId}`, {
+      const { data } = await axios.get(`/api/job/export/${selectedRoleId}`, {
         responseType: "blob",
       });
+      const selectedRole = job?.roles?.find((r) => String(r.id?._id) === String(selectedRoleId));
+      const roleName = selectedRole?.id?.roleName ?? "applicants";
       const url = window.URL.createObjectURL(new Blob([data]));
       const link = document.createElement("a");
       link.href = url;
-      link.setAttribute(
-        "download",
-        `${job.companyName}-${role}-applicants.csv`
-      );
+      link.setAttribute("download", `${job.companyName}-${roleName}-applicants.csv`);
       document.body.appendChild(link);
       link.click();
       link.remove();
+      window.URL.revokeObjectURL(url);
       toast.success("CSV downloaded successfully!");
     } catch (error) {
       toast.error("Failed to export CSV");
     }
   };
 
+  const filteredApplicants = applications.filter((app) => {
+    const matchesRole = !selectedRoleId || String(app.role?._id) === String(selectedRoleId);
+    const term = searchTerm?.toLowerCase().trim() ?? "";
+    const matchesSearch =
+      !term ||
+      (app.student?.fullName?.toLowerCase().includes(term) ||
+        app.user?.enrollNumber?.toLowerCase().includes(term));
+    return matchesRole && matchesSearch;
+  });
+
   const handleDeleteJob = async () => {
     if (!window.confirm("Are you sure? This action cannot be undone.")) return;
     try {
-      const { data } = await axios.delete(`/api/admin/delete-job/${jobId}`);
+      const { data } = await axios.delete(`/api/job/delete/${jobId}`);
       if (data.success) {
         toast.success("Job deleted");
-        navigate("/admin/jobs");
+        navigate("/jobs");
       }
     } catch (error) {
       toast.error("Delete failed");
@@ -128,10 +126,6 @@ const JobDetails = () => {
   useEffect(() => {
     fetchJobDetails();
   }, [jobId]);
-
-  useEffect(() => {
-    if (role) handleRoleChange(role);
-  }, [role, job]);
 
   if (loading)
     return (
@@ -145,12 +139,6 @@ const JobDetails = () => {
         Job not found
       </div>
     );
-
-  const filteredApplicants = appliedStudents.filter(
-    (app) =>
-      app.student.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      app.student.user.enrollNumber.includes(searchTerm)
-  );
 
   return (
     <div className="p-8 space-y-8 max-w-7xl mx-auto min-h-screen bg-slate-50/30">
@@ -300,18 +288,8 @@ const JobDetails = () => {
               Total Applicants
             </p>
             <h4 className="text-5xl font-black text-slate-900">
-              {appliedStudents.length}
+              {applications.length}
             </h4>
-            <div className="mt-4 flex flex-wrap gap-2">
-              {job.roles.map((r) => (
-                <span
-                  key={r.name}
-                  className="px-3 py-1 bg-primary/5 text-primary text-[10px] font-black rounded-lg border border-primary/10"
-                >
-                  {r.name}: {r.applicants.length}
-                </span>
-              ))}
-            </div>
           </div>
         </div>
       </div>
@@ -339,13 +317,13 @@ const JobDetails = () => {
               />
             </div>
             <select
-              value={role}
-              onChange={(e) => setRole(e.target.value)}
+              value={selectedRoleId}
+              onChange={(e) => setSelectedRoleId(e.target.value)}
               className="px-4 py-2.5 bg-slate-50 border border-slate-100 rounded-xl outline-none font-bold text-sm text-slate-600 cursor-pointer"
             >
-              {job.roles.map((r) => (
-                <option key={r.name} value={r.name}>
-                  {r.name}
+              {job.roles?.map((r) => (
+                <option key={r.id?._id} value={r.id?._id ?? ""}>
+                  {r.id?.roleName ?? "—"}
                 </option>
               ))}
             </select>
@@ -380,41 +358,44 @@ const JobDetails = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-50">
-              {filteredApplicants.map((item, idx) => (
+              {filteredApplicants.map((item) => (
                 <tr
-                  key={idx}
+                  key={`${item.user?._id}-${item.role?._id}`}
                   className="group hover:bg-slate-50/50 transition-colors"
                 >
                   <td className="px-6 py-4">
                     <p className="font-black text-slate-400 text-sm tracking-tighter mb-1">
-                      {item.student.user.enrollNumber}
+                      {item.user?.enrollNumber ?? "—"}
                     </p>
                     <p className="font-bold text-slate-800">
-                      {item.student.fullName}
+                      {item.student?.fullName ?? "—"}
                     </p>
                   </td>
                   <td className="px-6 py-4">
                     <span className="px-3 py-1 bg-slate-100 text-slate-500 rounded-lg text-[10px] font-black uppercase tracking-widest">
-                      {item.student.branch}
+                      {item.student?.branch ?? "—"}
                     </span>
                   </td>
                   <td className="px-6 py-4 text-sm font-medium text-slate-500">
-                    {new Date(item.appliedAt).toLocaleDateString()}
+                    {item.appliedAt
+                      ? new Date(item.appliedAt).toLocaleDateString()
+                      : "—"}
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex justify-center">
                       <select
-                        value={item.currentStatus}
+                        value={item.status ?? "In Consideration"}
                         onChange={(e) =>
                           handleStatusUpdate(
-                            item.student.user._id,
+                            item.user._id,
+                            item.role._id,
                             e.target.value
                           )
                         }
                         className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest border outline-none cursor-pointer transition-all ${
-                          item.currentStatus === "Selected"
+                          item.status === "Selected"
                             ? "bg-green-50 text-green-600 border-green-100"
-                            : item.currentStatus === "Rejected"
+                            : item.status === "Rejected"
                             ? "bg-red-50 text-red-600 border-red-100"
                             : "bg-blue-50 text-blue-600 border-blue-100"
                         }`}
@@ -430,7 +411,7 @@ const JobDetails = () => {
                   <td className="px-6 py-4 text-center">
                     <button
                       onClick={() =>
-                        navigate(`/students/${item.student.user.enrollNumber}`)
+                        navigate(`/students/${item.user?.enrollNumber}`)
                       }
                       className="p-2 hover:bg-primary/10 text-slate-300 hover:text-primary rounded-lg transition-colors"
                     >

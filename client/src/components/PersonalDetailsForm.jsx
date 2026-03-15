@@ -192,6 +192,7 @@ const PersonalDetailsForm = () => {
                       ? "cursor-not-allowed bg-slate-100 opacity-70"
                       : "focus:border-primary focus:ring-4 focus:ring-primary/10"
                   }`}
+                required
               />
             )}
           </div>

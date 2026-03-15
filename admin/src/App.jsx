@@ -22,12 +22,12 @@ const App = () => {
       {isAdmin && (
         <Routes>
           <Route path="/*" element={<AdminLayout />}>
-            <Route path="students" element={<ListOfStudents />} />
+            <Route path="students" index element={<ListOfStudents />} />
             <Route path="students/:id" element={<StudentDetails />} />
             <Route path="verify-user" element={<VerifyUsers />} />
             <Route path="create-job" element={<CreateJob />} />
             <Route path="jobs" element={<JobListing />} />
-            <Route path="job/:jobId" element={<JobDetails />} />
+            <Route path="job/get/:jobId" element={<JobDetails />} />
             <Route path="news" element={<News />} />
           </Route>
         </Routes>

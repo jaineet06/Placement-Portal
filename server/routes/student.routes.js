@@ -20,7 +20,7 @@ studentRouter.get('/job/:jobId', authUser, fetchJobById)
 
 
 
-studentRouter.post('/job/apply/:studentId/:jobId', authUser, applyToJob)
+studentRouter.post('/job/apply/:jobId', authUser, applyToJob)
 
 studentRouter.get('/job/apply/get-all/:userId', authUser, fetchAllAppliedJobs)
 

@@ -12,25 +12,33 @@ import {
   ArrowLeft,
   Info,
   ShieldCheck,
-  Verified,
 } from "lucide-react";
 import PendingVerification from "../components/PendingVerification";
 
 const JobDetails = () => {
-  const { axios, user, verified } = useAppContext();
+  const { axios, verified, appliedJobs, fetchAppliedJobs } = useAppContext();
   const { id } = useParams();
   const navigate = useNavigate();
+
   const [job, setJob] = useState(null);
   const [loading, setLoading] = useState(false);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [selectedRole, setSelectedRole] = useState([]);
   const [applying, setApplying] = useState(false);
 
-  const handleInput = (name) => {
+  const appliedRoleIds = (appliedJobs || [])
+    .filter((app) => String(app.jobId) === String(id))
+    .map((app) => app.roleId)
+    .filter(Boolean);
+
+  const handleInput = (roleId) => {
+    if (job.status !== "Open") return;
+    if (appliedRoleIds.some((rid) => String(rid) === String(roleId))) return;
+
     setSelectedRole((prev) =>
-      prev.includes(name)
-        ? prev.filter((item) => item !== name)
-        : [...prev, name]
+      prev.includes(roleId)
+        ? prev.filter((r) => r !== roleId)
+        : [...prev, roleId]
     );
   };
 
@@ -38,8 +46,11 @@ const JobDetails = () => {
     setLoading(true);
     try {
       const { data } = await axios.get(`/api/student/job/${id}`);
-      if (data.success) setJob(data.job);
-      else toast.error(data.message);
+      if (data.success) {
+        setJob(data.job);
+      } else {
+        toast.error(data.message);
+      }
     } catch (err) {
       toast.error("Failed to load job details");
     }
@@ -49,19 +60,22 @@ const JobDetails = () => {
   const handleApplyjob = async () => {
     if (selectedRole.length === 0)
       return toast.error("Select at least one role");
+
     if (!acceptedTerms) return toast.error("Accept terms & conditions");
 
     setApplying(true);
+
     try {
-      const { data } = await axios.post(
-        `/api/student/job/apply/${user._id}/${id}`,
-        { roles: selectedRole, acceptedTerms }
-      );
+      const { data } = await axios.post(`/api/student/job/apply/${id}`, {
+        roles: selectedRole,
+      });
 
       if (data.success) {
-        toast.success("Application submitted successfully!");
+        toast.success(data.message || "Application submitted!");
         setSelectedRole([]);
         setAcceptedTerms(false);
+        fetchAppliedJobs();
+        fetchJob();
       } else {
         toast.error(data.message);
       }
@@ -74,7 +88,7 @@ const JobDetails = () => {
 
   useEffect(() => {
     if (verified) fetchJob();
-  }, []);
+  }, [verified]);
 
   if (!verified) return <PendingVerification />;
 
@@ -99,17 +113,17 @@ const JobDetails = () => {
       </button>
 
       <div className="bg-white rounded-[2.5rem] border border-slate-100 p-8 md:p-12 shadow-sm relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 blur-[100px] rounded-full -mr-32 -mt-32" />
-
         <div className="relative z-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div className="space-y-4">
             <div className="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center border border-slate-100 shadow-sm">
               <Building2 className="text-primary" size={32} />
             </div>
+
             <div>
               <h2 className="text-4xl font-black text-slate-900 tracking-tight">
                 {job.title}
               </h2>
+
               <p className="text-xl text-primary font-bold italic mt-1">
                 {job.companyName}
               </p>
@@ -131,6 +145,7 @@ const JobDetails = () => {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {[
           { icon: <MapPin />, label: "Location", value: job.location },
+
           {
             icon: <Calendar />,
             label: "Apply Before",
@@ -140,6 +155,7 @@ const JobDetails = () => {
               year: "numeric",
             }),
           },
+
           {
             icon: <Briefcase />,
             label: "Job Type",
@@ -153,10 +169,12 @@ const JobDetails = () => {
             <div className="p-3 bg-primary/10 rounded-2xl text-primary">
               {item.icon}
             </div>
+
             <div>
               <p className="text-slate-400 text-xs font-bold uppercase tracking-wider">
                 {item.label}
               </p>
+
               <p className="text-slate-900 font-bold">{item.value}</p>
             </div>
           </div>
@@ -168,10 +186,12 @@ const JobDetails = () => {
           <div className="bg-white rounded-[2rem] border border-slate-100 p-8 shadow-sm">
             <div className="flex items-center gap-2 mb-6 text-slate-800">
               <Info className="text-primary" size={20} />
+
               <h3 className="text-xl font-black uppercase tracking-tight">
                 Job <span className="text-primary italic">Description</span>
               </h3>
             </div>
+
             <div
               className="rich-text"
               dangerouslySetInnerHTML={{
@@ -182,9 +202,8 @@ const JobDetails = () => {
 
           <div className="bg-white rounded-[2rem] border border-slate-100 p-8 shadow-sm">
             <div className="flex items-center gap-2 mb-6 text-slate-800">
-              <div className="p-2 bg-primary/10 rounded-lg text-primary">
-                <ShieldCheck size={20} />
-              </div>
+              <ShieldCheck className="text-primary" size={20} />
+
               <h3 className="text-xl font-black uppercase tracking-tight">
                 Recruitment <span className="text-primary italic">Path</span>
               </h3>
@@ -195,10 +214,9 @@ const JobDetails = () => {
                 job.rounds.map((roundName, index) => (
                   <div
                     key={index}
-                    className="flex items-center gap-4 p-5 bg-slate-50 border border-slate-100 rounded-2xl group hover:border-primary/30 hover:bg-white hover:shadow-md transition-all duration-300"
+                    className="flex items-center gap-4 p-5 bg-slate-50 border border-slate-100 rounded-2xl"
                   >
-                    
-                    <div className="w-10 h-10 shrink-0 bg-white rounded-xl flex items-center justify-center font-black text-primary border border-slate-100 shadow-sm group-hover:bg-primary group-hover:text-white transition-all">
+                    <div className="w-10 h-10 shrink-0 bg-white rounded-xl flex items-center justify-center font-black text-primary border border-slate-100">
                       {index + 1}
                     </div>
 
@@ -206,6 +224,7 @@ const JobDetails = () => {
                       <p className="text-sm font-black text-slate-400 uppercase tracking-widest text-[10px]">
                         Round {index + 1}
                       </p>
+
                       <p className="text-lg font-bold text-slate-800 leading-tight">
                         {roundName}
                       </p>
@@ -225,24 +244,43 @@ const JobDetails = () => {
           <div className="bg-white rounded-[2rem] border border-slate-100 p-8 shadow-sm">
             <div className="flex items-center gap-2 mb-6 text-slate-800">
               <CheckCircle2 className="text-primary" size={20} />
+
               <h3 className="text-xl font-black uppercase tracking-tight">
                 Select Your Preferred Role
               </h3>
             </div>
+
             <div className="flex flex-wrap gap-3">
-              {job.roles?.map((role, index) => (
-                <button
-                  key={index}
-                  onClick={() => handleInput(role.name)}
-                  className={`px-6 py-3 rounded-2xl font-bold text-sm transition-all border ${
-                    selectedRole.includes(role.name)
-                      ? "bg-primary border-primary text-white shadow-lg shadow-primary/30 scale-105"
-                      : "bg-slate-50 border-slate-200 text-slate-500 hover:border-primary/50"
-                  }`}
-                >
-                  {role.name}
-                </button>
-              ))}
+              {job.roles?.map((role, index) => {
+                const roleId = role.id?._id;
+                const roleIdStr = roleId?.toString?.() ?? roleId;
+                const isApplied = appliedRoleIds.some((rid) => String(rid) === String(roleIdStr));
+                const isSelected = selectedRole.some((rid) => String(rid) === String(roleIdStr));
+                return (
+                  <button
+                    key={index}
+                    type="button"
+                    onClick={() => handleInput(roleId)}
+                    disabled={isApplied}
+                    className={`px-6 py-3 rounded-2xl font-bold text-sm transition-all border ${
+                      isApplied
+                        ? "bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed opacity-75"
+                        : isSelected
+                        ? "bg-primary border-primary text-white shadow-lg shadow-primary/30 scale-105"
+                        : "bg-slate-50 border-slate-200 text-slate-500 hover:border-primary/50"
+                    }`}
+                  >
+                    <span className={isApplied ? "inline-flex items-center gap-2" : ""}>
+                      {role.id?.roleName}
+                      {isApplied && (
+                        <span className="text-[10px] font-black uppercase tracking-wider text-green-600">
+                          Applied
+                        </span>
+                      )}
+                    </span>
+                  </button>
+                );
+              })}
             </div>
           </div>
         </div>
@@ -250,37 +288,38 @@ const JobDetails = () => {
         <div className="lg:col-span-1">
           <div className="bg-slate-900 rounded-[2rem] p-8 text-white sticky top-8 shadow-2xl">
             <h3 className="text-xl font-black mb-6 flex items-center gap-2">
-              <ShieldCheck className="text-primary" /> Ready to Apply?
+              <ShieldCheck className="text-primary" />
+              Ready to Apply?
             </h3>
 
             <div className="space-y-6">
-              <label className="flex items-start gap-3 cursor-pointer group">
-                <div className="relative mt-1">
-                  <input
-                    type="checkbox"
-                    checked={acceptedTerms}
-                    onChange={() => setAcceptedTerms(!acceptedTerms)}
-                    className="peer appearance-none w-5 h-5 border-2 border-slate-700 rounded-md checked:bg-primary checked:border-primary transition-all"
-                  />
-                  <CheckCircle2
-                    size={12}
-                    className="absolute top-1 left-1 text-white opacity-0 peer-checked:opacity-100 pointer-events-none"
-                  />
-                </div>
-                <span className="text-sm text-slate-400 group-hover:text-slate-200 transition-colors leading-snug font-medium">
-                  I hereby confirm that I meet the eligibility criteria and
-                  agree to the T&P Cell guidelines.
+              <label className="flex items-start gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={acceptedTerms}
+                  onChange={() => setAcceptedTerms(!acceptedTerms)}
+                />
+
+                <span className="text-sm text-slate-400">
+                  I confirm that I meet the eligibility criteria and agree to
+                  the placement guidelines.
                 </span>
               </label>
 
               <button
                 onClick={handleApplyjob}
                 disabled={
-                  !acceptedTerms || selectedRole.length === 0 || applying
+                  !acceptedTerms ||
+                  selectedRole.length === 0 ||
+                  applying ||
+                  job.status !== "Open"
                 }
                 className={`w-full py-4 rounded-2xl font-bold text-lg transition-all flex items-center justify-center gap-2 ${
-                  acceptedTerms && selectedRole.length > 0 && !applying
-                    ? "bg-primary text-white hover:bg-primary-dull shadow-xl shadow-primary/20 active:scale-95"
+                  acceptedTerms &&
+                  selectedRole.length > 0 &&
+                  !applying &&
+                  job.status === "Open"
+                    ? "bg-primary text-white"
                     : "bg-slate-800 text-slate-500 cursor-not-allowed"
                 }`}
               >
