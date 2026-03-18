@@ -4,6 +4,8 @@ import Student from "../models/student.model.js";
 import User from "../models/user.model.js";
 import deleteFromCloudinary from "../utils/deleteFromCloudinary.js";
 import { updateApplicationStatusService } from "../services/job.service.js";
+import sendMail from "#configs/nodemailer.js";
+import { getStatusUpdateTemplate } from "#utils/mail-templates.js";
 
 const getStudentByEnrollment = async (req, res) => {
   const { id } = req.params;
@@ -133,6 +135,12 @@ const changeApplicationStatus = async (req, res) => {
         message: "Application not found.",
       });
     }
+
+    const email = application.user.email
+    const name = application.user.name
+    const companyName = application.job.companyName
+
+    await sendMail({ to: email, subject: "Your Application Status Has Been Updated", body: getStatusUpdateTemplate(name, companyName, roleId, status) })
 
     return res.json({
       success: true,

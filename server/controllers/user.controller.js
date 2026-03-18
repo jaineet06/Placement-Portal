@@ -1,29 +1,38 @@
 import User from "../models/user.model.js";
 import jwt from 'jsonwebtoken'
 import bcrypt from "bcryptjs"
+import { userSchema } from "#validations/user.validation.js";
+import { success } from "zod";
+import sendMail from "#configs/nodemailer.js";
+import { getSignupTemplate, getVerificationTemplate } from "#utils/mail-templates.js";
 
 const registerUser = async (req, res) => {
 
-    const { name, email, password, enrollNumber } = req.body
-
-    if (!name || !email || !password || !enrollNumber) {
-        return res.json({ success: false, message: "Enter all credentials properly!" })
-    }
-
     try {
-        const userExists = await User.findOne({ email })
+
+        const validationResult = userSchema.safeParse(req.body)
+
+        if (!validationResult.success) {
+            return res.status(400).json({
+                success: false,
+                message: validationResult.error.format()
+            })
+        }
+
+        const userExists = await User.findOne({ enrollNumber: validationResult.data.enrollNumber, email: validationResult.data.email })
         if (userExists) {
             return res.json({ success: false, message: "User already exists" })
         }
 
         const user = new User({
-            name,
-            email,
-            enrollNumber,
-            password,
+            ...validationResult.data,
             role: 'student'
         })
         await user.save()
+
+        await sendMail({
+            to: validationResult.data.email, subject: "Registration Successful - Pending Verification", body: getSignupTemplate(validationResult.data.name, validationResult.data.email, validationResult.data.password)
+        })
 
         const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET_KEY)
 
@@ -137,6 +146,8 @@ const verifyUser = async (req, res) => {
 
         user.isVerified = true
         await user.save();
+
+        await sendMail({ to: user.email, subject: "Portal Access Granted - You are Verified!", body: getVerificationTemplate(user.name) })
 
         return res.json({ success: true, message: "User verified succesfully" })
     } catch (error) {

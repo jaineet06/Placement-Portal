@@ -208,7 +208,16 @@ export const updateApplicationStatusService = async (userId, jobId, roleId, stat
             { user: userId, job: jobId, role: roleId },
             { $set: { status } },
             { new: true }
-        );
+        ).populate([{
+            path: "user",
+            select: "email name"
+        }, {
+            path: "job",
+            select: "companyName"
+        }, {
+            path: "role",
+            select: "roleName"
+        }]);
         return application;
     } catch (error) {
         console.error("Error updating application status:", error);
