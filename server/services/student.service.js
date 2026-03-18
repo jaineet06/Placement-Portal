@@ -6,7 +6,7 @@ export const applyJobService = async (userId, jobId, roles) => {
         const applications = []
         for (const roleId of roles) {
             const exists = await Application.findOne({
-                user: userId, role: roleId
+                user: userId, job: jobId, role: roleId
             })
 
             if (!exists) {

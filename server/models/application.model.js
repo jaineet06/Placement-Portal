@@ -43,7 +43,7 @@ const applicationSchema = new mongoose.Schema(
 );
 
 applicationSchema.index(
-    { student: 1, job: 1, role: 1 },
+    { user: 1, job: 1, role: 1 },
     { unique: true }
 );
 

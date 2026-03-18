@@ -1,10 +1,12 @@
 import { applyJobService, fetchAllAppliedJobsService } from "#services/student.service.js";
-import { success } from "zod";
 import Job from "../models/job.model.js";
 import Student from "../models/student.model.js";
 import User from "../models/user.model.js";
+import Role from "#models/role.model.js";
 import deleteFromCloudinary from "../utils/deleteFromCloudinary.js";
 import uploadToCloudinary from "../utils/uploadToCloudinary.js";
+import sendMail from "#configs/nodemailer.js";
+import { getApplicationSubmittedTemplate } from "#utils/mail-templates.js";
 
 
 const createStudent = async (req, res) => {
@@ -285,6 +287,9 @@ const applyToJob = async (req, res) => {
         const { roles } = req.body
         const userId = req.user.id
 
+        console.log(userId);
+
+
         if (!roles || roles.length === 0) {
             return res.status(400).json({
                 success: false,
@@ -292,10 +297,13 @@ const applyToJob = async (req, res) => {
             });
         }
 
-        const student = await Student.findOne({ user: userId })
+        const student = await Student.findOne({ user: userId }).populate({
+            path: "user",
+            select: "email name"
+        })
 
         if (!student) {
-            return res.json({ success: false, message: "No student found" })
+            return res.json({ success: false, message: "Create student profile first" })
         }
 
         const job = await Job.findById(jobId)
@@ -311,6 +319,17 @@ const applyToJob = async (req, res) => {
         if (applications.length === 0) {
             return res.json({ success: false, message: "Already applied for all roles" })
         }
+
+        const roleDocs = await Role.find({ _id: { $in: roles } }).select("roleName")
+        const roleNames = roleDocs.map(r => r.roleName)
+
+        await sendMail({
+            to: student.user.email, subject: `Application Received: ${job.companyName}`, body: getApplicationSubmittedTemplate(student.user.name, job.companyName, roleNames.join(", "), new Date().toLocaleDateString("en-IN", {
+                day: '2-digit',
+                month: 'long',
+                year: 'numeric'
+            }))
+        })
 
         return res.json({ success: true, message: "Successfully applied for roles" })
 

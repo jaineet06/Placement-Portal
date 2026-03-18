@@ -10,7 +10,7 @@ export const createJob = async (req, res) => {
         if (!validationResult.success) {
             return res.status(400).json({
                 success: false,
-                message: validationResult.error.flatten(),
+                message: validationResult.error.format()
             })
         }
 
