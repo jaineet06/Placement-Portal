@@ -1,11 +1,13 @@
 import express from "express";
 import { deleteUnverifyUser, getAllUsers, getUserProfile, loginUser, logoutUser, registerUser, verifyUser } from "../controllers/user.controller.js";
 import { authorizeRoles, authUser } from "../middlewares/auth.js";
+import { validate } from "../middleware/validate.js";
+import { userSchema } from "#validations/user.validation.js";
+
 
 const userRouter = express.Router()
 
-
-userRouter.post('/register', registerUser)
+userRouter.post('/register', validate(userSchema),registerUser)
 
 userRouter.post('/login', loginUser)
 userRouter.get('/logout', logoutUser)

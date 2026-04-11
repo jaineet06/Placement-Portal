@@ -2,7 +2,7 @@ import User from "../models/user.model.js";
 import jwt from 'jsonwebtoken'
 import bcrypt from "bcryptjs"
 import { userSchema } from "#validations/user.validation.js";
-import { success } from "zod";
+
 import sendMail from "#configs/nodemailer.js";
 import { getSignupTemplate, getVerificationTemplate } from "#utils/mail-templates.js";
 
@@ -10,28 +10,37 @@ const registerUser = async (req, res) => {
 
     try {
 
-        const validationResult = userSchema.safeParse(req.body)
+        // const validationResult = userSchema.safeParse(req.body)
 
-        if (!validationResult.success) {
-            return res.status(400).json({
+        // if (!validationResult.success) {
+        //     return res.status(400).json({
+        //         success: false,
+        //         message: validationResult.error.format()
+        //     })
+        // }
+
+        const data = req.validatedData; 
+
+        const userExists = await User.findOne({
+            enrollNumber: data.enrollNumber,
+            email: data.email
+        });
+
+         if( userExists){
+            return res.status(409).json({
                 success: false,
-                message: validationResult.error.format()
+                message : "User already exists"
             })
-        }
-
-        const userExists = await User.findOne({ enrollNumber: validationResult.data.enrollNumber, email: validationResult.data.email })
-        if (userExists) {
-            return res.json({ success: false, message: "User already exists" })
-        }
+         }
 
         const user = new User({
-            ...validationResult.data,
+            ...data,
             role: 'student'
         })
         await user.save()
 
         await sendMail({
-            to: validationResult.data.email, subject: "Registration Successful - Pending Verification", body: getSignupTemplate(validationResult.data.name, validationResult.data.email, validationResult.data.password)
+            to: data.email, subject: "Registration Successful - Pending Verification", body: getSignupTemplate(data.name, data.email)
         })
 
         const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET_KEY)
