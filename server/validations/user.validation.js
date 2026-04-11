@@ -4,11 +4,13 @@ export const userSchema = z.object({
     name: z
         .string()
         .min(2, "Name must be at least 2 characters")
-        .max(50, "Name too long"),
+        .max(50, "Name too long")
+        .trim(),
 
     email: z
         .string()
-        .email("Invalid email address"),
+        .email("Invalid email address")
+        .transform((val) => val.toLowerCase().trim()),
 
     password: z
         .string()
@@ -19,4 +21,25 @@ export const userSchema = z.object({
     enrollNumber: z
         .string()
         .length(12, "Enrollment number must be exactly 12 characters")
+        .regex(/^[A-Za-z0-9]+$/, "Only alphanumeric allowed")
+});
+
+export const loginSchema = z.object({
+  email: z
+    .string()
+    .email("Invalid email")
+    .transform((val) => val.toLowerCase().trim()),
+
+  password: z
+    .string()
+    .min(6, "Password is required")
+    .transform((val) => val.trim()),
+});
+
+
+export const idParamSchema = z.object({
+  id: z
+    .string()
+    .length(24, "Invalid user ID")
+    .regex(/^[0-9a-fA-F]{24}$/, "Invalid MongoDB ObjectId")
 });

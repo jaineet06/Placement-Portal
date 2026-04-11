@@ -1,7 +1,6 @@
 import User from "../models/user.model.js";
 import jwt from 'jsonwebtoken'
 import bcrypt from "bcryptjs"
-import { userSchema } from "#validations/user.validation.js";
 
 import sendMail from "#configs/nodemailer.js";
 import { getSignupTemplate, getVerificationTemplate } from "#utils/mail-templates.js";
@@ -56,50 +55,60 @@ const registerUser = async (req, res) => {
             options
         )
 
-        return res.json({ success: true, message: "Registerd Succesfully!", user: { email: user.email, name: user.name, role: user.role, isVerified: user.isVerified } })
+        return res.status(201).json({ success: true, message: "Registerd Succesfully!", user: { email: user.email, name: user.name, role: user.role, isVerified: user.isVerified } })
     }
     catch (error) {
-        res.json({ message: 'Server error', error: error.message });
+        return res.status(500).json({
+        success: false,
+        message: "Internal Server Error"
+      });
     }
 }
 
 
 const loginUser = async (req, res) => {
 
-    const { email, password } = req.body
+    const { email, password } = req.validatedData;
 
-    if (!email || !password) {
-        return res.json({ success: false, message: "Enter all credentials properly!" })
-    }
+   
 
     try {
         const user = await User.findOne({ email })
-        if (!user) {
-            return res.json({ success: false, message: "Invalid credentials" })
+        
+         if (!user) {
+            return res.status(401).json({
+                success: false,
+                message: "Invalid credentials"
+            });
         }
 
         const isMatch = await bcrypt.compare(password, user.password)
         if (!isMatch) {
-            return res.json({ success: false, message: "Wrong password" })
+            return res.status(401).json({
+                success: false,
+                message: "Invalid credentials"
+            });
         }
+
 
         const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET_KEY)
 
-        const options = {
+      res.cookie("token", token, {
             httpOnly: true,
             secure: false,
-            sameSite: 'lax',
+            sameSite: "lax",
             maxAge: 7 * 24 * 60 * 60 * 1000
-        }
+        });
 
-        res.cookie('token', token,
-            options
-        )
 
-        return res.json({ success: true, message: "Login Sucessfully", user: { email: user.email, name: user.name, role: user.role, isVerified: user.isVerified } })
+
+        return res.status(200).json({ success: true, message: "Login Sucessfully", user: { email: user.email, name: user.name, role: user.role, isVerified: user.isVerified } })
 
     } catch (error) {
-        res.json({ msg: 'Server error', error: error.message });
+        return res.status(500).json({
+            success: false,
+            message: "Server error"
+        });
     }
 }
 
@@ -115,9 +124,12 @@ const logoutUser = async (req, res) => {
 
         res.clearCookie("token", options);
 
-        return res.json({ success: true, message: "Logout Succesfully!" })
+        return res.status(200).json({ success: true, message: "Logout Succesfully!" })
     } catch (error) {
-        return res.json({ success: false, message: error.message })
+        return res.status(500).json({
+          success: false,
+          message: "Internal Server Error"
+        });
     }
 }
 
@@ -126,10 +138,13 @@ const getUserProfile = async (req, res) => {
         const { id } = req.user
         const user = await User.findById(id).select("-password")
 
-        return res.json({ success: true, user })
+        return res.status(200).json({ success: true, user })
     } catch (error) {
         console.log(error.message);
-        return res.json({ success: false, message: error.message })
+        return res.status(500).json({
+        success: false,
+        message: "Internal Server Error"
+     });
     }
 }
 
@@ -138,10 +153,13 @@ const getAllUsers = async (req, res) => {
         const { id } = req.user
         const users = await User.find({ isVerified: false }).select("-password")
 
-        return res.json({ success: true, users })
+        return res.status(200).json({ success: true, users })
     } catch (error) {
         console.log(error.message);
-        return res.json({ success: false, message: error.message })
+       return res.status(500).json({
+       success: false,
+       message: "Internal Server Error"
+      });
     }
 }
 
@@ -150,7 +168,7 @@ const verifyUser = async (req, res) => {
     try {
         const user = await User.findById(id);
         if (user.isVerified) {
-            return res.json({ success: false, message: "User is already verified" })
+            return res.status(400).json({ success: false, message: "User is already verified" })
         }
 
         user.isVerified = true
@@ -161,21 +179,26 @@ const verifyUser = async (req, res) => {
         return res.json({ success: true, message: "User verified succesfully" })
     } catch (error) {
         console.log(error.message);
-        return res.json({ success: false, message: error.message })
+        return res.status(500).json({ success: false, message: error.message })
     }
 }
-
 const deleteUnverifyUser = async (req, res) => {
-    const { id } = req.params;
-    console.log(id);
+  const { id } = req.validatedParams;
 
-    try {
-        await User.findByIdAndDelete(id);
-        return res.json({ success: true, message: "User deleted succesfully" })
-    } catch (error) {
-        console.log(error.message);
-        return res.json({ success: false, message: "Internal Server Error" })
-    }
-}
+  try {
+    await User.findByIdAndDelete(id);
+
+    return res.status(200).json({
+      success: true,
+      message: "User deleted successfully"
+    });
+
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Internal Server Error"
+    });
+  }
+};
 
 export { loginUser, logoutUser, registerUser, getUserProfile, getAllUsers, verifyUser, deleteUnverifyUser }
