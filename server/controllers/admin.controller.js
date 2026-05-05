@@ -7,16 +7,17 @@ import { updateApplicationStatusService } from "../services/job.service.js";
 import sendMail from "#configs/nodemailer.js";
 import { getStatusUpdateTemplate } from "#utils/mail-templates.js";
 
+
 const getStudentByEnrollment = async (req, res) => {
-  const { id } = req.params;
+
+  // ✅ from middleware
+  const { id } = req.validatedParams;
 
   try {
-
     const user = await User.findOne({ enrollNumber: id });
     if (!user) {
       return res.json({ success: false, message: "No Student found" });
     }
-
 
     const isStudent = await Student.findOne({ user: user._id }).populate(
       "user",
@@ -39,10 +40,10 @@ const getStudentByEnrollment = async (req, res) => {
 };
 
 
-
-
 const getAddressByEnrollment = async (req, res) => {
-  const { id } = req.params;
+
+  // ✅ from middleware
+  const { id } = req.validatedParams;
 
   try {
     const user = await User.findOne({ enrollNumber: id });
@@ -71,10 +72,10 @@ const getAddressByEnrollment = async (req, res) => {
 };
 
 
-
-
 const getEducation = async (req, res) => {
-  const { userId } = req.params;
+
+  // ✅ from middleware
+  const { userId } = req.validatedParams;
 
   try {
     const education = await Education.findOne({ user: userId });
@@ -91,10 +92,10 @@ const getEducation = async (req, res) => {
 };
 
 
-
-
 const deleteStudent = async (req, res) => {
-  const { userId } = req.params;
+
+  // ✅ from middleware
+  const { userId } = req.validatedParams;
 
   try {
     const student = await Student.findOne({ user: userId });
@@ -124,8 +125,12 @@ const deleteStudent = async (req, res) => {
   }
 };
 
+
 const changeApplicationStatus = async (req, res) => {
-  const { status, jobId, userId, roleId } = req.body;
+
+  // ✅ from middleware
+  const { status, jobId, userId, roleId } = req.validatedData;
+
   try {
     const application = await updateApplicationStatusService(userId, jobId, roleId, status);
 
@@ -136,11 +141,15 @@ const changeApplicationStatus = async (req, res) => {
       });
     }
 
-    const email = application.user.email
-    const name = application.user.name
-    const companyName = application.job.companyName
+    const email = application.user.email;
+    const name = application.user.name;
+    const companyName = application.job.companyName;
 
-    await sendMail({ to: email, subject: "Your Application Status Has Been Updated", body: getStatusUpdateTemplate(name, companyName, roleId, status) })
+    await sendMail({
+      to: email,
+      subject: "Your Application Status Has Been Updated",
+      body: getStatusUpdateTemplate(name, companyName, roleId, status),
+    });
 
     return res.json({
       success: true,
@@ -151,6 +160,7 @@ const changeApplicationStatus = async (req, res) => {
     return res.status(500).json({ success: false, message: "Server Error" });
   }
 };
+
 
 export {
   getStudentByEnrollment,

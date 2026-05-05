@@ -9,23 +9,15 @@ const registerUser = async (req, res) => {
 
     try {
 
-        // const validationResult = userSchema.safeParse(req.body)
-
-        // if (!validationResult.success) {
-        //     return res.status(400).json({
-        //         success: false,
-        //         message: validationResult.error.format()
-        //     })
-        // }
-
-        const data = req.validatedData; 
+        const data = req.validatedData;         
 
         const userExists = await User.findOne({
             enrollNumber: data.enrollNumber,
             email: data.email
-        });
+        });        
+        
 
-         if( userExists){
+         if(userExists){
             return res.status(409).json({
                 success: false,
                 message : "User already exists"
@@ -58,6 +50,7 @@ const registerUser = async (req, res) => {
         return res.status(201).json({ success: true, message: "Registerd Succesfully!", user: { email: user.email, name: user.name, role: user.role, isVerified: user.isVerified } })
     }
     catch (error) {
+        console.log(error); 
         return res.status(500).json({
         success: false,
         message: "Internal Server Error"
@@ -166,6 +159,7 @@ const getAllUsers = async (req, res) => {
 const verifyUser = async (req, res) => {
     const { id } = req.body;
     try {
+        console.log(req.body);
         const user = await User.findById(id);
         if (user.isVerified) {
             return res.status(400).json({ success: false, message: "User is already verified" })

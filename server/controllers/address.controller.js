@@ -1,23 +1,21 @@
-
 import Address from "../models/address.model.js";
 import Student from "../models/student.model.js";
 
-
 const addOrUpdateAddress = async (req, res) => {
-    const { type, address, city, state, pincode, country = "India" } = req.body;
-    const { id } = req.user;
-
+    const { id } = req.user;    
     try {
+        const { type, address, city, state, pincode, country } = req.validatedData;
+        
         const studentExists = await Student.findOne({ user: id });
         if (!studentExists) {
-            return res.status(404).json({ success: false, message: "No Student exists with this ID" });
-        }
-
-        if (!type || !address || !city || !state || !pincode) {
-            return res.status(400).json({ success: false, message: "Provide all required address fields" });
+            return res.status(404).json({
+                success: false,
+                message: "No Student exists with this ID"
+            });
         }
 
         const existing = await Address.findOne({ user: id, type });
+
         if (existing) {
             existing.address = address;
             existing.city = city;
@@ -38,9 +36,17 @@ const addOrUpdateAddress = async (req, res) => {
             await newAddress.save();
         }
 
-        return res.status(200).json({ success: true, message: "Address added/updated successfully" });
+        return res.status(200).json({
+            success: true,
+            message: "Address added/updated successfully"
+        });
+
     } catch (error) {
-        return res.status(500).json({ success: false, message: "Server error", error: error.message });
+        return res.status(500).json({
+            success: false,
+            message: "Server error",
+            error: error.message
+        });
     }
 };
 
@@ -83,6 +89,5 @@ const getAddresses = async (req, res) => {
         });
     }
 };
-
 
 export { addOrUpdateAddress, getAddresses };

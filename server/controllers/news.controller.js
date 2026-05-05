@@ -1,16 +1,15 @@
 import News from "../models/news.model.js"
 
+
 const addNews = async (req, res) => {
 
-    const { headline, tag, link } = req.body
-    try {
-        if (!headline.trim() || !tag.trim()) {
-            return res.json({ success: false, message: "All feilds are required" })
-        }
+    // ✅ from middleware
+    const { headline, tag, link } = req.validatedData;
 
+    try {
         const news = new News({
-            headline: headline.trim(),
-            tag: tag.trim(),
+            headline,
+            tag,
             link: link || ""
         })
 
@@ -23,12 +22,15 @@ const addNews = async (req, res) => {
     }
 }
 
+
 const deleteNews = async (req, res) => {
-    const { newsId } = req.params
+
+    // ✅ from middleware
+    const { newsId } = req.validatedParams;
 
     try {
-
         const news = await News.findByIdAndDelete(newsId);
+
         if (!news) {
             return res.json({ success: false, message: "No news found" })
         }
@@ -39,6 +41,7 @@ const deleteNews = async (req, res) => {
         res.json({ success: false, message: 'Internal Server error' });
     }
 }
+
 
 const fetchAllVisibleNews = async (req, res) => {
     try {
@@ -55,6 +58,7 @@ const fetchAllVisibleNews = async (req, res) => {
     }
 }
 
+
 const fetchAllNews = async (req, res) => {
     try {
         const news = await News.find({}).sort({ createdAt: -1 });
@@ -70,11 +74,15 @@ const fetchAllNews = async (req, res) => {
     }
 }
 
+
 const changeVisiblity = async (req, res) => {
 
-    const { newsId } = req.params
+    // ✅ from middleware
+    const { newsId } = req.validatedParams;
+
     try {
         const news = await News.findById(newsId);
+
         if (!news) {
             return res.json({ success: false, message: "No news found" })
         }
