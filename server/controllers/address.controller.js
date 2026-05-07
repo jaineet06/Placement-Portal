@@ -1,39 +1,16 @@
-import Address from "../models/address.model.js";
-import Student from "../models/student.model.js";
+import { addOrUpdateAddressService, getAddressesService } from "#services/address.service.js";
 
 const addOrUpdateAddress = async (req, res) => {
     const { id } = req.user;    
+
     try {
-        const { type, address, city, state, pincode, country } = req.validatedData;
-        
-        const studentExists = await Student.findOne({ user: id });
-        if (!studentExists) {
+        const result = await addOrUpdateAddressService(id, req.validatedData);
+
+        if (result?.error) {
             return res.status(404).json({
                 success: false,
-                message: "No Student exists with this ID"
+                message: result.error
             });
-        }
-
-        const existing = await Address.findOne({ user: id, type });
-
-        if (existing) {
-            existing.address = address;
-            existing.city = city;
-            existing.state = state;
-            existing.pincode = pincode;
-            existing.country = country;
-            await existing.save();
-        } else {
-            const newAddress = new Address({
-                user: id,
-                type,
-                address,
-                city,
-                state,
-                pincode,
-                country,
-            });
-            await newAddress.save();
         }
 
         return res.status(200).json({
@@ -53,29 +30,9 @@ const addOrUpdateAddress = async (req, res) => {
 
 const getAddresses = async (req, res) => {
     const { id } = req.user;
+
     try {
-        const addresses = await Address.find({ user: id }).select(
-            "type address city state pincode country"
-        );
-
-        const formatted = {
-            permanent: {},
-            current: {},
-        };
-
-        for (let addr of addresses) {
-            const cleanAddr = {
-                type: addr.type,
-                address: addr.address,
-                city: addr.city,
-                state: addr.state,
-                pincode: addr.pincode,
-                country: addr.country
-            };
-
-            if (addr.type === "permanent") formatted.permanent = cleanAddr;
-            if (addr.type === "current") formatted.current = cleanAddr;
-        }
+        const formatted = await getAddressesService(id);
 
         return res.status(200).json({
             success: true,

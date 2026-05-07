@@ -1,19 +1,18 @@
-import News from "../models/news.model.js"
+import {
+    addNewsService,
+    deleteNewsService,
+    fetchAllVisibleNewsService,
+    fetchAllNewsService,
+    changeVisibilityService
+} from "../services/news.service.js";
 
 
 const addNews = async (req, res) => {
 
-    // ✅ from middleware
     const { headline, tag, link } = req.validatedData;
 
     try {
-        const news = new News({
-            headline,
-            tag,
-            link: link || ""
-        })
-
-        await news.save();
+        await addNewsService({ headline, tag, link });
 
         return res.json({ success: true, message: "News Added Succesfully" })
     } catch (error) {
@@ -25,11 +24,10 @@ const addNews = async (req, res) => {
 
 const deleteNews = async (req, res) => {
 
-    // ✅ from middleware
     const { newsId } = req.validatedParams;
 
     try {
-        const news = await News.findByIdAndDelete(newsId);
+        const news = await deleteNewsService(newsId);
 
         if (!news) {
             return res.json({ success: false, message: "No news found" })
@@ -45,7 +43,7 @@ const deleteNews = async (req, res) => {
 
 const fetchAllVisibleNews = async (req, res) => {
     try {
-        const news = await News.find({ isVisible: true }).sort({ createdAt: -1 });
+        const news = await fetchAllVisibleNewsService();
 
         if (news.length === 0) {
             return res.json({ success: false, message: "No news available" })
@@ -61,7 +59,7 @@ const fetchAllVisibleNews = async (req, res) => {
 
 const fetchAllNews = async (req, res) => {
     try {
-        const news = await News.find({}).sort({ createdAt: -1 });
+        const news = await fetchAllNewsService();
 
         if (news.length === 0) {
             return res.json({ success: false, message: "No news available" })
@@ -77,18 +75,14 @@ const fetchAllNews = async (req, res) => {
 
 const changeVisiblity = async (req, res) => {
 
-    // ✅ from middleware
     const { newsId } = req.validatedParams;
 
     try {
-        const news = await News.findById(newsId);
+        const news = await changeVisibilityService(newsId);
 
         if (!news) {
             return res.json({ success: false, message: "No news found" })
         }
-
-        news.isVisible = !news.isVisible
-        await news.save()
 
         return res.json({
             success: true,

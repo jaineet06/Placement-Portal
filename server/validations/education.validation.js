@@ -1,10 +1,18 @@
 import { z } from "zod";
 
+const yearSchema = z
+    .number({ invalid_type_error: "Passout year must be a number" })
+    .min(1980, "Year is too old")
+    .max(new Date().getFullYear(), "Year cannot be in the future");
+
 const percentageSchema = z.object({
     percentage: z
         .number({ invalid_type_error: "Percentage must be a number" })
         .min(0, "Percentage cannot be less than 0")
         .max(100, "Percentage cannot exceed 100"),
+
+    // ✅ added passoutYear
+    passoutYear: yearSchema
 });
 
 export const educationSchema = z.object({

@@ -1,37 +1,30 @@
-import Address from "../models/address.model.js";
-import Education from "../models/education.model.js";
-import Student from "../models/student.model.js";
-import User from "../models/user.model.js";
-import deleteFromCloudinary from "../utils/deleteFromCloudinary.js";
-import { updateApplicationStatusService } from "../services/job.service.js";
+import {
+  getStudentByEnrollmentService,
+  getAddressByEnrollmentService,
+  getEducationService,
+  deleteStudentService,
+  changeApplicationStatusAdminService
+} from "../services/admin.service.js";
+
 import sendMail from "#configs/nodemailer.js";
 import { getStatusUpdateTemplate } from "#utils/mail-templates.js";
 
 
 const getStudentByEnrollment = async (req, res) => {
 
-  // ✅ from middleware
   const { id } = req.validatedParams;
 
   try {
-    const user = await User.findOne({ enrollNumber: id });
-    if (!user) {
-      return res.json({ success: false, message: "No Student found" });
-    }
+    const student = await getStudentByEnrollmentService(id);
 
-    const isStudent = await Student.findOne({ user: user._id }).populate(
-      "user",
-      "name email phone enrollNumber"
-    );
-
-    if (!isStudent) {
+    if (!student) {
       return res.json({ success: false, message: "No Student found" });
     }
 
     return res.json({
       success: true,
       message: "Student fetched successfully",
-      student: isStudent,
+      student,
     });
   } catch (error) {
     console.error("Create Student Error:", error.message);
@@ -42,29 +35,16 @@ const getStudentByEnrollment = async (req, res) => {
 
 const getAddressByEnrollment = async (req, res) => {
 
-  // ✅ from middleware
   const { id } = req.validatedParams;
 
   try {
-    const user = await User.findOne({ enrollNumber: id });
-    if (!user) {
-      return res.json({ success: false, message: "No Student found" });
-    }
+    const address = await getAddressByEnrollmentService(id);
 
-    const addresses = await Address.find({ user: user._id });
-
-    if (!addresses || addresses.length === 0) {
+    if (!address) {
       return res.json({ success: false, message: "No Address found" });
     }
 
-    const formatted = { permanent: {}, current: {} };
-
-    for (let add of addresses) {
-      if (add.type === "permanent") formatted.permanent = add;
-      if (add.type === "current") formatted.current = add;
-    }
-
-    return res.json({ success: true, address: formatted });
+    return res.json({ success: true, address });
   } catch (error) {
     console.error("Address Fetch Error:", error.message);
     return res.json({ success: false, message: "Server Error" });
@@ -74,11 +54,10 @@ const getAddressByEnrollment = async (req, res) => {
 
 const getEducation = async (req, res) => {
 
-  // ✅ from middleware
   const { userId } = req.validatedParams;
 
   try {
-    const education = await Education.findOne({ user: userId });
+    const education = await getEducationService(userId);
 
     if (!education) {
       return res.json({ success: false, message: "No education data found" });
@@ -94,26 +73,10 @@ const getEducation = async (req, res) => {
 
 const deleteStudent = async (req, res) => {
 
-  // ✅ from middleware
   const { userId } = req.validatedParams;
 
   try {
-    const student = await Student.findOne({ user: userId });
-
-    if (student) {
-      if (student.profilePath?.public_id) {
-        await deleteFromCloudinary(student.profilePath.public_id, "image");
-      }
-
-      if (student.resume?.public_id) {
-        await deleteFromCloudinary(student.resume.public_id, "raw");
-      }
-    }
-
-    await User.findByIdAndDelete(userId);
-    await Student.findOneAndDelete({ user: userId });
-    await Address.deleteMany({ user: userId });
-    await Education.findOneAndDelete({ user: userId });
+    await deleteStudentService(userId);
 
     return res.json({
       success: true,
@@ -128,11 +91,10 @@ const deleteStudent = async (req, res) => {
 
 const changeApplicationStatus = async (req, res) => {
 
-  // ✅ from middleware
   const { status, jobId, userId, roleId } = req.validatedData;
 
   try {
-    const application = await updateApplicationStatusService(userId, jobId, roleId, status);
+    const application = await changeApplicationStatusAdminService(req.validatedData);
 
     if (!application) {
       return res.status(404).json({
@@ -148,7 +110,7 @@ const changeApplicationStatus = async (req, res) => {
     await sendMail({
       to: email,
       subject: "Your Application Status Has Been Updated",
-      body: getStatusUpdateTemplate(name, companyName, roleId, status),
+      body: getStatusUpdateTemplate(name, companyName, application.role.roleName, status),
     });
 
     return res.json({
