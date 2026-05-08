@@ -13,6 +13,8 @@ import newsRouter from './routes/news.router.js'
 import jobRouter from './routes/job.routes.js'
 import { success } from 'zod'
 
+import AppError from './utils/AppError.js';
+import errorHandler from './middlewares/errorHandler.js';
 
 connectDB()
 connectCloudinary()
@@ -38,9 +40,15 @@ app.use('/api/admin', adminRouter)
 app.use('/api/news', newsRouter)
 app.use('/api/job', jobRouter)
 
-app.use((_, res) => {
-    res.status(404).json({ success: false, message: "Page not found" })
-})
+// app.use((_, res) => {
+//     res.status(404).json({ success: false, message: "Page not found" })
+// })
+
+app.all('*splat', (req, res, next) => {
+  next(new AppError(`Route ${req.originalUrl} not found`, 404));
+});
+
+app.use(errorHandler);
 
 app.listen(port, () => {
     console.log(`App is listening on http://localhost:${port}`)
