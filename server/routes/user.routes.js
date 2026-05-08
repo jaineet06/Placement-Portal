@@ -1,9 +1,9 @@
 import express from "express";
 import { deleteUnverifyUser, getAllUsers, getUserProfile, loginUser, logoutUser, registerUser, verifyUser } from "../controllers/user.controller.js";
 import { authorizeRoles, authUser } from "../middlewares/auth.js";
-import { validate } from "../middleware/validate.js";
+import { validate } from "../middlewares/validate.js";
 import { userSchema , loginSchema , idParamSchema} from "#validations/user.validation.js";
-import { validateParams } from "../middleware/validateParams.js";
+import { validateParams } from "../middlewares/validateParams.js";
 
 
 const userRouter = express.Router()
