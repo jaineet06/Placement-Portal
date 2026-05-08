@@ -1,72 +1,46 @@
 import User from "../models/user.model.js";
 import bcrypt from "bcryptjs";
+import AppError from "../utils/AppError.js";
 
 export const registerUserService = async (data) => {
+  const userExists = await User.findOne({ enrollNumber: data.enrollNumber, email: data.email });
+  if (userExists) throw new AppError("User already exists with this email or enrollment number", 409);
 
-    const userExists = await User.findOne({
-        enrollNumber: data.enrollNumber,
-        email: data.email
-    });
-
-    if (userExists) {
-        return { error: "User already exists" };
-    }
-
-    const user = new User({
-        ...data,
-        role: "student"
-    });
-
-    await user.save();
-
-    return user;
+  const user = await User.create({ ...data, role: "student" });
+  return user;
 };
-
 
 export const loginUserService = async (email, password) => {
+  const user = await User.findOne({ email });
+  if (!user) throw new AppError("Invalid credentials", 401);
 
-    const user = await User.findOne({ email });
+  const isMatch = await bcrypt.compare(password, user.password);
+  if (!isMatch) throw new AppError("Invalid credentials", 401);
 
-    if (!user) return { error: "Invalid credentials" };
-
-    const isMatch = await bcrypt.compare(password, user.password);
-
-    if (!isMatch) return { error: "Invalid credentials" };
-
-    return user;
+  return user;
 };
-
 
 export const getUserProfileService = async (userId) => {
-    const user = await User.findById(userId).select("-password");
-    return user;
+  const user = await User.findById(userId).select("-password");
+  if (!user) throw new AppError("User not found", 404);
+  return user;
 };
-
 
 export const getAllUsersService = async () => {
-    const users = await User.find({ isVerified: false }).select("-password");
-    return users;
+  const users = await User.find({ isVerified: false }).select("-password");
+  return users;
 };
-
 
 export const verifyUserService = async (userId) => {
+  const user = await User.findById(userId);
+  if (!user) throw new AppError("User not found", 404);
+  if (user.isVerified) throw new AppError("User is already verified", 400);
 
-    const user = await User.findById(userId);
-
-    if (!user) return { error: "User not found" };
-
-    if (user.isVerified) {
-        return { error: "User is already verified" };
-    }
-
-    user.isVerified = true;
-    await user.save();
-
-    return user;
+  user.isVerified = true;
+  await user.save();
+  return user;
 };
 
-
 export const deleteUnverifyUserService = async (userId) => {
-    await User.findByIdAndDelete(userId);
-    return true;
+  await User.findByIdAndDelete(userId);
 };

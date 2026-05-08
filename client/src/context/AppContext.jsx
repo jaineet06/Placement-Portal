@@ -1,59 +1,58 @@
+
 import { createContext, useContext, useEffect, useState } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
 
 const AppContext = createContext();
 
-//Base url
 axios.defaults.baseURL = import.meta.env.VITE_BACKEND_URL;
 axios.defaults.withCredentials = true;
 
-export const AppContextProvider = (props) => {
+export const AppContextProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [showUserLogin, setShowUserLogin] = useState(true);
   const [verified, setVerified] = useState(null);
   const [appliedJobs, setAppliedJobs] = useState([]);
   const [appliedJobsLoading, setAppliedJobsLoading] = useState(false);
+  const [authLoading, setAuthLoading] = useState(true); // ← NEW
 
   const fetchUser = async () => {
     try {
       const { data } = await axios.get("/api/auth/get-profile");
-
-      if (data.success) {
-        setUser(data.user);
-        setIsLoggedIn(true);
-        setShowUserLogin(false);
-      }
+      setUser(data.user);
+      setIsLoggedIn(true);
+      setShowUserLogin(false);
+      return true; 
     } catch (error) {
+      if (error.response?.status !== 401) {
+        
+        toast.error("Failed to load profile. Please refresh.");
+      }
       setUser(null);
+      setIsLoggedIn(false);
+      return false; 
     }
   };
 
   const getStudentVerification = async () => {
     try {
       const { data } = await axios.get("/api/student/is-verifed");
-      if (!data.success) {
-        setShowUserLogin(true);
-      } else {
-        setVerified(data.isVerified);
-      }
+      setVerified(data.isVerified);
+      if (!data.isVerified) setShowUserLogin(true);
     } catch (error) {
-      toast.error(error.message);
+      if (error.response?.status !== 401) {
+        toast.error("Could not check verification status.");
+      }
       setVerified(false);
     }
   };
 
   const fetchAppliedJobs = async () => {
-    if (!user?._id) return;
     setAppliedJobsLoading(true);
     try {
-      const { data } = await axios.get(`/api/student/job/apply/get-all/${user._id}`);
-      if (data.success) {
-        setAppliedJobs(data.appliedJobs ?? []);
-      } else {
-        setAppliedJobs([]);
-      }
+      const { data } = await axios.get("/api/student/job/apply/get-all");
+      setAppliedJobs(data.appliedJobs ?? []);
     } catch {
       setAppliedJobs([]);
     } finally {
@@ -61,9 +60,15 @@ export const AppContextProvider = (props) => {
     }
   };
 
+  
   useEffect(() => {
-    fetchUser();
-    getStudentVerification();
+    const init = async () => {
+      setAuthLoading(true);
+      const loggedIn = await fetchUser();
+      if (loggedIn) await getStudentVerification();
+      setAuthLoading(false);
+    };
+    init();
   }, []);
 
   useEffect(() => {
@@ -76,6 +81,7 @@ export const AppContextProvider = (props) => {
 
   const values = {
     user,
+    setUser,
     axios,
     isLoggedIn,
     setIsLoggedIn,
@@ -83,16 +89,14 @@ export const AppContextProvider = (props) => {
     setShowUserLogin,
     getStudentVerification,
     verified,
+    setVerified,
     appliedJobs,
     appliedJobsLoading,
     fetchAppliedJobs,
+    authLoading, 
   };
 
-  return (
-    <AppContext.Provider value={values}>{props.children}</AppContext.Provider>
-  );
+  return <AppContext.Provider value={values}>{children}</AppContext.Provider>;
 };
 
-export const useAppContext = () => {
-  return useContext(AppContext);
-};
+export const useAppContext = () => useContext(AppContext);
