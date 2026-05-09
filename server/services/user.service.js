@@ -1,12 +1,14 @@
 import User from "../models/user.model.js";
 import bcrypt from "bcryptjs";
 import AppError from "../utils/AppError.js";
+import logger from "../configs/logger.js";
 
 export const registerUserService = async (data) => {
   const userExists = await User.findOne({ enrollNumber: data.enrollNumber, email: data.email });
   if (userExists) throw new AppError("User already exists with this email or enrollment number", 409);
 
   const user = await User.create({ ...data, role: "student" });
+  logger.info(`New user registered: ${user.email} | enrollNumber: ${user.enrollNumber}`)
   return user;
 };
 
@@ -43,4 +45,6 @@ export const verifyUserService = async (userId) => {
 
 export const deleteUnverifyUserService = async (userId) => {
   await User.findByIdAndDelete(userId);
+  logger.info(`Unverified user deleted: ${userId}`);
+
 };

@@ -6,6 +6,7 @@ import User from "../models/user.model.js";
 import deleteFromCloudinary from "../utils/deleteFromCloudinary.js";
 import { updateApplicationStatusService } from "./job.service.js";
 import AppError from "../utils/AppError.js";
+import logger from "../configs/logger.js";
 
 export const getStudentByEnrollmentService = async (enrollNumber) => {
   const user = await User.findOne({ enrollNumber });
@@ -57,6 +58,9 @@ export const deleteStudentService = async (userId) => {
   await Student.findOneAndDelete({ user: userId });
   await Address.deleteMany({ user: userId });
   await Education.findOneAndDelete({ user: userId });
+
+
+  logger.warn(`Student deleted: userId=${userId}`); 
 };
 
 export const changeApplicationStatusAdminService = async (data) => {

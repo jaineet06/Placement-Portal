@@ -11,10 +11,13 @@ import educationRouter from './routes/education.routes.js'
 import adminRouter from './routes/admin.routes.js'
 import newsRouter from './routes/news.router.js'
 import jobRouter from './routes/job.routes.js'
-import { success } from 'zod'
+
 
 import AppError from './utils/AppError.js';
 import errorHandler from './middlewares/errorHandler.js';
+import logger from "./configs/logger.js";
+import httpLogger from "./middlewares/httpLogger.js";
+
 
 connectDB()
 connectCloudinary()
@@ -27,7 +30,7 @@ app.use(express.json())
 app.use(cookieParser())
 app.use(cors({ origin: allowedOrigins, credentials: true }))
 
-
+app.use(httpLogger);
 app.get('/', (req, res) => {
     res.send("Api is working")
 })
@@ -51,5 +54,5 @@ app.all('*splat', (req, res, next) => {
 app.use(errorHandler);
 
 app.listen(port, () => {
-    console.log(`App is listening on http://localhost:${port}`)
-})
+  logger.info(`Server running on port ${port} in ${process.env.NODE_ENV} mode`);
+});
