@@ -254,8 +254,12 @@ const JobDetails = () => {
               {job.roles?.map((role, index) => {
                 const roleId = role.id?._id;
                 const roleIdStr = roleId?.toString?.() ?? roleId;
-                const isApplied = appliedRoleIds.some((rid) => String(rid) === String(roleIdStr));
-                const isSelected = selectedRole.some((rid) => String(rid) === String(roleIdStr));
+                const isApplied = appliedRoleIds.some(
+                  (rid) => String(rid) === String(roleIdStr)
+                );
+                const isSelected = selectedRole.some(
+                  (rid) => String(rid) === String(roleIdStr)
+                );
                 return (
                   <button
                     key={index}
@@ -270,7 +274,11 @@ const JobDetails = () => {
                         : "bg-slate-50 border-slate-200 text-slate-500 hover:border-primary/50"
                     }`}
                   >
-                    <span className={isApplied ? "inline-flex items-center gap-2" : ""}>
+                    <span
+                      className={
+                        isApplied ? "inline-flex items-center gap-2" : ""
+                      }
+                    >
                       {role.id?.roleName}
                       {isApplied && (
                         <span className="text-[10px] font-black uppercase tracking-wider text-green-600">

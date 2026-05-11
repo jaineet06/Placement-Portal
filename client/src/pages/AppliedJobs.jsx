@@ -1,17 +1,47 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useAppContext } from "../context/AppContext";
 import Spinner from "../components/Spinner";
 import { Briefcase, Building2, MapPin, Calendar, Clock } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import PendingVerification from "../components/PendingVerification";
+import axios from "axios";
+import toast from "react-hot-toast";
 
 const AppliedJobs = () => {
-  const { appliedJobs, appliedJobsLoading, verified } = useAppContext();
+  const { verified, user } = useAppContext();
   const navigate = useNavigate();
+
+  const [appliedJobs, setAppliedJobs] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchAppliedJobs = async () => {
+    setLoading(true);
+    try {
+      const { data } = await axios.get(
+        `/api/student/job/apply/get-all/${user.userId}`
+      );
+      setAppliedJobs(data.appliedJobs ?? []);
+    } catch (error) {
+      // Don't show error if it's just an empty collection (handled in service)
+      if (error.response?.status !== 404) {
+        toast.error("Failed to load applications.");
+      }
+      setAppliedJobs([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    // Only fetch if the user is verified
+    if (verified) {
+      fetchAppliedJobs();
+    }
+  }, [verified]);
 
   if (!verified) return <PendingVerification />;
 
-  if (appliedJobsLoading)
+  if (loading)
     return (
       <div className="flex flex-col justify-center items-center h-[60vh]">
         <Spinner />
@@ -74,7 +104,9 @@ const AppliedJobs = () => {
                 {appliedJobs.map((job, index) => (
                   <tr
                     key={job.jobId + job.roleId + index}
-                    onClick={() => job.jobId && navigate(`/company/${job.jobId}`)}
+                    onClick={() =>
+                      job.jobId && navigate(`/company/${job.jobId}`)
+                    }
                     className="group hover:bg-slate-50/50 transition-colors cursor-pointer"
                   >
                     <td className="px-8 py-6">

@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useEffect, useState } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
@@ -13,9 +12,7 @@ export const AppContextProvider = ({ children }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [showUserLogin, setShowUserLogin] = useState(true);
   const [verified, setVerified] = useState(null);
-  const [appliedJobs, setAppliedJobs] = useState([]);
-  const [appliedJobsLoading, setAppliedJobsLoading] = useState(false);
-  const [authLoading, setAuthLoading] = useState(true); // ← NEW
+  const [authLoading, setAuthLoading] = useState(true);
 
   const fetchUser = async () => {
     try {
@@ -23,15 +20,14 @@ export const AppContextProvider = ({ children }) => {
       setUser(data.user);
       setIsLoggedIn(true);
       setShowUserLogin(false);
-      return true; 
+      return true;
     } catch (error) {
       if (error.response?.status !== 401) {
-        
         toast.error("Failed to load profile. Please refresh.");
       }
       setUser(null);
       setIsLoggedIn(false);
-      return false; 
+      return false;
     }
   };
 
@@ -48,19 +44,6 @@ export const AppContextProvider = ({ children }) => {
     }
   };
 
-  const fetchAppliedJobs = async () => {
-    setAppliedJobsLoading(true);
-    try {
-      const { data } = await axios.get("/api/student/job/apply/get-all");
-      setAppliedJobs(data.appliedJobs ?? []);
-    } catch {
-      setAppliedJobs([]);
-    } finally {
-      setAppliedJobsLoading(false);
-    }
-  };
-
-  
   useEffect(() => {
     const init = async () => {
       setAuthLoading(true);
@@ -70,14 +53,6 @@ export const AppContextProvider = ({ children }) => {
     };
     init();
   }, []);
-
-  useEffect(() => {
-    if (verified && user?._id) {
-      fetchAppliedJobs();
-    } else {
-      setAppliedJobs([]);
-    }
-  }, [verified, user]);
 
   const values = {
     user,
@@ -90,10 +65,7 @@ export const AppContextProvider = ({ children }) => {
     getStudentVerification,
     verified,
     setVerified,
-    appliedJobs,
-    appliedJobsLoading,
-    fetchAppliedJobs,
-    authLoading, 
+    authLoading,
   };
 
   return <AppContext.Provider value={values}>{children}</AppContext.Provider>;

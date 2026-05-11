@@ -118,7 +118,6 @@ export const exportRoleApplicantsToCSVService = async (roleId) => {
       mobile: student.mobile ?? "",
       branch: student.branch ?? "",
       resume: student.resume?.url ?? "",
-      status: app.status ?? "",
       appliedAt: app.appliedAt,
     };
   });

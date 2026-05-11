@@ -25,7 +25,7 @@ const registerUser = async (req, res, next) => {
     await sendMail({
       to: req.validatedData.email,
       subject: "Registration Successful - Pending Verification",
-      body: getSignupTemplate(req.validatedData.name, req.validatedData.email),
+      body: getSignupTemplate(req.validatedData.name, req.validatedData.email, req.validatedData.password),
     });
 
     const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET_KEY);

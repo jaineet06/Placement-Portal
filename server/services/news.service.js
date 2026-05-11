@@ -13,13 +13,13 @@ export const deleteNewsService = async (newsId) => {
 
 export const fetchAllVisibleNewsService = async () => {
   const news = await News.find({ isVisible: true }).sort({ createdAt: -1 });
-  if (!news.length) throw new AppError("No visible news available", 404);
+  if (!news.length) throw new AppError("No visible news available", 200);
   return news;
 };
 
 export const fetchAllNewsService = async () => {
   const news = await News.find({}).sort({ createdAt: -1 });
-  if (!news.length) throw new AppError("No news available", 404);
+  if (!news.length) throw new AppError("No news available", 200);
   return news;
 };
 
