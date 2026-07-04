@@ -1,6 +1,9 @@
 import e from "express";
 import { authorizeRoles, authUser } from "../middlewares/auth.js";
-import {deleteStudent,getAddressByEnrollment,getEducation,getStudentByEnrollment,changeApplicationStatus} from "../controllers/admin.controller.js";
+import {
+    deleteStudent, getAddressByEnrollment, getEducation, getStudentByEnrollment, changeApplicationStatus,
+    sendResetPasswordLink
+} from "../controllers/admin.controller.js";
 
 import { validate } from "../middlewares/validate.js";
 import { validateParams } from "../middlewares/validateParams.js";
@@ -17,6 +20,8 @@ adminRouter.get('/address/:id',authUser,authorizeRoles('admin'),validateParams(e
 adminRouter.get('/education/:userId',authUser,authorizeRoles('admin'),validateParams(userIdParamSchema),getEducation)
 
 adminRouter.delete('/delete/:userId',authUser,authorizeRoles('admin'),validateParams(userIdParamSchema),deleteStudent)
+
+adminRouter.post('/reset-pass/:userId', authUser, authorizeRoles('admin'), validateParams(userIdParamSchema), sendResetPasswordLink)
 
 // ✅ body validation
 adminRouter.post("/job/change-status",authUser,authorizeRoles("admin"),validate(changeApplicationStatusSchema),changeApplicationStatus)

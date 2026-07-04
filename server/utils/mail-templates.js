@@ -266,4 +266,19 @@ const getStatusUpdateTemplate = (name, companyName, jobRole, status) => {
   `;
 };
 
-export { getSignupTemplate, getVerificationTemplate, getApplicationSubmittedTemplate, getStatusUpdateTemplate }
+const getResetPasswordTemplate = (resetLink) => {
+    return `
+        <p>You requested a password reset.</p>
+        <p>Click the link below to reset your password:</p>
+
+        <a href="${resetLink}">
+            Reset Password
+        </a>
+
+        <p>This link will expire in 15 minutes.</p>
+
+        <p>If you didn't request this, you can safely ignore this email.</p>
+    `
+}
+
+export { getSignupTemplate, getVerificationTemplate, getApplicationSubmittedTemplate, getStatusUpdateTemplate, getResetPasswordTemplate }

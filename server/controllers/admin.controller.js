@@ -1,10 +1,10 @@
 
 import {
-  getStudentByEnrollmentService,
-  getAddressByEnrollmentService,
-  getEducationService,
-  deleteStudentService,
-  changeApplicationStatusAdminService
+    getStudentByEnrollmentService,
+    getAddressByEnrollmentService,
+    getEducationService,
+    deleteStudentService,
+    changeApplicationStatusAdminService, sendResetPasswordLinkService
 } from "../services/admin.service.js";
 
 import sendMail from "#configs/nodemailer.js";
@@ -70,10 +70,23 @@ const changeApplicationStatus = async (req, res, next) => {
   }
 };
 
+const sendResetPasswordLink = async (req, res, next) => {
+    const {userId} = req.validatedParams
+    try {
+        await sendResetPasswordLinkService(userId);
+
+        res.status(200).json({ success: true, message: "Reset Link Sent!" });
+    }catch (error) {
+        next(error);
+    }
+}
+
+
 export {
   getStudentByEnrollment,
   getAddressByEnrollment,
   getEducation,
   deleteStudent,
-  changeApplicationStatus
+  changeApplicationStatus,
+  sendResetPasswordLink
 };
