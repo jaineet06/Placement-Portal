@@ -3,12 +3,12 @@ import jwt from "jsonwebtoken";
 import sendMail from "#configs/nodemailer.js";
 import { getSignupTemplate, getVerificationTemplate } from "#utils/mail-templates.js";
 import {
-  registerUserService,
-  loginUserService,
-  getUserProfileService,
-  getAllUsersService,
-  verifyUserService,
-  deleteUnverifyUserService,
+    registerUserService,
+    loginUserService,
+    getUserProfileService,
+    getAllUsersService,
+    verifyUserService,
+    deleteUnverifyUserService, resetPasswordService,
 } from "../services/user.service.js";
 
 const COOKIE_OPTIONS = {
@@ -21,12 +21,6 @@ const COOKIE_OPTIONS = {
 const registerUser = async (req, res, next) => {
   try {
     const user = await registerUserService(req.validatedData);
-
-    await sendMail({
-      to: req.validatedData.email,
-      subject: "Registration Successful - Pending Verification",
-      body: getSignupTemplate(req.validatedData.name, req.validatedData.email, req.validatedData.password),
-    });
 
     const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET_KEY);
     res.cookie("token", token, COOKIE_OPTIONS);
@@ -113,4 +107,16 @@ const deleteUnverifyUser = async (req, res, next) => {
   }
 };
 
-export { loginUser, logoutUser, registerUser, getUserProfile, getAllUsers, verifyUser, deleteUnverifyUser };
+const resetPassword = async (req, res, next) => {
+    const {password} = req.validatedData
+    const {token, userId} = req.body
+    try{
+        await resetPasswordService(userId, token, password);
+
+        res.status(200).json({ success: true, message: "Password reset successfully" });
+    }catch (e) {
+        next(e);
+    }
+}
+
+export { loginUser, logoutUser, registerUser, getUserProfile, getAllUsers, verifyUser, deleteUnverifyUser, resetPassword };

@@ -43,3 +43,12 @@ export const idParamSchema = z.object({
     .length(24, "Invalid user ID")
     .regex(/^[0-9a-fA-F]{24}$/, "Invalid MongoDB ObjectId")
 });
+
+export const resetPasswordSchema = z.object({
+    password: z
+        .string()
+        .min(8, "Password must be at least 8 characters").regex(/[0-9]/, "Password must contain at least one number")
+        .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
+        .regex(/[a-z]/, "Password must contain at least one lowercase letter")
+        .regex(/[^A-Za-z0-9]/, "Password must contain at least one special character")
+})

@@ -44,3 +44,26 @@ export const verifyUserService = async (userId) => {
 export const deleteUnverifyUserService = async (userId) => {
   await User.findByIdAndDelete(userId);
 };
+
+export const resetPasswordService = async (userId, token, password) => {
+    const user = await User.findById(userId);
+    if (!user) throw new AppError("User not found", 404);
+
+    if(user.resetPasswordToken !== token){
+        throw new AppError("Invalid Token", 404);
+    }
+
+    if(user.resetPasswordExpiresIn < new Date()){
+        user.resetPasswordToken = undefined
+        user.resetPasswordExpiresIn = undefined
+        await user.save()
+        throw new AppError("Token Expired", 404);
+    }
+
+    user.password = password
+    user.resetPasswordToken = undefined
+    user.resetPasswordExpiresIn = undefined
+
+    await user.save();
+
+}

@@ -6,6 +6,9 @@ import User from "../models/user.model.js";
 import deleteFromCloudinary from "../utils/deleteFromCloudinary.js";
 import { updateApplicationStatusService } from "./job.service.js";
 import AppError from "../utils/AppError.js";
+import sendMail from "#configs/nodemailer.js";
+import crypto from "crypto"
+import {getResetPasswordTemplate} from "#utils/mail-templates.js";
 
 export const getStudentByEnrollmentService = async (enrollNumber) => {
   const user = await User.findOne({ enrollNumber });
@@ -67,3 +70,18 @@ export const changeApplicationStatusAdminService = async (data) => {
 
   return application;
 };
+
+export const sendResetPasswordLinkService = async (userId) => {
+    const user = await User.findById(userId);
+    if (!user) throw new AppError("User not found", 404);
+
+    const token = crypto.randomBytes(32).toString("hex");
+
+    user.resetPasswordToken = token;
+    user.resetPasswordExpiresIn = new Date(Date.now() + 15*60*1000);
+    await user.save();
+
+    const resetLink = `${process.env.FRONTEND_URL}/reset-pass/?token=${token}&id=${userId}`
+
+    await sendMail({to: user.email, subject: "Reset Password Link - Valid For 15 minutes", body: getResetPasswordTemplate(resetLink)})
+}
