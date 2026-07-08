@@ -22,7 +22,9 @@ const registerUser = async (req, res, next) => {
   try {
     const user = await registerUserService(req.validatedData);
 
-    const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET_KEY);
+    const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET_KEY,
+       { expiresIn: "7d",}
+    );
     res.cookie("token", token, COOKIE_OPTIONS);
 
     res.status(201).json({
