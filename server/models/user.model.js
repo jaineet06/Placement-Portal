@@ -11,8 +11,8 @@ const userSchema = new mongoose.Schema({
     password: { type: String, required: true },
     role: { type: String, enum: ['admin', 'student'], required: true },
     isVerified: { type: Boolean, default: false },
-    resetPasswordToken: {type: String},
-    resetPasswordExpiresIn: {type: Date}
+    resetPasswordToken: { type: String },
+    resetPasswordExpiresIn: { type: Date }
 }, { timestamps: true })
 
 userSchema.pre('save', async function (next) {
@@ -25,6 +25,7 @@ userSchema.pre('save', async function (next) {
         next()
     } catch (error) {
         console.log(error.message);
+        next(error)
     }
 })
 

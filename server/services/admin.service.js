@@ -9,6 +9,7 @@ import AppError from "../utils/AppError.js";
 import sendMail from "#configs/nodemailer.js";
 import crypto from "crypto"
 import {getResetPasswordTemplate} from "#utils/mail-templates.js";
+import Application from "#models/application.model.js";
 
 export const getStudentByEnrollmentService = async (enrollNumber) => {
   const user = await User.findOne({ enrollNumber });
@@ -60,6 +61,7 @@ export const deleteStudentService = async (userId) => {
   await Student.findOneAndDelete({ user: userId });
   await Address.deleteMany({ user: userId });
   await Education.findOneAndDelete({ user: userId });
+  await Application.deleteMany({user: userId})
 };
 
 export const changeApplicationStatusAdminService = async (data) => {
