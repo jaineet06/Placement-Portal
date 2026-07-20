@@ -12,7 +12,7 @@ const tranporter = nodemailer.createTransport({
 const sendMail = async ({ to, subject, body }) => {
     try {
         await tranporter.sendMail({
-            from: '"Training & Placement Cell" <jaineetshah07@gmail.com>',
+            from: 'Placement Portal <gecbhceplacement@gmail.com>',
             to, subject, html: body
         })
 

@@ -4,7 +4,7 @@ import toast from "react-hot-toast";
 import { Eye, EyeOff, GraduationCap, ArrowLeft } from "lucide-react";
 
 const Login = () => {
-  const { axios, setIsLoggedIn, setShowUserLogin } = useAppContext();
+  const { axios, setIsLoggedIn, setShowUserLogin, verified } = useAppContext();
   const [state, setState] = useState("login");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -52,6 +52,14 @@ const Login = () => {
       });
 
       if (data.success) {
+        if (!data.user?.verified) {
+          toast.success(
+            "Your account is pending verification. Please check your email or contact admin."
+          );
+          setLoading(false);
+          return;
+        }
+
         toast.success(data.message);
         setIsLoggedIn(true);
         setShowUserLogin(false);

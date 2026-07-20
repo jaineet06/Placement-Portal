@@ -12,7 +12,7 @@ export const globalRateLimiter = rateLimit({
 })
 
 export const loginRateLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000,
+    windowMs: 60 * 1000,
     max: 5,
     handler: (req, res, next) => {
         next(

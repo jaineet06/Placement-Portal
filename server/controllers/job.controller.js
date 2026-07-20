@@ -1,5 +1,6 @@
 
 import {
+  changeJobStatusService,
   createJobService,
   deleteJobService,
   exportRoleApplicantsToCSVService,
@@ -36,6 +37,7 @@ export const changeStatus = async (req, res, next) => {
       message: `Job status updated to ${req.validatedData.status}`,
     });
   } catch (error) {
+    console.log(error);
     next(error);
   }
 };
