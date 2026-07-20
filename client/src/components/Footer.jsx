@@ -162,17 +162,35 @@ const Footer = () => {
           <span className="text-red-500 animate-pulse">❤️</span>
           <span>by</span>
           <div className="flex gap-2">
-            <span className="text-primary font-bold hover:text-white transition-colors cursor-default">
-              Shah Jaineet
-            </span>
+            <a
+              href="https://www.linkedin.com/in/jaineet-shah-5894a731b"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <span className="text-primary font-bold hover:text-white transition-colors">
+                Shah Jaineet
+              </span>
+            </a>
             <span className="text-slate-700">|</span>
-            <span className="text-primary font-bold hover:text-white transition-colors cursor-default">
-              Rajan Bhatti
-            </span>
+            <a
+              href="https://www.linkedin.com/in/rajan-bhatti-a723a033b"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <span className="text-primary font-bold hover:text-white transition-colors">
+                Rajan Bhatti
+              </span>
+            </a>
             <span className="text-slate-700">|</span>
-            <span className="text-primary font-bold hover:text-white transition-colors cursor-default">
-              Khooshi Tiwari
-            </span>
+            <a
+              href="https://www.linkedin.com/in/khooshi-tiwari-a2485a338"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <span className="text-primary font-bold hover:text-white transition-colors">
+                Khooshi Tiwari
+              </span>
+            </a>
           </div>
         </div>
       </div>

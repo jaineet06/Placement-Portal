@@ -1,4 +1,3 @@
-
 import { ArrowRight, Sparkles, Megaphone } from "lucide-react";
 import { Link } from "react-router-dom";
 import Footer from "../components/Footer";
@@ -52,7 +51,7 @@ const Home = () => {
             <div className="absolute -inset-4 bg-primary/5 rounded-[2.5rem] blur-2xl group-hover:bg-primary/10 transition-all"></div>
             <div className="relative w-full lg:w-[480px] aspect-[4/3] rounded-[2rem] overflow-hidden shadow-2xl border-[6px] border-white">
               <img
-                src="https://images.unsplash.com/photo-1523240715639-953894982996?auto=format&fit=crop&q=80&w=1000"
+                src="./src/assets/deptImg.png"
                 alt="Students"
                 className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
               />
@@ -74,13 +73,12 @@ const Home = () => {
       <div className="mt-10 mx-8">
         <Announcements />
 
-        
         <section className="mt-5 px-2">
           <div className="bg-white rounded-[2.5rem] border border-slate-100 shadow-sm overflow-hidden flex flex-col lg:flex-row items-stretch">
             <div className="lg:w-1/3 relative min-h-[350px]">
               <img
                 src="https://gecbharuch.com/wp-content/uploads/2022/09/PPL-passport-photo-2022-e1695362980638-300x300.jpg"
-                alt="Principal Dr. Jay M Joshi"
+                alt="Principal Dr. P P Lodha"
                 className="absolute inset-0 w-full h-full object-cover"
               />
             </div>
@@ -133,13 +131,12 @@ const Home = () => {
           </div>
         </section>
 
-        
         <section className="px-2 mt-12">
           <div className="flex flex-col lg:flex-row-reverse items-stretch bg-white rounded-[2.5rem] border border-slate-100 shadow-sm overflow-hidden">
             <div className="lg:w-1/3 relative min-h-[350px] bg-slate-200">
               <img
                 src="https://gecbharuch.com/wp-content/uploads/2025/06/namrata_photo-300x300.jpg"
-                alt="HOD Computer Engineering"
+                alt="HOD Computer Department"
                 className="absolute inset-0 w-full h-full object-cover transition-all duration-700 hover:scale-105"
               />
             </div>
