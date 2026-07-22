@@ -12,12 +12,11 @@ const tranporter = nodemailer.createTransport({
 const sendMail = async ({ to, subject, body }) => {
     try {
         await tranporter.sendMail({
-            from: 'Placement Portal <gecbhceplacement@gmail.com>',
+            from: `"Placement Portal" <${process.env.SMTP_SENDER}>`,
             to, subject, html: body
         })
 
     } catch (error) {
-        console.log("Send Email Error: ", error.message);
         throw error
     }
 }

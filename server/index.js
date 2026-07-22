@@ -13,7 +13,7 @@ import newsRouter from './routes/news.router.js'
 import jobRouter from './routes/job.routes.js'
 import AppError from './utils/AppError.js';
 import errorHandler from './middlewares/errorHandler.js';
-import {globalRateLimiter} from "#middlewares/rateLimiter.js";
+import { globalRateLimiter } from "#middlewares/rateLimiter.js";
 import helmet from "helmet";
 import mongoose from "mongoose";
 
@@ -60,7 +60,7 @@ app.get('/health', (req, res) => {
 })
 
 app.all('*splat', (req, res, next) => {
-  next(new AppError(`Route ${req.originalUrl} not found`, 404));
+    next(new AppError(`Route ${req.originalUrl} not found`, 404));
 });
 
 app.use(errorHandler);
