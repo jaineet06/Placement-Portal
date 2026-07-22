@@ -17,6 +17,7 @@ const sendMail = async ({ to, subject, body }) => {
         })
 
     } catch (error) {
+        console.log(error);
         throw error
     }
 }
