@@ -59,7 +59,13 @@ const UploadFiles = () => {
         toast.error(data.message || "Upload failed");
       }
     } catch (error) {
-      toast.error("Network error during upload");
+      console.error(error);
+      console.log("Status:", error.response?.status);
+      console.log("Data:", error.response?.data);
+
+      toast.error(
+        error.response?.data?.message || error.message || "Upload failed",
+      );
     } finally {
       setUploading(false);
     }

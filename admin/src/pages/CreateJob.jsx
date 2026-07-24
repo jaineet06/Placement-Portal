@@ -75,7 +75,7 @@ const CreateJob = () => {
       !recruiter.contact
     ) {
       return toast.error(
-        "Please fill all required fields including Recruiter details!"
+        "Please fill all required fields including Recruiter details!",
       );
     }
     if (roles.length === 0 || rounds.length === 0) {
@@ -270,7 +270,7 @@ const CreateJob = () => {
                   setRecruiter({ ...recruiter, contact: e.target.value })
                 }
                 className={`${inputStyles} pl-12`}
-                placeholder="+91 ..."
+                placeholder="do not include +91 ..."
                 required
               />
             </div>

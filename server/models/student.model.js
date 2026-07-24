@@ -18,6 +18,10 @@ const studentSchema = new mongoose.Schema({
         url: { type: String, default: "" },
         public_id: { type: String, default: "" }
     },
+    isBlocked: {
+        type : Boolean,
+        default:false
+    }
 
 }, { timestamps: true })
 

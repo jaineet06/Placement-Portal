@@ -1,4 +1,3 @@
-
 import {
   changeJobStatusService,
   createJobService,
@@ -6,13 +5,15 @@ import {
   exportRoleApplicantsToCSVService,
   getAllJobServices,
   getApplicationsForJobByIdService,
-  getJobByIdService
+  getJobByIdService,
 } from "../services/job.service.js";
 
 export const createJob = async (req, res, next) => {
   try {
     await createJobService(req.validatedData);
-    res.status(201).json({ success: true, message: "Job and roles created successfully" });
+    res
+      .status(201)
+      .json({ success: true, message: "Job and roles created successfully" });
   } catch (error) {
     next(error);
   }
@@ -22,7 +23,9 @@ export const deleteJob = async (req, res, next) => {
   const { jobId } = req.params;
   try {
     await deleteJobService(jobId);
-    res.status(200).json({ success: true, message: "Job deleted successfully" });
+    res
+      .status(200)
+      .json({ success: true, message: "Job deleted successfully" });
   } catch (error) {
     next(error);
   }
@@ -64,11 +67,20 @@ export const getAllJobs = async (req, res, next) => {
 
 export const exportRoleApplicantsToCSV = async (req, res, next) => {
   const { roleId } = req.params;
+  const { status = "all" } = req.query;
+
+  console.log("Status:", status);
+
   try {
-    const { csv, companyName, roleName } = await exportRoleApplicantsToCSVService(roleId);
+    const { csv, companyName, roleName } =
+      await exportRoleApplicantsToCSVService(roleId, status);
 
     res.setHeader("Content-Type", "text/csv");
-    res.setHeader("Content-Disposition", `attachment; filename=${companyName}-${roleName}-applicants.csv`);
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename=${companyName}-${roleName}-${status}.csv`,
+    );
+
     res.status(200).send(csv);
   } catch (error) {
     next(error);

@@ -2,7 +2,7 @@ import e from "express";
 import { authorizeRoles, authUser } from "../middlewares/auth.js";
 import {
     deleteStudent, getAddressByEnrollment, getEducation, getStudentByEnrollment, changeApplicationStatus,
-    sendResetPasswordLink
+    sendResetPasswordLink ,   blockStudent, unblockStudent
 } from "../controllers/admin.controller.js";
 
 import { validate } from "../middlewares/validate.js";
@@ -25,5 +25,22 @@ adminRouter.post('/reset-pass/:userId', authUser, authorizeRoles('admin'), valid
 
 // ✅ body validation
 adminRouter.post("/job/change-status",authUser,authorizeRoles("admin"),validate(changeApplicationStatusSchema),changeApplicationStatus)
+
+
+adminRouter.patch(
+    "/block/:userId",
+    authUser,
+    authorizeRoles("admin"),
+    validateParams(userIdParamSchema),
+    blockStudent
+);
+
+adminRouter.patch(
+    "/unblock/:userId",
+    authUser,
+    authorizeRoles("admin"),
+    validateParams(userIdParamSchema),
+    unblockStudent
+);
 
 export default adminRouter

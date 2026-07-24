@@ -1,10 +1,12 @@
-
 import {
-    getStudentByEnrollmentService,
-    getAddressByEnrollmentService,
-    getEducationService,
-    deleteStudentService,
-    changeApplicationStatusAdminService, sendResetPasswordLinkService
+  getStudentByEnrollmentService,
+  getAddressByEnrollmentService,
+  getEducationService,
+  deleteStudentService,
+  changeApplicationStatusAdminService,
+  sendResetPasswordLinkService,
+  blockStudentService,
+  unblockStudentService,
 } from "../services/admin.service.js";
 
 import sendMail from "#configs/nodemailer.js";
@@ -14,7 +16,13 @@ const getStudentByEnrollment = async (req, res, next) => {
   const { id } = req.validatedParams;
   try {
     const student = await getStudentByEnrollmentService(id);
-    res.status(200).json({ success: true, message: "Student fetched successfully", student });
+    res
+      .status(200)
+      .json({
+        success: true,
+        message: "Student fetched successfully",
+        student,
+      });
   } catch (error) {
     next(error);
   }
@@ -44,7 +52,12 @@ const deleteStudent = async (req, res, next) => {
   const { userId } = req.validatedParams;
   try {
     await deleteStudentService(userId);
-    res.status(200).json({ success: true, message: "Student and related data deleted successfully" });
+    res
+      .status(200)
+      .json({
+        success: true,
+        message: "Student and related data deleted successfully",
+      });
   } catch (error) {
     next(error);
   }
@@ -53,7 +66,9 @@ const deleteStudent = async (req, res, next) => {
 const changeApplicationStatus = async (req, res, next) => {
   const { status } = req.validatedData;
   try {
-    const application = await changeApplicationStatusAdminService(req.validatedData);
+    const application = await changeApplicationStatusAdminService(
+      req.validatedData,
+    );
 
     const { email, name } = application.user;
     const { companyName } = application.job;
@@ -61,26 +76,62 @@ const changeApplicationStatus = async (req, res, next) => {
     await sendMail({
       to: email,
       subject: "Your Application Status Has Been Updated",
-      body: getStatusUpdateTemplate(name, companyName, application.role.roleName, status),
+      body: getStatusUpdateTemplate(
+        name,
+        companyName,
+        application.role.roleName,
+        status,
+      ),
     });
 
-    res.status(200).json({ success: true, message: "Status updated successfully" });
+    res
+      .status(200)
+      .json({ success: true, message: "Status updated successfully" });
   } catch (error) {
     next(error);
   }
 };
 
 const sendResetPasswordLink = async (req, res, next) => {
-    const {userId} = req.validatedParams
-    try {
-        await sendResetPasswordLinkService(userId);
+  const { userId } = req.validatedParams;
+  try {
+    await sendResetPasswordLinkService(userId);
 
-        res.status(200).json({ success: true, message: "Reset Link Sent!" });
-    }catch (error) {
-        next(error);
-    }
-}
+    res.status(200).json({ success: true, message: "Reset Link Sent!" });
+  } catch (error) {
+    next(error);
+  }
+};
 
+const blockStudent = async (req, res, next) => {
+  const { userId } = req.validatedParams;
+
+  try {
+    await blockStudentService(userId);
+
+    res.status(200).json({
+      success: true,
+      message: "Student blocked successfully",
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const unblockStudent = async (req, res, next) => {
+  const { userId } = req.validatedParams;
+
+  try {
+    await unblockStudentService(userId);
+
+    res.status(200).json({
+      success: true,
+      message: "Student unblocked successfully",
+    });
+  } catch (error) {
+    next(error);
+  }
+};
 
 export {
   getStudentByEnrollment,
@@ -88,5 +139,7 @@ export {
   getEducation,
   deleteStudent,
   changeApplicationStatus,
-  sendResetPasswordLink
+  sendResetPasswordLink,
+  blockStudent,
+  unblockStudent,
 };

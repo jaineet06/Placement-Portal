@@ -29,6 +29,7 @@ import {
 
 const studentRouter = express.Router()
 
+
 // ✅ apply middleware here
 studentRouter.post('/create', authUser, validate(createStudentSchema), createStudent)
 
