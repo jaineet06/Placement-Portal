@@ -8,11 +8,9 @@ The Placement Portal is a MERN stack-based web application designed to streamlin
 
 ---
 
-## Demo
+## Demo Video
+https://github.com/user-attachments/assets/5669a5f1-5004-48d5-ba77-5badaf396512
 
- <img width="1842" height="1009" alt="image" src="https://github.com/user-attachments/assets/57a07c36-ad27-48fb-a2af-eaffcb0bfa27" />
- <img width="1842" height="1009" alt="Screenshot from 2026-04-15 08-57-04" src="https://github.com/user-attachments/assets/29e9225b-0b1e-4855-9569-a1503fe01425" />
-<img width="1842" height="1009" alt="Screenshot from 2026-04-15 08-56-07" src="https://github.com/user-attachments/assets/e1adaa44-30e5-406d-bc5d-2b910053830f" />
 
 
 
