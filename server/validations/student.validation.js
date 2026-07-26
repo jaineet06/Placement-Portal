@@ -18,12 +18,13 @@ export const createStudentSchema = z.object({
     .regex(/^[0-9]+$/),
 
   alternateMobile: z.preprocess(
-  (val) => val === "" ? undefined : val,
-  z.string()
-    .length(10, "Alternate mobile must be 10 digits")
-    .regex(/^[0-9]+$/)
-    .optional()
-),
+    (val) => (val === "" ? undefined : val),
+    z
+      .string()
+      .length(10, "Alternate mobile must be 10 digits")
+      .regex(/^[0-9]+$/)
+      .optional(),
+  ),
 
   parentMobile: z
     .string()
@@ -44,7 +45,14 @@ export const applyJobSchema = z.object({
       z
         .string()
         .length(24, "Invalid Role ID")
-        .regex(/^[0-9a-fA-F]{24}$/)
+        .regex(/^[0-9a-fA-F]{24}$/),
     )
     .min(1, "Select at least one role"),
+});
+
+export const studentIdParamSchema = z.object({
+  id: z
+    .string()
+    .length(24, "Invalid student ID")
+    .regex(/^[0-9a-fA-F]{24}$/, "Invalid MongoDB ObjectId"),
 });

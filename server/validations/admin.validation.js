@@ -27,8 +27,9 @@ export const changeApplicationStatusSchema = z.object({
     .length(24, "Invalid User ID")
     .regex(/^[0-9a-fA-F]{24}$/),
 
-  roleId: z
-    .string()
-    .min(1, "Role ID is required")
-    .trim(),
+  roleId: z.string().min(1, "Role ID is required").trim(),
+});
+
+export const updateStudentStatusSchema = z.object({
+  isBlocked: z.boolean(),
 });

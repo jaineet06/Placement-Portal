@@ -11,6 +11,8 @@ import {
   ChevronRight,
   UserCircle,
   Filter,
+  Lock,
+  LockOpen,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
@@ -25,11 +27,26 @@ const ListOfStudents = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [isOpen, setIsOpen] = useState(false);
 
+  const toggleBlockStatus = async (student) => {
+    try {
+      const { data } = await axios.patch(`/api/admin/student/${student._id}/status`, {
+        isBlocked: !student.isBlocked,
+      });
+
+      if (data.success) {
+        toast.success(data.message);
+        fetchStudent();
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Something went wrong");
+    }
+  };
+
   const fetchStudent = async () => {
     setLoading(true);
     try {
       const { data } = await axios.get(
-        `/api/student/get-all?page=${page}&limit=${limit}&search=${searchQuery}`
+        `/api/student/get-all?page=${page}&limit=${limit}&search=${searchQuery}`,
       );
       if (data.success) {
         setStudents(data.students);
@@ -165,12 +182,16 @@ const ListOfStudents = () => {
                   <th className="px-6 py-4 text-[11px] font-black text-slate-400 uppercase tracking-widest text-center">
                     Resume
                   </th>
+
+                  <th className="px-6 py-4 text-[11px] font-black text-slate-400 uppercase tracking-widest text-center">
+                    Action
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-50">
                 {students.length === 0 ? (
                   <tr>
-                    <td colSpan="5" className="px-6 py-20 text-center">
+                    <td colSpan="7" className="px-6 py-20 text-center">
                       <div className="flex flex-col items-center justify-center text-slate-400">
                         <UserCircle size={48} className="mb-4 text-slate-200" />
                         <p className="font-bold">
@@ -216,6 +237,7 @@ const ListOfStudents = () => {
                       <td className="px-6 py-4 font-medium text-slate-600 text-sm">
                         {item.mobile}
                       </td>
+
                       <td className="px-6 py-4 text-center">
                         {item.resume && item.resume.url ? (
                           <a
@@ -236,6 +258,28 @@ const ListOfStudents = () => {
                             —
                           </span>
                         )}
+                      </td>
+
+                      <td className="px-6 py-4 text-center">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            toggleBlockStatus(item);
+                          }}
+                          className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold border transition-all duration-200
+    ${
+      item.isBlocked
+        ? "bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100"
+        : "bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100"
+    }`}
+                        >
+                          {item.isBlocked ? (
+                            <LockOpen size={14} />
+                          ) : (
+                            <Lock size={14} />
+                          )}
+                          {item.isBlocked ? "Unblock" : "Block"}
+                        </button>
                       </td>
                     </tr>
                   ))

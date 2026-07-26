@@ -38,7 +38,7 @@ const JobDetails = () => {
     setSelectedRole((prev) =>
       prev.includes(roleId)
         ? prev.filter((r) => r !== roleId)
-        : [...prev, roleId]
+        : [...prev, roleId],
     );
   };
 
@@ -80,7 +80,9 @@ const JobDetails = () => {
         toast.error(data.message);
       }
     } catch (error) {
-      toast.error("Internal server error");
+      toast.error(
+        error.response?.data?.message || "Unable to connect to the server",
+      );
     } finally {
       setApplying(false);
     }
@@ -255,10 +257,10 @@ const JobDetails = () => {
                 const roleId = role.id?._id;
                 const roleIdStr = roleId?.toString?.() ?? roleId;
                 const isApplied = appliedRoleIds.some(
-                  (rid) => String(rid) === String(roleIdStr)
+                  (rid) => String(rid) === String(roleIdStr),
                 );
                 const isSelected = selectedRole.some(
-                  (rid) => String(rid) === String(roleIdStr)
+                  (rid) => String(rid) === String(roleIdStr),
                 );
                 return (
                   <button
@@ -270,8 +272,8 @@ const JobDetails = () => {
                       isApplied
                         ? "bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed opacity-75"
                         : isSelected
-                        ? "bg-primary border-primary text-white shadow-lg shadow-primary/30 scale-105"
-                        : "bg-slate-50 border-slate-200 text-slate-500 hover:border-primary/50"
+                          ? "bg-primary border-primary text-white shadow-lg shadow-primary/30 scale-105"
+                          : "bg-slate-50 border-slate-200 text-slate-500 hover:border-primary/50"
                     }`}
                   >
                     <span

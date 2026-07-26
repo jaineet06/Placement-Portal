@@ -1,4 +1,3 @@
-
 import Address from "../models/address.model.js";
 import Education from "../models/education.model.js";
 import Student from "../models/student.model.js";
@@ -7,17 +6,19 @@ import deleteFromCloudinary from "../utils/deleteFromCloudinary.js";
 import { updateApplicationStatusService } from "./job.service.js";
 import AppError from "../utils/AppError.js";
 import sendMail from "#configs/nodemailer.js";
-import crypto from "crypto"
-import {getResetPasswordTemplate} from "#utils/mail-templates.js";
+import crypto from "crypto";
+import { getResetPasswordTemplate } from "#utils/mail-templates.js";
 import Application from "#models/application.model.js";
+import { is } from "zod/v4/locales";
 
 export const getStudentByEnrollmentService = async (enrollNumber) => {
   const user = await User.findOne({ enrollNumber });
-  if (!user) throw new AppError("No student found with this enrollment number", 404);
+  if (!user)
+    throw new AppError("No student found with this enrollment number", 404);
 
   const student = await Student.findOne({ user: user._id }).populate(
     "user",
-    "name email phone enrollNumber"
+    "name email phone enrollNumber",
   );
   if (!student) throw new AppError("Student profile not found", 404);
 
@@ -26,7 +27,8 @@ export const getStudentByEnrollmentService = async (enrollNumber) => {
 
 export const getAddressByEnrollmentService = async (enrollNumber) => {
   const user = await User.findOne({ enrollNumber });
-  if (!user) throw new AppError("No user found with this enrollment number", 404);
+  if (!user)
+    throw new AppError("No user found with this enrollment number", 404);
 
   const addresses = await Address.find({ user: user._id });
   if (!addresses || addresses.length === 0)
@@ -43,7 +45,8 @@ export const getAddressByEnrollmentService = async (enrollNumber) => {
 
 export const getEducationService = async (userId) => {
   const education = await Education.findOne({ user: userId });
-  if (!education) throw new AppError("No education data found for this user", 404);
+  if (!education)
+    throw new AppError("No education data found for this user", 404);
   return education;
 };
 
@@ -61,29 +64,49 @@ export const deleteStudentService = async (userId) => {
   await Student.findOneAndDelete({ user: userId });
   await Address.deleteMany({ user: userId });
   await Education.findOneAndDelete({ user: userId });
-  await Application.deleteMany({user: userId})
+  await Application.deleteMany({ user: userId });
 };
 
 export const changeApplicationStatusAdminService = async (data) => {
   const { status, jobId, userId, roleId } = data;
 
-  const application = await updateApplicationStatusService(userId, jobId, roleId, status);
+  const application = await updateApplicationStatusService(
+    userId,
+    jobId,
+    roleId,
+    status,
+  );
   if (!application) throw new AppError("Application not found", 404);
 
   return application;
 };
 
 export const sendResetPasswordLinkService = async (userId) => {
-    const user = await User.findById(userId);
-    if (!user) throw new AppError("User not found", 404);
+  const user = await User.findById(userId);
+  if (!user) throw new AppError("User not found", 404);
 
-    const token = crypto.randomBytes(32).toString("hex");
+  const token = crypto.randomBytes(32).toString("hex");
 
-    user.resetPasswordToken = token;
-    user.resetPasswordExpiresIn = new Date(Date.now() + 15*60*1000);
-    await user.save();
+  user.resetPasswordToken = token;
+  user.resetPasswordExpiresIn = new Date(Date.now() + 15 * 60 * 1000);
+  await user.save();
 
-    const resetLink = `${process.env.FRONTEND_URL}/reset-pass/?token=${token}&id=${userId}`
+  const resetLink = `${process.env.FRONTEND_URL}/reset-pass/?token=${token}&id=${userId}`;
 
-    await sendMail({to: user.email, subject: "Reset Password Link - Valid For 15 minutes", body: getResetPasswordTemplate(resetLink)})
-}
+  await sendMail({
+    to: user.email,
+    subject: "Reset Password Link - Valid For 15 minutes",
+    body: getResetPasswordTemplate(resetLink),
+  });
+};
+
+export const updateStudentStatusService = async (id, isBlocked) => {
+  const student = await Student.findById(id);
+
+  if (!student) {
+    throw new AppError("Student not found", 404);
+  }
+
+  student.isBlocked = isBlocked;
+  await student.save();
+};

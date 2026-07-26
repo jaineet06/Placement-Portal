@@ -29,6 +29,7 @@ const JobDetails = () => {
   const [loading, setLoading] = useState(false);
   const [applications, setApplications] = useState([]);
   const [selectedRoleId, setSelectedRoleId] = useState("");
+  const [exportStatus, setExportStatus] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
 
   const fetchJobDetails = async () => {
@@ -65,10 +66,11 @@ const JobDetails = () => {
         toast.success("Status updated successfully");
         setApplications((prev) =>
           prev.map((item) =>
-            String(item.user?._id) === String(userId) && String(item.role?._id) === String(roleId)
+            String(item.user?._id) === String(userId) &&
+            String(item.role?._id) === String(roleId)
               ? { ...item, status: newStatus }
-              : item
-          )
+              : item,
+          ),
         );
       } else {
         toast.error(data.message || "Failed to update status");
@@ -82,34 +84,57 @@ const JobDetails = () => {
     if (!selectedRoleId) return toast.error("Please select a role");
     try {
       const { data } = await axios.get(`/api/job/export/${selectedRoleId}`, {
+        params: {
+          status: exportStatus,
+        },
         responseType: "blob",
       });
-      const selectedRole = job?.roles?.find((r) => String(r.id?._id) === String(selectedRoleId));
+      const selectedRole = job?.roles?.find(
+        (r) => String(r.id?._id) === String(selectedRoleId),
+      );
       const roleName = selectedRole?.id?.roleName ?? "applicants";
       const url = window.URL.createObjectURL(new Blob([data]));
       const link = document.createElement("a");
       link.href = url;
-      link.setAttribute("download", `${job.companyName}-${roleName}-applicants.csv`);
+      link.setAttribute(
+        "download",
+        `${job.companyName}-${roleName}-${exportStatus}.csv`,
+      );
       document.body.appendChild(link);
       link.click();
       link.remove();
       window.URL.revokeObjectURL(url);
       toast.success("CSV downloaded successfully!");
     } catch (error) {
-      toast.error("Failed to export CSV");
+      try {
+        if (error.response?.data instanceof Blob) {
+          const text = await error.response.data.text();
+          const err = JSON.parse(text);
+          toast.error(err.message || "Failed to export CSV");
+        } else {
+          toast.error(error.response?.data?.message || "Failed to export CSV");
+        }
+      } catch {
+        toast.error("Failed to export CSV");
+      }
     }
   };
 
   const filteredApplicants = applications.filter((app) => {
-    const matchesRole = !selectedRoleId || String(app.role?._id) === String(selectedRoleId);
-    const term = searchTerm?.toLowerCase().trim() ?? "";
+    const matchesRole =
+      !selectedRoleId || String(app.role?._id) === String(selectedRoleId);
+
+    const matchesStatus = exportStatus === "all" || app.status === exportStatus;
+
+    const term = searchTerm.toLowerCase().trim();
+
     const matchesSearch =
       !term ||
-      (app.student?.fullName?.toLowerCase().includes(term) ||
-        app.user?.enrollNumber?.toLowerCase().includes(term));
-    return matchesRole && matchesSearch;
-  });
+      app.student?.fullName?.toLowerCase().includes(term) ||
+      app.user?.enrollNumber?.toLowerCase().includes(term);
 
+    return matchesRole && matchesStatus && matchesSearch;
+  });
   const handleDeleteJob = async () => {
     if (!window.confirm("Are you sure? This action cannot be undone.")) return;
     try {
@@ -327,6 +352,16 @@ const JobDetails = () => {
                 </option>
               ))}
             </select>
+            <select
+              value={exportStatus}
+              onChange={(e) => setExportStatus(e.target.value)}
+              className="px-4 py-2.5 bg-slate-50 border border-slate-100 rounded-xl outline-none font-bold text-sm text-slate-600 cursor-pointer"
+            >
+              <option value="all">All</option>
+              <option value="Selected">Selected</option>
+              <option value="Rejected">Rejected</option>
+              <option value="In Consideration">In Consideration</option>
+            </select>
             <button
               onClick={handleExportCSV}
               className="flex items-center gap-2 px-6 py-2.5 bg-slate-900 text-white rounded-xl font-bold hover:bg-black transition-all shadow-lg"
@@ -389,15 +424,15 @@ const JobDetails = () => {
                           handleStatusUpdate(
                             item.user._id,
                             item.role._id,
-                            e.target.value
+                            e.target.value,
                           )
                         }
                         className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest border outline-none cursor-pointer transition-all ${
                           item.status === "Selected"
                             ? "bg-green-50 text-green-600 border-green-100"
                             : item.status === "Rejected"
-                            ? "bg-red-50 text-red-600 border-red-100"
-                            : "bg-blue-50 text-blue-600 border-blue-100"
+                              ? "bg-red-50 text-red-600 border-red-100"
+                              : "bg-blue-50 text-blue-600 border-blue-100"
                         }`}
                       >
                         <option value="In Consideration">
