@@ -5,8 +5,7 @@ import {
   deleteStudentService,
   changeApplicationStatusAdminService,
   sendResetPasswordLinkService,
-  blockStudentService,
-  unblockStudentService,
+  updateStudentStatusService,
 } from "../services/admin.service.js";
 
 import sendMail from "#configs/nodemailer.js";
@@ -16,13 +15,11 @@ const getStudentByEnrollment = async (req, res, next) => {
   const { id } = req.validatedParams;
   try {
     const student = await getStudentByEnrollmentService(id);
-    res
-      .status(200)
-      .json({
-        success: true,
-        message: "Student fetched successfully",
-        student,
-      });
+    res.status(200).json({
+      success: true,
+      message: "Student fetched successfully",
+      student,
+    });
   } catch (error) {
     next(error);
   }
@@ -52,12 +49,10 @@ const deleteStudent = async (req, res, next) => {
   const { userId } = req.validatedParams;
   try {
     await deleteStudentService(userId);
-    res
-      .status(200)
-      .json({
-        success: true,
-        message: "Student and related data deleted successfully",
-      });
+    res.status(200).json({
+      success: true,
+      message: "Student and related data deleted successfully",
+    });
   } catch (error) {
     next(error);
   }
@@ -103,30 +98,18 @@ const sendResetPasswordLink = async (req, res, next) => {
   }
 };
 
-const blockStudent = async (req, res, next) => {
-  const { userId } = req.validatedParams;
-
+const updateStudentStatus = async (req, res, next) => {
   try {
-    await blockStudentService(userId);
+    const { id } = req.validatedParams;
+    const { isBlocked } = req.validatedData;
+
+    await updateStudentStatusService(id, isBlocked);
 
     res.status(200).json({
       success: true,
-      message: "Student blocked successfully",
-    });
-  } catch (error) {
-    next(error);
-  }
-};
-
-const unblockStudent = async (req, res, next) => {
-  const { userId } = req.validatedParams;
-
-  try {
-    await unblockStudentService(userId);
-
-    res.status(200).json({
-      success: true,
-      message: "Student unblocked successfully",
+      message: isBlocked
+        ? "Student blocked successfully."
+        : "Student unblocked successfully.",
     });
   } catch (error) {
     next(error);
@@ -140,6 +123,5 @@ export {
   deleteStudent,
   changeApplicationStatus,
   sendResetPasswordLink,
-  blockStudent,
-  unblockStudent,
+  updateStudentStatus,
 };

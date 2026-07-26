@@ -11,7 +11,8 @@ import {
   ChevronRight,
   UserCircle,
   Filter,
-  Lock, LockOpen 
+  Lock,
+  LockOpen,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
@@ -28,19 +29,14 @@ const ListOfStudents = () => {
 
   const toggleBlockStatus = async (student) => {
     try {
-      const endpoint = student.isBlocked
-        ? `/api/admin/unblock/${student.user._id}`
-        : `/api/admin/block/${student.user._id}`;
+      const { data } = await axios.patch(`/api/admin/student/${student._id}/status`, {
+        isBlocked: !student.isBlocked,
+      });
 
-      const { data } = await axios.patch(endpoint);
-
-      
-
-        if (data.success) {
-          toast.success(data.message);
-          fetchStudent();
-        }
-      
+      if (data.success) {
+        toast.success(data.message);
+        fetchStudent();
+      }
     } catch (error) {
       toast.error(error.response?.data?.message || "Something went wrong");
     }
@@ -186,9 +182,6 @@ const ListOfStudents = () => {
                   <th className="px-6 py-4 text-[11px] font-black text-slate-400 uppercase tracking-widest text-center">
                     Resume
                   </th>
-                  <th className="px-6 py-4 text-[11px] font-black text-slate-400 uppercase tracking-widest text-center">
-                    Status
-                  </th>
 
                   <th className="px-6 py-4 text-[11px] font-black text-slate-400 uppercase tracking-widest text-center">
                     Action
@@ -266,34 +259,27 @@ const ListOfStudents = () => {
                           </span>
                         )}
                       </td>
-                      <td className="px-6 py-4 text-center">
-                        <span
-                          className={`px-3 py-1 rounded-full text-xs font-bold ${
-                            item.isBlocked
-                              ? "bg-red-100 text-red-700"
-                              : "bg-green-100 text-green-700"
-                          }`}
-                        >
-                          {item.isBlocked ? "Blocked" : "Active"}
-                        </span>
-                      </td>
 
                       <td className="px-6 py-4 text-center">
                         <button
-  onClick={(e) => {
-    e.stopPropagation();
-    toggleBlockStatus(item);
-  }}
-  className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold border transition-all duration-200
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            toggleBlockStatus(item);
+                          }}
+                          className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold border transition-all duration-200
     ${
       item.isBlocked
         ? "bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100"
         : "bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100"
     }`}
->
-  {item.isBlocked ? <LockOpen size={14} /> : <Lock size={14} />}
-  {item.isBlocked ? "Unblock" : "Block"}
-</button>
+                        >
+                          {item.isBlocked ? (
+                            <LockOpen size={14} />
+                          ) : (
+                            <Lock size={14} />
+                          )}
+                          {item.isBlocked ? "Unblock" : "Block"}
+                        </button>
                       </td>
                     </tr>
                   ))

@@ -9,6 +9,7 @@ import sendMail from "#configs/nodemailer.js";
 import crypto from "crypto";
 import { getResetPasswordTemplate } from "#utils/mail-templates.js";
 import Application from "#models/application.model.js";
+import { is } from "zod/v4/locales";
 
 export const getStudentByEnrollmentService = async (enrollNumber) => {
   const user = await User.findOne({ enrollNumber });
@@ -99,28 +100,13 @@ export const sendResetPasswordLinkService = async (userId) => {
   });
 };
 
-export const blockStudentService = async (userId) => {
-  const student = await Student.findOne({ user: userId });
+export const updateStudentStatusService = async (id, isBlocked) => {
+  const student = await Student.findById(id);
 
   if (!student) {
     throw new AppError("Student not found", 404);
   }
 
-  student.isBlocked = true;
+  student.isBlocked = isBlocked;
   await student.save();
-
-  return student;
-};
-
-export const unblockStudentService = async (userId) => {
-  const student = await Student.findOne({ user: userId });
-
-  if (!student) {
-    throw new AppError("Student not found", 404);
-  }
-
-  student.isBlocked = false;
-  await student.save();
-
-  return student;
 };
