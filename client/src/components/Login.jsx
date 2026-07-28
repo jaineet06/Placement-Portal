@@ -53,8 +53,8 @@ const Login = () => {
 
       if (data.success) {
         if (!data.user?.isVerified) {
-          toast.error(
-            "Your account is pending verification. Please check your email or contact admin."
+          toast.success(
+            "Registration successful! Please contact admin to approve your account before logging in."
           );
           setLoading(false);
           return;
