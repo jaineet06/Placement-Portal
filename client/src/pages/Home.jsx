@@ -3,6 +3,8 @@ import { Link } from "react-router-dom";
 import Footer from "../components/Footer";
 import Announcements from "../components/Announcements";
 
+import deptImg from "../assets/deptImg.png"; // Adjust the path if needed
+
 const Home = () => {
   return (
     <>
@@ -14,61 +16,68 @@ const Home = () => {
         />
       </div>
 
-      <section className="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden mx-8">
-        <div className="p-8 md:p-14 flex flex-col lg:flex-row items-center gap-12 bg-gradient-to-br from-white via-white to-blue-50/30">
-          <div className="flex-1 space-y-8">
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 text-primary text-xs font-bold uppercase tracking-widest border border-primary/20">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
-              </span>
-              Placement Season 2025-26 Live
+
+<section className="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden mx-4 md:mx-8">
+  <div className="p-6 md:p-14 flex flex-col lg:flex-row items-center gap-10 lg:gap-12 bg-gradient-to-br from-white via-white to-blue-50/30">
+    {/* Left Content */}
+    <div className="flex-1 space-y-6 md:space-y-8 text-center lg:text-left">
+      <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 text-primary text-xs font-bold uppercase tracking-widest border border-primary/20">
+        <span className="relative flex h-2 w-2">
+          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75"></span>
+          <span className="relative inline-flex h-2 w-2 rounded-full bg-primary"></span>
+        </span>
+        Placement Season 2025-26 Live
+      </div>
+
+      <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black text-slate-900 leading-tight">
+        Empowering Careers at <br />
+        <span className="text-primary italic font-serif">
+          GEC Bharuch
+        </span>
+      </h1>
+
+      <p className="text-base sm:text-lg md:text-xl text-slate-500 max-w-xl mx-auto lg:mx-0 leading-relaxed font-medium">
+        Access exclusive job opportunities, track your applications, and
+        prepare for your future with our unified T&amp;P portal.
+      </p>
+
+      <div className="flex justify-center lg:justify-start">
+        <Link
+          to="/company"
+          className="inline-flex items-center gap-2 sm:gap-3 bg-primary hover:bg-primary-dull text-white px-6 sm:px-8 lg:px-10 py-3 sm:py-4 rounded-2xl font-bold transition-all shadow-2xl shadow-primary/30 active:scale-95 text-base sm:text-lg"
+        >
+          Apply Now
+          <ArrowRight size={20} />
+        </Link>
+      </div>
+    </div>
+
+    {/* Right Image */}
+    <div className="relative group w-full max-w-[480px]">
+      <div className="absolute -inset-4 rounded-[2.5rem] bg-primary/5 blur-2xl transition-all group-hover:bg-primary/10"></div>
+
+      <div className="relative w-full aspect-[4/3] overflow-hidden rounded-2xl lg:rounded-[2rem] border-4 lg:border-[6px] border-white shadow-2xl">
+        <img
+          src={deptImg}
+          alt="Students"
+          className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+        />
+
+        <div className="absolute bottom-3 left-3 right-3 lg:bottom-6 lg:left-6 lg:right-6 rounded-xl border border-white/50 bg-white/90 p-3 lg:p-4 backdrop-blur-md shadow-xl">
+          <div className="flex items-center gap-2 lg:gap-3">
+            <div className="shrink-0 rounded-lg bg-primary/10 p-2 text-primary">
+              <Sparkles size={18} />
             </div>
 
-            <h1 className="text-4xl md:text-6xl font-black text-slate-900 leading-[1.1]">
-              Empowering Careers at <br />
-              <span className="text-primary italic font-serif">
-                GEC Bharuch
-              </span>
-            </h1>
-
-            <p className="text-xl text-slate-500 max-w-xl leading-relaxed font-medium">
-              Access exclusive job opportunities, track your applications, and
-              prepare for your future with our unified T&P portal.
+            <p className="text-xs sm:text-sm font-bold leading-tight text-slate-800">
+              Shaping Excellence since 2004
             </p>
-
-            <div className="flex flex-wrap gap-5 pt-2">
-              <Link
-                to={"/company"}
-                className="flex items-center gap-3 bg-primary hover:bg-primary-dull text-white px-10 py-4 rounded-2xl font-bold transition-all shadow-2xl shadow-primary/30 active:scale-95 text-lg"
-              >
-                Apply Now <ArrowRight size={22} />
-              </Link>
-            </div>
-          </div>
-
-          <div className="relative group">
-            <div className="absolute -inset-4 bg-primary/5 rounded-[2.5rem] blur-2xl group-hover:bg-primary/10 transition-all"></div>
-            <div className="relative w-full lg:w-[480px] aspect-[4/3] rounded-[2rem] overflow-hidden shadow-2xl border-[6px] border-white">
-              <img
-                src="./src/assets/deptImg.png"
-                alt="Students"
-                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-              />
-              <div className="absolute bottom-6 left-6 right-6 bg-white/90 backdrop-blur-md p-4 rounded-xl border border-white/50 shadow-xl">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-primary/10 rounded-lg text-primary">
-                    <Sparkles size={20} />
-                  </div>
-                  <p className="text-slate-800 font-bold text-sm">
-                    Shaping Excellence since 2004
-                  </p>
-                </div>
-              </div>
-            </div>
           </div>
         </div>
-      </section>
+      </div>
+    </div>
+  </div>
+</section>
 
       <div className="mt-10 mx-8">
         <Announcements />
