@@ -39,7 +39,7 @@ const AppliedJobs = () => {
     }
   }, [verified]);
 
-  if (!verified) return <PendingVerification />;
+  if (verified === false ) return <PendingVerification />;
 
   if (loading)
     return (

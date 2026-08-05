@@ -42,7 +42,7 @@ const Companies = () => {
       job.title.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  if (!verified) {
+  if ( verified === false ) {
     return <PendingVerification />;
   }
 
