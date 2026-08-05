@@ -42,6 +42,7 @@ export const AppContextProvider = ({ children }) => {
       if (error.response?.status !== 401) {
         toast.error("Could not check verification status.");
       }
+      
       setVerified(false);
     }
   };
