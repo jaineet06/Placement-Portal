@@ -32,26 +32,88 @@ const getStudents = async (req, res, next) => {
     const page = Number(req.query.page) || 1;
     const limit = Number(req.query.limit) || 10;
     const searchQuery = req.query.search?.trim() || "";
+
     const skip = (page - 1) * limit;
 
     let filter = {};
+
     if (searchQuery) {
       const regex = new RegExp(searchQuery, "i");
-      const users = await User.find({ enrollNumber: regex }).select("_id");
+
+      const users = await User.find({
+        enrollNumber: regex,
+      }).select("_id");
+
       const userIds = users.map((u) => u._id);
+
       filter = {
         $or: [
           { fullName: regex },
-          ...(userIds.length > 0 ? [{ user: { $in: userIds } }] : []),
+          ...(userIds.length > 0
+            ? [{ user: { $in: userIds } }]
+            : []),
         ],
       };
     }
 
     const [students, total] = await Promise.all([
-      Student.find(filter)
-        .populate("user", "enrollNumber fullName email")
-        .skip(skip)
-        .limit(limit),
+      Student.aggregate([
+        //  Join Student with User
+        {
+          $lookup: {
+            from: "users",
+            localField: "user",
+            foreignField: "_id",
+            as: "user",
+          },
+        },
+
+        //  Convert user array into object
+        {
+          $unwind: "$user",
+        },
+
+        //  Apply search/filter
+        {
+          $match: filter,
+        },
+
+        //  Sort ALL students by enrollment number
+        {
+          $sort: {
+            "user.enrollNumber": 1,
+          },
+        },
+
+        // Skip previous pages
+        {
+          $skip: skip,
+        },
+
+        //  Get only current page
+        {
+          $limit: limit,
+        },
+
+        // Return only required User fields
+        {
+          $project: {
+            _id: 1,
+            fullName: 1,
+            branch: 1,
+            mobile: 1,
+            isBlocked: 1,
+            resume: 1,
+            user: {
+              _id: 1,
+              enrollNumber: 1,
+              fullName: 1,
+              email: 1,
+            },
+          },
+        },
+      ]),
+
       Student.countDocuments(filter),
     ]);
 
@@ -65,6 +127,7 @@ const getStudents = async (req, res, next) => {
     next(error);
   }
 };
+
 
 const getStudent = async (req, res, next) => {
   const { id } = req.user;
@@ -146,6 +209,7 @@ const uploadStudentFiles = async (req, res, next) => {
     next(error);
   }
 };
+
 
 const getStudentVefrification = async (req, res, next) => {
   const { id } = req.user;
